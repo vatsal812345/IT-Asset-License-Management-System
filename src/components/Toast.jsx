@@ -87,7 +87,8 @@ const Toast = ({ id, message, type, onClose }) => {
                 </div>
             </div>
 
-            <button onClick={handleClose}
+            <button 
+            onClick={handleClose}
                 className="p-1 hover:bg-gray-100 rounded-lg transition-colors text-gray-400 hover:text-gray-600"
             >
                 <X className="w-4 h-4" />
