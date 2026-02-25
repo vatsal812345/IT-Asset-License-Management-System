@@ -74,12 +74,12 @@ const EmployeeForm = ({ isOpen, onClose, onSubmit, initialData }) => {
                             label="Profile Picture"
                             uploadUrl={initialData ? `https://itam-backend.onrender.com/api/employees/${initialData._id}/image` : null}
                             fieldName="profileImage"
-                            initialImage={initialData ? initialData.image : null}
+                            initialImage={initialData ? initialData.profileImage : null}
                             onUploadSuccess={(imageUrl) => {
-                                setFormData(prev => ({ ...prev, image: imageUrl }));
+                                setFormData(prev => ({ ...prev, profileImage: imageUrl }));
                             }}
                             onFileSelect={(file) => {
-                                setFormData(prev => ({ ...prev, imageFile: file }));
+                                setFormData(prev => ({ ...prev, profileImageFile: file }));
                             }}
                         />
                     </div>

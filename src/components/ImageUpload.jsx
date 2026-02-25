@@ -101,7 +101,13 @@ const ImageUpload = ({
 
             if (data.success) {
                 showToast('Image uploaded successfully', 'success');
-                if (onUploadSuccess) onUploadSuccess(data.data || data.url);
+                if (onUploadSuccess) {
+                    // Normalize the URL from the response
+                    const url = typeof data.data === 'string' 
+                        ? data.data 
+                        : (data.data?.url || data.data?.imageUrl || data.url);
+                    onUploadSuccess(url);
+                }
             } else {
                 showToast(data.message || 'Upload failed', 'error');
             }

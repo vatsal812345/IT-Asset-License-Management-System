@@ -88,13 +88,13 @@ const AssetForm = ({ isOpen, onClose, onSubmit, initialData }) => {
 
         <form onSubmit={handleSubmit} className="p-8 space-y-6">
           <div className="mb-6">
-            <ImageUpload 
+            <ImageUpload
               label="Asset Image"
               uploadUrl={initialData ? `https://itam-backend.onrender.com/api/assets/${initialData._id}/image` : null}
               fieldName="image"
-              initialImage={initialData ? initialData.image : null}
+              initialImage={initialData ? initialData.imageUrl : null}
               onUploadSuccess={(imageUrl) => {
-                setFormData(prev => ({ ...prev, image: imageUrl }));
+                setFormData(prev => ({ ...prev, imageUrl: imageUrl }));
               }}
               onFileSelect={(file) => {
                 setFormData(prev => ({ ...prev, imageFile: file }));

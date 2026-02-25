@@ -65,7 +65,7 @@ const EmployeeList = () => {
     const handleCreateUpdate = async (formData) => {
         try {
             const url = editingEmployee
-                ? `https://itam-backend.onrender.com/api/employees/${editingEmployee.employeeId}`
+                ? `https://itam-backend.onrender.com/api/employees/${editingEmployee._id}`
                 : 'https://itam-backend.onrender.com/api/employees';
             
             const method = editingEmployee ? 'PUT' : 'POST';
@@ -74,6 +74,11 @@ const EmployeeList = () => {
             const imageFile = formData.imageFile;
             const body = { ...formData };
             delete body.imageFile;
+
+            // Ensure profileImage is a string if it exists (safeguard)
+            if (body.profileImage && typeof body.profileImage === 'object') {
+                body.profileImage = body.profileImage.url || body.profileImage.profileImage || '';
+            }
 
             const response = await fetch(url, {
                 method,
@@ -238,8 +243,8 @@ const EmployeeList = () => {
                                             <td className="px-8 py-6">
                                                 <div className="flex items-center space-x-4">
                                                     <div className="w-12 h-12 bg-blue-50 rounded-2xl overflow-hidden flex items-center justify-center text-blue-600 border border-blue-100 group-hover:bg-white transition-colors shrink-0">
-                                                        {emp.image ? (
-                                                            <img src={emp.image} alt={emp.firstName} className="w-full h-full object-cover" />
+                                                        {emp.profileImage ? (
+                                                            <img src={emp.profileImage} alt={emp.firstName} className="w-full h-full object-cover" />
                                                         ) : (
                                                             <span className="text-lg font-bold">{emp.firstName.charAt(0)}{emp.lastName.charAt(0)}</span>
                                                         )}

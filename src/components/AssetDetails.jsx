@@ -84,12 +84,13 @@ const AssetDetails = () => {
             if (data.success) {
                 setAsset({ ...asset, status: 'Available', currentAssignedTo: null });
                 setIsReturnModalOpen(false);
+                showToast('Asset returned successfully', 'success');
             } else {
-                alert('Error: ' + (data.message || 'Unknown error occurred'));
+                showToast(data.message || 'Error returning asset', 'error');
             }
         } catch (error) {
             console.error('Error returning asset:', error);
-            alert('Failed to return asset: ' + error.message);
+            showToast('Failed to return asset: ' + error.message, 'error');
         } finally {
             setIsReturning(false);
         }
@@ -122,12 +123,38 @@ const AssetDetails = () => {
 
     const handleEditSubmit = async (formData) => {
         try {
+            // Sanitize payload for backend validation requirements (as in AssetList.jsx)
+            const payload = { ...formData };
+            
+            // 1. Remove internal metadata
+            delete payload.__v;
+            delete payload.createdAt;
+            delete payload.updatedAt;
+            delete payload.history;
+            delete payload._id;
+
+            // 2. Ensure currentAssignedTo is just an ID (if populated)
+            if (payload.currentAssignedTo && typeof payload.currentAssignedTo === 'object') {
+                payload.currentAssignedTo = payload.currentAssignedTo._id;
+            }
+
+            // 3. Status consistency: if NOT Assigned, clear assignedTo fields
+            if (payload.status !== 'Assigned') {
+                payload.currentAssignedTo = null;
+                payload.assignedTo = null;
+            }
+
+            // 4. Ensure imageUrl is a string (safeguard)
+            if (payload.imageUrl && typeof payload.imageUrl === 'object') {
+                payload.imageUrl = payload.imageUrl.url || payload.imageUrl.imageUrl || '';
+            }
+
             const response = await fetch(`https://itam-backend.onrender.com/api/assets/${id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(formData),
+                body: JSON.stringify(payload),
             });
 
             const data = await response.json();
@@ -135,12 +162,13 @@ const AssetDetails = () => {
             if (data.success) {
                 fetchAssetDetails();
                 setIsEditModalOpen(false);
+                showToast('Asset updated successfully', 'success');
             } else {
-                alert('Error updating asset: ' + data.message);
+                showToast(data.message || 'Error updating asset', 'error');
             }
         } catch (error) {
             console.error('Error updating asset:', error);
-            alert('Failed to update asset');
+            showToast('Failed to update asset', 'error');
         }
     };
 
@@ -152,13 +180,14 @@ const AssetDetails = () => {
             });
             const data = await response.json();
             if (data.success) {
+                showToast('Asset deleted successfully', 'success');
                 navigate('/assets');
             } else {
-                alert('Error deleting asset: ' + data.message);
+                showToast(data.message || 'Error deleting asset', 'error');
             }
         } catch (error) {
             console.error('Error deleting asset:', error);
-            alert('Failed to delete asset');
+            showToast('Failed to delete asset', 'error');
         } finally {
             setIsDeleting(false);
         }
@@ -260,9 +289,9 @@ const AssetDetails = () => {
                                     label="Upload Asset Image"
                                     uploadUrl={`https://itam-backend.onrender.com/api/assets/${id}/image`}
                                     fieldName="image"
-                                    initialImage={asset.image}
+                                    initialImage={asset.imageUrl}
                                     onUploadSuccess={(imageUrl) => {
-                                        setAsset(prev => ({ ...prev, image: imageUrl }));
+                                        setAsset(prev => ({ ...prev, imageUrl: imageUrl }));
                                         fetchAssetDetails();
                                     }}
                                 />

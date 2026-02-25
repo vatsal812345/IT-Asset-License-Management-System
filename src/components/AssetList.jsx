@@ -106,6 +106,11 @@ const AssetList = () => {
             const imageFile = payload.imageFile;
             delete payload.imageFile;
 
+            // 4. Ensure imageUrl is a string (safeguard against weird API responses/state updates)
+            if (payload.imageUrl && typeof payload.imageUrl === 'object') {
+                payload.imageUrl = payload.imageUrl.url || payload.imageUrl.imageUrl || '';
+            }
+
             const response = await fetch(url, {
                 method,
                 headers: {
@@ -327,8 +332,8 @@ const AssetList = () => {
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center space-x-3">
                                                     <div className="w-10 h-10 bg-gray-100 rounded-lg overflow-hidden border border-gray-100 shrink-0">
-                                                        {asset.image ? (
-                                                            <img src={asset.image} alt={asset.name} className="w-full h-full object-cover" />
+                                                        {asset.imageUrl ? (
+                                                            <img src={asset.imageUrl} alt={asset.name} className="w-full h-full object-cover" />
                                                         ) : (
                                                             <div className="w-full h-full flex items-center justify-center text-gray-400">
                                                                 <Box className="w-5 h-5" />
