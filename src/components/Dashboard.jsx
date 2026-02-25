@@ -1,0 +1,467 @@
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { 
+    Box, 
+    CheckCircle, 
+    User, 
+    Wrench, 
+    Loader, 
+    ArrowUpRight, 
+    Plus, 
+    UserPlus, 
+    Clock,
+    Tag,
+    History,
+    ShieldCheck,
+    BarChart3,
+    Activity,
+    Smartphone,
+    Monitor,
+    Laptop,
+    AlertTriangle
+} from 'lucide-react';
+import { 
+    PieChart, 
+    Pie, 
+    Cell, 
+    ResponsiveContainer, 
+    Tooltip, 
+    Legend,
+    BarChart,
+    Bar,
+    XAxis,
+    YAxis,
+    CartesianGrid
+} from 'recharts';
+import AssetForm from './AssetForm';
+
+//header cards
+const StatCard = ({ title, value, icon: Icon, color, onClick }) => (
+  <div 
+    onClick={onClick}
+    className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-5 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 cursor-pointer group relative overflow-hidden"
+  >
+    <div className={`p-4 rounded-full ${color.bg} shadow-sm group-hover:scale-110 transition-transform duration-300`}>
+      <Icon className={`w-7 h-7 ${color.text}`} />
+    </div>
+    
+    <div>
+      <p className="text-gray-400 text-xs font-bold uppercase tracking-wider">{title}</p>
+      <p className="text-3xl font-extrabold text-gray-800 mt-1 tracking-tight group-hover:text-gray-900">{value}</p>
+    </div>
+
+    <ArrowUpRight className="absolute top-4 right-4 w-4 h-4 text-gray-300 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 -translate-y-2 group-hover:translate-x-0 group-hover:translate-y-0" />
+  </div>
+);
+
+const Dashboard = () => {
+    const [stats, setStats] = useState({
+        totalAssets: 0,
+        available: 0,
+        assigned: 0,
+        underRepair: 0,
+        totalLicenses: 0,
+        expiringLicenses: 0
+    });
+    const [licenseStats, setLicenseStats] = useState([]);
+    const [recentActivities, setRecentActivities] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [isAssetFormOpen, setIsAssetFormOpen] = useState(false);
+    const navigate = useNavigate();
+
+    const fetchData = async () => {
+        try {
+            const statsRes = await fetch('https://itam-backend.onrender.com/api/dashboard/stats');
+            const statsData = await statsRes.json();
+            
+            if (statsData.success) {
+                setStats({
+                    totalAssets: statsData.data.assets.total || 0,
+                    available: statsData.data.assets.byStatus.Available || 0,
+                    assigned: statsData.data.assets.byStatus.Assigned || 0,
+                    underRepair: statsData.data.assets.byStatus['Under Repair'] || 0,
+                });
+            }
+
+            const licensesRes = await fetch('https://itam-backend.onrender.com/api/licenses');
+            const licensesData = await licensesRes.json();
+            if (licensesData.success) {
+                const total = licensesData.data.length;
+                const expiring = licensesData.data.filter(l => new Date(l.expiryDate) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)).length;
+                setStats(prev => ({
+                    ...prev,
+                    totalLicenses: total,
+                    expiringLicenses: expiring
+                }));
+                // Get top 3 utilized licenses
+                const utilized = [...licensesData.data]
+                    .sort((a, b) => ((b.usedSeats || 0) / b.totalSeats) - ((a.usedSeats || 0) / a.totalSeats))
+                    .slice(0, 4);
+                setLicenseStats(utilized);
+            }
+
+            const assetsRes = await fetch('https://itam-backend.onrender.com/api/assets');
+            const assetsData = await assetsRes.json();
+            if (assetsData.success) {
+                const sorted = [...assetsData.data]
+                    .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
+                    .slice(0, 5);
+                setRecentActivities(sorted);
+            }
+        } catch (err) {
+            console.error('Error fetching dashboard data:', err);
+            setError('Error connecting to server');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const handleCardClick = (title) => {
+        let statusFilter = 'All';
+        switch (title) {
+            case 'Available': statusFilter = 'Available'; break;
+            case 'Assigned': statusFilter = 'Assigned'; break;
+            case 'Under Repair': statusFilter = 'Under Repair'; break;
+            default: statusFilter = 'All';
+        }
+        navigate('/assets', { state: { statusFilter } });
+    };
+
+    const handleCreateAsset = async (formData) => {
+        try {
+            const response = await fetch('https://itam-backend.onrender.com/api/assets', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData),
+            });
+            const data = await response.json();
+            if (data.success) {
+                setIsAssetFormOpen(false);
+                fetchData();
+            } else {
+                alert('Error creating asset: ' + data.message);
+            }
+        } catch (error) {
+            console.error('Error saving asset:', error);
+            alert('Failed to save asset');
+        }
+    };
+
+    const statCards = [
+        { title: "Total Assets", value: stats.totalAssets, icon: Box, color: { bg: "bg-blue-50", text: "text-blue-600" } },
+        { title: "Available", value: stats.available, icon: CheckCircle, color: { bg: "bg-emerald-50", text: "text-emerald-600" } },
+        { title: "Assigned", value: stats.assigned, icon: UserPlus, color: { bg: "bg-purple-50", text: "text-purple-600" } },
+        { title: "Under Repair", value: stats.underRepair, icon: Wrench, color: { bg: "bg-orange-50", text: "text-orange-600" } },
+        { title: "Total Licenses", value: stats.totalLicenses, icon: ShieldCheck, color: { bg: "bg-indigo-50", text: "text-indigo-600" } },
+        { title: "Expiring Soon", value: stats.expiringLicenses, icon: Clock, color: { bg: "bg-amber-50", text: "text-amber-600" } },
+    ];
+
+    if (loading && !stats.totalAssets) {
+        return (
+            <div className="flex h-screen items-center justify-center bg-gray-50">
+                <Loader className="w-10 h-10 text-blue-500 animate-spin" />
+            </div>
+        );
+    }
+
+    return (
+        <div className="p-4 md:p-8 bg-gray-50/50 min-h-screen">
+            <header className="mb-10">
+                <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Dashboard</h1>
+            </header>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-10">
+                {statCards.map((stat, index) => (
+                    <div key={index} className="animate-slide-up" style={{ animationDelay: `${index * 0.1}s` }}>
+                        <StatCard {...stat} onClick={() => stat.title.includes('License') || stat.title === 'Expiring Soon' ? navigate('/licenses') : handleCardClick(stat.title)} />
+                    </div>
+                ))}
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                {/* License Utilization */}
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 min-h-[400px]">
+                    <div className="flex items-center justify-between mb-8">
+                        <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                        License Utilization
+                        </h2>
+                        <button onClick={() => navigate('/licenses')} className="text-blue-600 text-xs font-bold uppercase tracking-widest hover:underline transition-all">View All</button>
+                    </div>
+                    
+                    <div className="space-y-6">
+                        {licenseStats.length > 0 ? (
+                            licenseStats.map((license, index) => {
+                                const used = license.usedSeats || 0;
+                                const total = license.totalSeats || 1;
+                                const percentage = Math.round((used / total) * 100);
+                                
+                                // Color indicators
+                                let barColor = '#3b82f6'; // blue
+                                let bgColor = 'bg-blue-50';
+                                if (percentage > 90) {
+                                    barColor = '#ef4444'; // red
+                                    bgColor = 'bg-red-50';
+                                } else if (percentage > 70) {
+                                    barColor = '#f59e0b'; // orange
+                                    bgColor = 'bg-amber-50';
+                                } else {
+                                    barColor = '#10b981'; // green
+                                    bgColor = 'bg-emerald-50';
+                                }
+
+                                return (
+                                    <div key={license._id} className="p-4 rounded-xl border border-gray-50 hover:border-blue-100 hover:shadow-md transition-all duration-300 group">
+                                        <div className="flex justify-between items-start mb-3">
+                                            <div>
+                                                <p className="text-sm font-extrabold text-gray-800 group-hover:text-blue-600 transition-colors">{license.softwareName}</p>
+                                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{license.vendor}</p>
+                                            </div>
+                                            <div className={`px-2 py-1 rounded-md ${bgColor} border border-opacity-50 flex items-center gap-1`}>
+                                                <span className="text-[10px] font-bold text-gray-700">{percentage}% USED</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="relative pt-1">
+                                    <div className="flex mb-2 items-center justify-between">
+                                                <div>
+                                                    <span className="text-[10px] font-bold inline-block py-1 px-2 uppercase rounded-full text-blue-600 bg-blue-50">
+                                                        Utilization
+                                                    </span>
+                                                </div>
+                                                <div className="text-right">
+                                                    <span className="text-[10px] font-bold inline-block text-gray-600">
+                                                        {used} / {total} Seats
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div className="overflow-hidden h-2 mb-1 text-xs flex rounded-full bg-gray-100 border border-gray-50">
+                                                <div 
+                                                    style={{ width: `${percentage}%`, backgroundColor: barColor }} 
+                                                    className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center transition-all duration-1000 ease-out"
+                                                ></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })
+                        ) : (
+                            <div className="text-center py-12 text-gray-400">
+                                No license data available.
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Asset Distribution Chart */}
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col min-h-[400px]">
+                    <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                        Asset Distribution
+                    </h2>
+                    <div className="flex-1 min-h-[250px] w-full items-center justify-center flex">
+                        <ResponsiveContainer width="100%" height={280}>
+                            <PieChart>
+                                <Pie
+                                    data={[
+                                        { name: 'Available', value: stats.available, color: '#10b981' },
+                                        { name: 'Assigned', value: stats.assigned, color: '#3b82f6' },
+                                        { name: 'Under Repair', value: stats.underRepair, color: '#f59e0b' }
+                                    ]}
+                                    cx="50%"
+                                    cy="50%"
+                                    innerRadius={60}
+                                    outerRadius={80}
+                                    paddingAngle={5}
+                                    dataKey="value"
+                                >
+                                    {[
+                                        { name: 'Available', color: '#10b981' },
+                                        { name: 'Assigned', color: '#3b82f6' },
+                                        { name: 'Under Repair', color: '#f59e0b' }
+                                    ].map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={entry.color} />
+                                    ))}
+                                </Pie>
+                                <Tooltip 
+                                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}
+                                />
+                                <Legend verticalAlign="bottom" height={36}/>
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 mt-4">
+                         <div className="text-center">
+                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Available</p>
+                            <p className="text-lg font-bold text-emerald-600">{stats.available}</p>
+                         </div>
+                         <div className="text-center border-x border-gray-100">
+                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Assigned</p>
+                            <p className="text-lg font-bold text-blue-600">{stats.assigned}</p>
+                         </div>
+                         <div className="text-center">
+                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Repair</p>
+                            <p className="text-lg font-bold text-amber-600">{stats.underRepair}</p>
+                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Recent Activity Feed */}
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col lg:col-span-2 min-h-[400px]">
+                    <div className="flex items-center justify-between mb-8">
+                        <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                             Recent Activity Feed
+                        </h2>
+                        <button onClick={() => navigate('/history')} className="text-blue-600 text-xs font-bold uppercase tracking-widest hover:underline transition-all">View All History</button>
+                    </div>
+                    
+                    <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-4 max-h-[500px]">
+                        {recentActivities.length > 0 ? (
+                            recentActivities.map((activity, index) => {
+                                // Determine activity type and icon
+                                let typeLabel = "Asset Updated";
+                                let typeIcon = Activity;
+                                let iconColor = "bg-blue-50 text-blue-600";
+                                let actionMessage = "";
+
+                                if (activity.status === 'Assigned') {
+                                    typeLabel = "Asset Assigned";
+                                    typeIcon = UserPlus;
+                                    iconColor = "bg-purple-50 text-purple-600";
+                                    actionMessage = `Asset ${activity.name} was assigned to an employee.`;
+                                } else if (activity.status === 'Available') {
+                                    typeLabel = "Asset Returned";
+                                    typeIcon = CheckCircle;
+                                    iconColor = "bg-emerald-50 text-emerald-600";
+                                    actionMessage = `Asset ${activity.name} is now available.`;
+                                } else if (activity.status === 'Under Repair') {
+                                    typeLabel = "Maintenance";
+                                    typeIcon = Wrench;
+                                    iconColor = "bg-orange-50 text-orange-600";
+                                    actionMessage = `Asset ${activity.name} sent for repair.`;
+                                } else {
+                                    actionMessage = `Asset ${activity.name} was updated.`;
+                                }
+
+                                const Icon = typeIcon;
+                                const timeAgo = new Date(activity.updatedAt).toLocaleString();
+
+                                return (
+                                    <div key={activity._id} className="flex gap-4 p-4 rounded-xl hover:bg-gray-50 transition-all border border-transparent hover:border-gray-100 group animate-slide-up" style={{ animationDelay: `${index * 0.05}s` }}>
+                                        <div className={`w-12 h-12 rounded-xl overflow-hidden flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 transition-transform ${activity.image ? 'border border-gray-100' : iconColor}`}>
+                                            {activity.image ? (
+                                                <img src={activity.image} alt={activity.name} className="w-full h-full object-cover" />
+                                            ) : (
+                                                <Icon className="w-6 h-6" />
+                                            )}
+                                        </div>
+                                        <div className="flex-1">
+                                            <div className="flex justify-between items-start">
+                                                <h4 className="text-sm font-bold text-gray-800">{typeLabel}</h4>
+                                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1">
+                                                    <Clock className="w-3 h-3" />
+                                                    {timeAgo}
+                                                </span>
+                                            </div>
+                                            <p className="text-sm text-gray-500 mt-1">{actionMessage}</p>
+                                            <div className="mt-2 flex items-center gap-2">
+                                                <span className="text-[10px] font-mono bg-white border border-gray-100 px-2 py-0.5 rounded text-gray-400">{activity.assetTag}</span>
+                                                <span className="text-[10px] font-bold text-blue-500 hover:underline cursor-pointer" onClick={(e) => { e.stopPropagation(); navigate(`/assets/${activity._id}`); }}>View Details</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })
+                        ) : (
+                            <div className="text-center py-20 text-gray-400">
+                                <Activity className="w-12 h-12 mx-auto mb-4 opacity-10" />
+                                <p>No recent activity found.</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Quick Actions */}
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-fit">
+                    <h2 className="text-xl font-bold text-gray-800 mb-8 font-extrabold uppercase tracking-tight">
+                        Quick Actions
+                    </h2>
+                    <div className="grid grid-cols-1 gap-4">
+                        <button 
+                            onClick={() => navigate('/licenses/register')}
+                            className="w-full bg-blue-600 text-white px-6 py-4 rounded-xl font-bold text-sm shadow-lg shadow-blue-100 hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-between group"
+                        >
+                            <span>Register License</span>
+                            <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform" />
+                        </button>
+                        <button 
+                            onClick={() => setIsAssetFormOpen(true)}
+                            className="w-full bg-indigo-600 text-white px-6 py-4 rounded-xl font-bold text-sm shadow-lg shadow-indigo-100 hover:bg-indigo-700 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-between group"
+                        >
+                            <span>Add Asset</span>
+                            <Monitor className="w-5 h-5 transition-bounce" />
+                        </button>
+                        <button 
+                            onClick={() => navigate('/licenses')}
+                            className="w-full bg-emerald-600 text-white px-6 py-4 rounded-xl font-bold text-sm shadow-lg shadow-emerald-100 hover:bg-emerald-700 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-between group"
+                        >
+                            <span>Manage Licenses</span>
+                            <ShieldCheck className="w-5 h-5 transition-transform" />
+                        </button>
+                        <button 
+                            onClick={() => navigate('/licenses/any/assign')}
+                            className="w-full bg-purple-600 text-white px-6 py-4 rounded-xl font-bold text-sm shadow-lg shadow-purple-100 hover:bg-purple-700 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-between group"
+                        >
+                            <span>Assign License</span>
+                            <UserPlus className="w-5 h-5 transition-transform" />
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <style>{`
+                .custom-scrollbar::-webkit-scrollbar {
+                    width: 6px;
+                }
+                .custom-scrollbar::-webkit-scrollbar-track {
+                    background: #f1f1f1;
+                    border-radius: 10px;
+                }
+                .custom-scrollbar::-webkit-scrollbar-thumb {
+                    background: #e2e8f0;
+                    border-radius: 10px;
+                }
+                .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                    background: #cbd5e1;
+                }
+                @keyframes slide-up {
+                    from { opacity: 0; transform: translateY(20px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+                .animate-slide-up {
+                    animation: slide-up 0.5s ease-out forwards;
+                }
+                .transition-bounce:hover {
+                    animation: bounce 0.5s infinite;
+                }
+                @keyframes bounce {
+                    0%, 100% { transform: translateY(0); }
+                    50% { transform: translateY(-3px); }
+                }
+            `}</style>
+
+            <AssetForm 
+                isOpen={isAssetFormOpen}
+                onClose={() => setIsAssetFormOpen(false)}
+                onSubmit={handleCreateAsset}
+            />
+        </div>
+    );
+};
+
+export default Dashboard;
