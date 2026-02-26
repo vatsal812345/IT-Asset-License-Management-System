@@ -13,7 +13,7 @@ const EmployeeForm = ({ isOpen, onClose, onSubmit, initialData }) => {
         designation: '',
         joiningDate: new Date().toISOString().split('T')[0],
         status: 'Active',
-        imageFile: null
+        profileImageFile: null
     });
 
     useEffect(() => {
@@ -33,7 +33,7 @@ const EmployeeForm = ({ isOpen, onClose, onSubmit, initialData }) => {
                 designation: '',
                 joiningDate: new Date().toISOString().split('T')[0],
                 status: 'Active',
-                imageFile: null
+                profileImageFile: null
             });
         }
     }, [initialData, isOpen]);
@@ -50,7 +50,7 @@ const EmployeeForm = ({ isOpen, onClose, onSubmit, initialData }) => {
             <div className="bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl overflow-hidden border border-gray-100 animate-scale-up">
                 {/* Header */}
                 <div className="p-8 pb-4 relative">
-                    <button 
+                    <button
                         onClick={onClose}
                         className="absolute right-8 top-8 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-all"
                     >
@@ -70,14 +70,10 @@ const EmployeeForm = ({ isOpen, onClose, onSubmit, initialData }) => {
 
                 <form onSubmit={handleSubmit} className="p-8 pt-4 space-y-6 overflow-y-auto max-h-[70vh]">
                     <div className="mb-6">
-                        <ImageUpload 
+                        <ImageUpload
                             label="Profile Picture"
-                            uploadUrl={initialData ? `https://itam-backend.onrender.com/api/employees/${initialData._id}/image` : null}
                             fieldName="profileImage"
                             initialImage={initialData ? initialData.profileImage : null}
-                            onUploadSuccess={(imageUrl) => {
-                                setFormData(prev => ({ ...prev, profileImage: imageUrl }));
-                            }}
                             onFileSelect={(file) => {
                                 setFormData(prev => ({ ...prev, profileImageFile: file }));
                             }}
@@ -253,3 +249,4 @@ const EmployeeForm = ({ isOpen, onClose, onSubmit, initialData }) => {
 };
 
 export default EmployeeForm;
+

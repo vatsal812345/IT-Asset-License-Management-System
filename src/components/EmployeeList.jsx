@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../context/ToastContext';
@@ -14,7 +15,7 @@ const EmployeeList = () => {
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [deptFilter, setDeptFilter] = useState('All');
-    
+
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingEmployee, setEditingEmployee] = useState(null);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -67,51 +68,59 @@ const EmployeeList = () => {
             const url = editingEmployee
                 ? `https://itam-backend.onrender.com/api/employees/${editingEmployee._id}`
                 : 'https://itam-backend.onrender.com/api/employees';
-            
+
             const method = editingEmployee ? 'PUT' : 'POST';
 
-            // Store imageFile if it exists, but don't send it in the JSON body
-            const imageFile = formData.imageFile;
-            const body = { ...formData };
-            delete body.imageFile;
+            // Extract the file (stored as profileImageFile by EmployeeForm)
+            const imageFile = formData.profileImageFile || null;
 
-            // Ensure profileImage is a string if it exists (safeguard)
-            if (body.profileImage && typeof body.profileImage === 'object') {
-                body.profileImage = body.profileImage.url || body.profileImage.profileImage || '';
-            }
+            let response;
 
-            const response = await fetch(url, {
-                method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body),
-            });
+            if (imageFile) {
+                // ── Send as multipart/form-data so Multer can receive req.file ──
+                const payload = new FormData();
 
-            const data = await response.json();
-            if (data.success) {
-                // Handle image upload for new employee if a file was selected
-                if (!editingEmployee && imageFile) {
-                    const newEmpId = data.data._id; 
-                    const uploadUrl = `https://itam-backend.onrender.com/api/employees/${newEmpId}/image`;
-                    const imgFormData = new FormData();
-                    imgFormData.append('profileImage', imageFile);
+                // Append every scalar field
+                const scalarFields = { ...formData };
+                delete scalarFields.profileImageFile; // don't double-send the file
+                // profileImage may already be a Cloudinary URL on update; skip if sending file
+                delete scalarFields.profileImage;
 
-                    try {
-                        await fetch(uploadUrl, {
-                            method: 'POST',
-                            body: imgFormData,
-                        });
-                    } catch (uploadError) {
-                        console.error('Error uploading image for new employee:', uploadError);
-                        showToast('Employee created but image upload failed', 'warning');
+                for (const [key, value] of Object.entries(scalarFields)) {
+                    if (value !== null && value !== undefined) {
+                        payload.append(key, value);
                     }
                 }
 
+                // Append the actual file under the field name Multer expects
+                payload.append('profileImage', imageFile);
+
+                response = await fetch(url, { method, body: payload });
+            } else {
+                // ── No new file — send as JSON ──
+                const body = { ...formData };
+                delete body.profileImageFile;
+
+                // Safeguard: ensure profileImage is a plain string
+                if (body.profileImage && typeof body.profileImage === 'object') {
+                    body.profileImage = body.profileImage.url || body.profileImage.profileImage || '';
+                }
+
+                response = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body),
+                });
+            }
+
+            const data = await response.json();
+            if (data.success) {
                 fetchEmployees();
                 setIsFormOpen(false);
                 setEditingEmployee(null);
                 showToast(
-                    editingEmployee 
-                        ? 'Employee updated successfully' 
+                    editingEmployee
+                        ? 'Employee updated successfully'
                         : 'New employee created successfully',
                     'success'
                 );
@@ -236,8 +245,8 @@ const EmployeeList = () => {
                             <tbody className="divide-y divide-gray-50">
                                 {filteredEmployees.length > 0 ? (
                                     filteredEmployees.map((emp, index) => (
-                                        <tr 
-                                            key={emp._id} 
+                                        <tr
+                                            key={emp._id}
                                             className="hover:bg-blue-50/40 transition-colors group cursor-pointer"
                                         >
                                             <td className="px-8 py-6">
@@ -344,7 +353,7 @@ const EmployeeList = () => {
                 initialData={editingEmployee}
             />
 
-            <DeleteConfirmModal 
+            <DeleteConfirmModal
                 isOpen={isDeleteModalOpen}
                 onClose={() => setIsDeleteModalOpen(false)}
                 onConfirm={confirmDelete}

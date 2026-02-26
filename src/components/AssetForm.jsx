@@ -198,6 +198,7 @@ const AssetForm = ({ isOpen, onClose, onSubmit, initialData }) => {
               <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Status</label>
               <div className="relative group">
                 <select
+                  required
                   name="status"
                   value={formData.status}
                   onChange={handleChange}

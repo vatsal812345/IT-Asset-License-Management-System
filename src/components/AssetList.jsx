@@ -91,9 +91,12 @@ const AssetList = () => {
             delete payload.history;
             delete payload._id;
 
-            // 2. Ensure currentAssignedTo is just an ID (if populated)
+            // 2. Ensure assignment fields are just IDs (if populated)
             if (payload.currentAssignedTo && typeof payload.currentAssignedTo === 'object') {
                 payload.currentAssignedTo = payload.currentAssignedTo._id;
+            }
+            if (payload.assignedTo && typeof payload.assignedTo === 'object') {
+                payload.assignedTo = payload.assignedTo._id;
             }
 
             // 3. Status consistency: if NOT Assigned, clear assignedTo fields
