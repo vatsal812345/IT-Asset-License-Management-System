@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Plus, Filter, Edit, Trash2, Loader, BarChart3, ShieldCheck, Clock, Users, Package, UserPlus, ChevronDown, ChevronRight, User } from 'lucide-react';
+import { Search, Plus, Filter, Edit, Trash2, Loader, BarChart3, ShieldCheck, Clock, Users, Package, UserPlus, ChevronDown, ChevronRight, User, ShieldAlert, ShieldX } from 'lucide-react';
 import LicenseForm from './LicenseForm';
 import DeleteConfirmModal from './DeleteConfirmModal';
+import { getExpiryStatus } from '../utils/warrantyUtils';
 
 const LicenseList = () => {
     const navigate = useNavigate();
@@ -11,6 +12,7 @@ const LicenseList = () => {
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [categoryFilter, setCategoryFilter] = useState('All');
+    const [expiryFilter, setExpiryFilter] = useState('All');
     
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingLicense, setEditingLicense] = useState(null);
@@ -65,6 +67,18 @@ const LicenseList = () => {
         if (categoryFilter !== 'All') {
             result = result.filter(license => license.category === categoryFilter);
         }
+
+        if (expiryFilter !== 'All') {
+            result = result.filter(license => {
+                const status = getExpiryStatus(license.expiryDate);
+                if (expiryFilter === 'Active') return status.status === 'active';
+                if (expiryFilter === 'Expiring Soon') return status.status === 'expiring';
+                if (expiryFilter === 'Expired') return status.status === 'expired';
+                if (expiryFilter === 'No Expiry') return status.status === 'none';
+                return true;
+            });
+        }
+
         if (searchQuery) {
             const query = searchQuery.toLowerCase();
             result = result.filter(license =>
@@ -74,7 +88,7 @@ const LicenseList = () => {
             );
         }
         setFilteredLicenses(result);
-    }, [licenses, searchQuery, categoryFilter]);
+    }, [licenses, searchQuery, categoryFilter, expiryFilter]);
 
     const handleCreateUpdate = async (formData) => {
         try {
@@ -227,6 +241,17 @@ const LicenseList = () => {
                         <option value="Graphic Design">Design</option>
                         <option value="Development">Development</option>
                     </select>
+                    <select
+                        value={expiryFilter}
+                        onChange={(e) => setExpiryFilter(e.target.value)}
+                        className="px-4 py-3 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:ring-4 focus:ring-emerald-100 focus:border-emerald-500 outline-none cursor-pointer transition-all duration-300 font-medium text-gray-800 min-w-[160px]"
+                    >
+                        <option value="All">All Expiry</option>
+                        <option value="Active">Active</option>
+                        <option value="Expiring Soon">Expiring Soon</option>
+                        <option value="Expired">Expired</option>
+                        <option value="No Expiry">No Expiry</option>
+                    </select>
                 </div>
             </div>
 
@@ -299,22 +324,47 @@ const LicenseList = () => {
                                                 </span>
                                             </td>
                                             <td className="px-8 py-6">
-                                                <div className="flex flex-col">
-                                                    <span className="text-sm font-bold text-gray-700">{new Date(license.expiryDate).toLocaleDateString()}</span>
-                                                    <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest flex items-center gap-1 mt-1">
-                                                        <Clock className="w-3 h-3" />
-                                                        {Math.max(0, Math.ceil((new Date(license.expiryDate) - new Date()) / (1000 * 60 * 60 * 24)))} days left
-                                                    </span>
-                                                </div>
+                                                {(() => {
+                                                    const expiryStatus = getExpiryStatus(license.expiryDate);
+                                                    const Icon = expiryStatus.icon;
+                                                    return (
+                                                        <div className="flex flex-col gap-2">
+                                                            <span 
+                                                                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 hover:scale-105 w-fit ${
+                                                                    expiryStatus.status === 'active' 
+                                                                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' 
+                                                                        : expiryStatus.status === 'expiring' 
+                                                                        ? 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100' 
+                                                                        : expiryStatus.status === 'expired'
+                                                                        ? 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100'
+                                                                        : 'bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100'
+                                                                }`}
+                                                            >
+                                                                <Icon className="w-3.5 h-3.5" />
+                                                                {expiryStatus.label}
+                                                            </span>
+                                                            {license.expiryDate && (
+                                                                <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest flex items-center gap-1">
+                                                                    <Clock className="w-3 h-3" />
+                                                                    {expiryStatus.daysRemaining > 0 
+                                                                        ? `${expiryStatus.daysRemaining} days left` 
+                                                                        : expiryStatus.daysRemaining < 0
+                                                                        ? `Expired ${Math.abs(expiryStatus.daysRemaining)} days ago`
+                                                                        : 'Expires today'}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })()}
                                             </td>
                                             <td className="px-8 py-6 text-right">
-                                                <div className="flex items-center justify-end space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <div className="flex items-center justify-end space-x-2 transition-opacity">
                                                     <button
                                                         onClick={(e) => {
                                                             e.stopPropagation();
                                                             navigate(`/licenses/${license._id}/assign`);
                                                         }}
-                                                        className="p-3 text-emerald-600 bg-white border border-gray-100 rounded-2xl hover:bg-emerald-600 hover:text-white hover:border-emerald-600 hover:shadow-lg hover:shadow-emerald-200 transition-all duration-300"
+                                                        className="p-3 text-emerald-600 bg-emerald-50 border border-emerald-100 rounded-2xl hover:bg-emerald-600 hover:text-white hover:border-emerald-600 hover:shadow-lg hover:shadow-emerald-200 transition-all duration-300"
                                                         title="Assign License"
                                                     >
                                                         <UserPlus className="w-4 h-4" />
@@ -325,7 +375,7 @@ const LicenseList = () => {
                                                             setEditingLicense(license);
                                                             setIsFormOpen(true);
                                                         }}
-                                                        className="p-3 text-blue-600 bg-white border border-gray-100 rounded-2xl hover:bg-blue-600 hover:text-white hover:border-blue-600 hover:shadow-lg hover:shadow-blue-200 transition-all duration-300"
+                                                        className="p-3 text-blue-600 bg-blue-50 border border-blue-100 rounded-2xl hover:bg-blue-600 hover:text-white hover:border-blue-600 hover:shadow-lg hover:shadow-blue-200 transition-all duration-300"
                                                         title="Edit"
                                                     >
                                                         <Edit className="w-4 h-4" />
@@ -335,7 +385,7 @@ const LicenseList = () => {
                                                             e.stopPropagation();
                                                             handleDeleteClick(license);
                                                         }}
-                                                        className="p-3 text-red-500 bg-white border border-gray-100 rounded-2xl hover:bg-red-500 hover:text-white hover:border-red-500 hover:shadow-lg hover:shadow-red-200 transition-all duration-300"
+                                                        className="p-3 text-red-500 bg-red-50 border border-red-100 rounded-2xl hover:bg-red-500 hover:text-white hover:border-red-500 hover:shadow-lg hover:shadow-red-200 transition-all duration-300"
                                                         title="Delete"
                                                     >
                                                         <Trash2 className="w-4 h-4" />
@@ -440,8 +490,9 @@ const LicenseList = () => {
                 isOpen={isDeleteModalOpen}
                 onClose={() => setIsDeleteModalOpen(false)}
                 onConfirm={confirmDelete}
-                assetName={selectedDeleteLicense?.softwareName}
-                assetTag={selectedDeleteLicense?.licenseKey}
+                title="Delete License?"
+                itemName={selectedDeleteLicense?.softwareName}
+                itemTag={selectedDeleteLicense?.licenseKey}
                 isDeleting={isDeleting}
             />
 

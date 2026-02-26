@@ -26,6 +26,7 @@ const AssetForm = ({ isOpen, onClose, onSubmit, initialData }) => {
     model: '',
     serialNumber: '',
     purchaseDate: '',
+    warrantyExpiryDate: '',
     status: 'Available',
     location: '',
     imageFile: null,
@@ -36,6 +37,7 @@ const AssetForm = ({ isOpen, onClose, onSubmit, initialData }) => {
       setFormData({
         ...initialData,
         purchaseDate: initialData.purchaseDate ? initialData.purchaseDate.split('T')[0] : '',
+        warrantyExpiryDate: initialData.warrantyExpiryDate ? initialData.warrantyExpiryDate.split('T')[0] : '',
       });
     } else {
         setFormData({
@@ -46,6 +48,7 @@ const AssetForm = ({ isOpen, onClose, onSubmit, initialData }) => {
             model: '',
             serialNumber: '',
             purchaseDate: '',
+            warrantyExpiryDate: '',
             status: 'Available',
             location: '',
             imageFile: null,
@@ -70,8 +73,8 @@ const AssetForm = ({ isOpen, onClose, onSubmit, initialData }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-md p-4 animate-fade-in">
-      <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl max-h-[95vh] overflow-y-auto animate-scale-in border border-gray-100">
-        <div className="flex items-center justify-between p-8 border-b border-gray-50 bg-gray-50/30">
+      <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl max-h-[95vh] overflow-hidden animate-scale-in border border-gray-100 flex flex-col">
+        <div className="flex items-center justify-between p-8 border-b border-gray-50 bg-gray-50/30 flex-shrink-0">
           <div>
             <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">
               {initialData ? 'Edit Asset' : 'Add New Asset'}
@@ -86,7 +89,8 @@ const AssetForm = ({ isOpen, onClose, onSubmit, initialData }) => {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-8 space-y-6">
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+          <div className="overflow-y-auto custom-scrollbar flex-1 p-8 space-y-6">
           <div className="mb-6">
             <ImageUpload
               label="Asset Image"
@@ -195,6 +199,16 @@ const AssetForm = ({ isOpen, onClose, onSubmit, initialData }) => {
               />
             </div>
             <div className="space-y-1.5">
+              <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Warranty Expiry Date</label>
+              <input
+                type="date"
+                name="warrantyExpiryDate"
+                value={formData.warrantyExpiryDate}
+                onChange={handleChange}
+                className="w-full h-12 px-5 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-emerald-100 focus:border-emerald-500 outline-none transition-all duration-300 font-bold text-gray-800 cursor-pointer"
+              />
+            </div>
+            <div className="space-y-1.5">
               <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Status</label>
               <div className="relative group">
                 <select
@@ -224,8 +238,9 @@ const AssetForm = ({ isOpen, onClose, onSubmit, initialData }) => {
               />
             </div>
           </div>
+          </div>
 
-          <div className="flex items-center justify-end space-x-4 mt-8 pt-6 border-t border-gray-50">
+          <div className="flex items-center justify-end space-x-4 p-6 border-t border-gray-100 bg-gray-50/30 flex-shrink-0">
             <button
               type="button"
               onClick={onClose}

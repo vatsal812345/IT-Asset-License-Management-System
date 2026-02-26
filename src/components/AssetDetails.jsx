@@ -22,7 +22,10 @@ import {
     Mail,
     Smartphone,
     RotateCcw,
-    Trash2
+    Trash2,
+    ShieldCheck,
+    ShieldAlert,
+    ShieldX
 } from 'lucide-react';
 
 import ReturnConfirmModal from './ReturnConfirmModal';
@@ -30,6 +33,7 @@ import AssetForm from './AssetForm';
 import DeleteConfirmModal from './DeleteConfirmModal';
 import ImageUpload from './ImageUpload';
 import { useToast } from '../context/ToastContext';
+import { getExpiryStatus } from '../utils/warrantyUtils';
 
 
 const DetailItem = ({ icon: Icon, label, value, color = "text-gray-500" }) => (
@@ -105,6 +109,8 @@ const AssetDetails = () => {
             const response = await fetch(`https://itam-backend.onrender.com/api/assets/${id}`);
             const data = await response.json();
             if (data.success) {
+                console.log('Fetched asset details:', data.data); // Debug log
+                console.log('Warranty Expiry Date:', data.data.warrantyExpiryDate); // Specific warranty log
                 setAsset(data.data);
             } else {
                 setError('Asset not found');
@@ -152,6 +158,13 @@ const AssetDetails = () => {
                 payload.imageUrl = payload.imageUrl.url || payload.imageUrl.imageUrl || '';
             }
 
+            // 5. Ensure warrantyExpiryDate is included (if provided)
+            if (payload.warrantyExpiryDate === '') {
+                delete payload.warrantyExpiryDate; // Remove empty string, let backend handle null
+            }
+
+            console.log('Updating asset with payload:', payload); // Debug log
+
             const response = await fetch(`https://itam-backend.onrender.com/api/assets/${id}`, {
                 method: 'PUT',
                 headers: {
@@ -163,9 +176,12 @@ const AssetDetails = () => {
             const data = await response.json();
 
             if (data.success) {
-                fetchAssetDetails();
                 setIsEditModalOpen(false);
                 showToast('Asset updated successfully', 'success');
+                // Refresh with slight delay to ensure backend has processed
+                setTimeout(() => {
+                    fetchAssetDetails();
+                }, 300);
             } else {
                 showToast(data.message || 'Error updating asset', 'error');
             }
@@ -318,6 +334,102 @@ const AssetDetails = () => {
                             </div>
                         </div>
 
+                        {/* Warranty Information Card */}
+                        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+                            <div className="p-6 border-b border-gray-100 bg-gray-50/50">
+                                <h2 className="text-lg font-bold text-gray-800">Warranty Information</h2>
+                            </div>
+                            <div className="p-8">
+                                {(() => {
+                                    const warrantyStatus = getExpiryStatus(asset.warrantyExpiryDate);
+                                    const Icon = warrantyStatus.icon;
+                                    
+                                    return (
+                                        <div className={`rounded-2xl border-2 p-6 transition-all duration-300 ${
+                                            warrantyStatus.status === 'active' 
+                                                ? 'bg-emerald-50 border-emerald-200' 
+                                                : warrantyStatus.status === 'expiring' 
+                                                ? 'bg-amber-50 border-amber-200' 
+                                                : warrantyStatus.status === 'expired'
+                                                ? 'bg-red-50 border-red-200'
+                                                : 'bg-gray-50 border-gray-200'
+                                        }`}>
+                                            <div className="flex items-start justify-between mb-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`p-3 rounded-xl ${
+                                                        warrantyStatus.status === 'active' 
+                                                            ? 'bg-emerald-100' 
+                                                            : warrantyStatus.status === 'expiring' 
+                                                            ? 'bg-amber-100' 
+                                                            : warrantyStatus.status === 'expired'
+                                                            ? 'bg-red-100'
+                                                            : 'bg-gray-100'
+                                                    }`}>
+                                                        <Icon className={`w-6 h-6 ${
+                                                            warrantyStatus.status === 'active' 
+                                                                ? 'text-emerald-600' 
+                                                                : warrantyStatus.status === 'expiring' 
+                                                                ? 'text-amber-600' 
+                                                                : warrantyStatus.status === 'expired'
+                                                                ? 'text-red-600'
+                                                                : 'text-gray-500'
+                                                        }`} />
+                                                    </div>
+                                                    <div>
+                                                        <h3 className={`text-lg font-bold ${
+                                                            warrantyStatus.status === 'active' 
+                                                                ? 'text-emerald-900' 
+                                                                : warrantyStatus.status === 'expiring' 
+                                                                ? 'text-amber-900' 
+                                                                : warrantyStatus.status === 'expired'
+                                                                ? 'text-red-900'
+                                                                : 'text-gray-700'
+                                                        }`}>
+                                                            {warrantyStatus.label}
+                                                        </h3>
+                                                        <p className={`text-sm font-medium ${
+                                                            warrantyStatus.status === 'active' 
+                                                                ? 'text-emerald-700' 
+                                                                : warrantyStatus.status === 'expiring' 
+                                                                ? 'text-amber-700' 
+                                                                : warrantyStatus.status === 'expired'
+                                                                ? 'text-red-700'
+                                                                : 'text-gray-500'
+                                                        }`}>
+                                                            {asset.warrantyExpiryDate 
+                                                                ? `Expires: ${new Date(asset.warrantyExpiryDate).toLocaleDateString()}`
+                                                                : 'No warranty information available'}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                {warrantyStatus.daysRemaining !== null && (
+                                                    <div className={`px-4 py-2 rounded-full font-bold text-sm ${
+                                                        warrantyStatus.status === 'active' 
+                                                            ? 'bg-emerald-100 text-emerald-700' 
+                                                            : warrantyStatus.status === 'expiring' 
+                                                            ? 'bg-amber-100 text-amber-700' 
+                                                            : 'bg-red-100 text-red-700'
+                                                    }`}>
+                                                        {warrantyStatus.daysRemaining > 0 
+                                                            ? `${warrantyStatus.daysRemaining} days left` 
+                                                            : `Expired ${Math.abs(warrantyStatus.daysRemaining)} days ago`}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            {asset.purchaseDate && asset.warrantyExpiryDate && (
+                                                <div className="mt-4 pt-4 border-t border-current border-opacity-20">
+                                                    <div className="flex items-center gap-2 text-sm font-medium opacity-75">
+                                                        <Calendar className="w-4 h-4" />
+                                                        <span>Purchase Date: {new Date(asset.purchaseDate).toLocaleDateString()}</span>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })()}
+                            </div>
+                        </div>
+
                         {/* Assignment Card */}
                         <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
                             <div className="p-6 border-b border-gray-100 bg-gray-50/50">
@@ -427,8 +539,9 @@ const AssetDetails = () => {
                 isOpen={isDeleteModalOpen}
                 onClose={() => setIsDeleteModalOpen(false)}
                 onConfirm={confirmDelete}
-                assetName={asset?.name}
-                assetTag={asset?.assetTag}
+                title="Delete Asset?"
+                itemName={asset?.name}
+                itemTag={asset?.assetTag}
                 isDeleting={isDeleting}
             />
         </div>

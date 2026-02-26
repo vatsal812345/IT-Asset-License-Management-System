@@ -1,7 +1,7 @@
 import React from 'react';
 import { X, Trash2, AlertCircle } from 'lucide-react';
 
-const DeleteConfirmModal = ({ isOpen, onClose, onConfirm, assetName, assetTag, isDeleting }) => {
+const DeleteConfirmModal = ({ isOpen, onClose, onConfirm, title = "Delete Asset?", itemName, itemTag, isDeleting }) => {
     if (!isOpen) return null;
 
     return (
@@ -23,9 +23,9 @@ const DeleteConfirmModal = ({ isOpen, onClose, onConfirm, assetName, assetTag, i
                         <Trash2 className="w-10 h-10 text-red-500" />
                     </div>
 
-                    <h2 className="text-2xl font-extrabold text-gray-900 mb-2">Delete Asset?</h2>
+                    <h2 className="text-2xl font-extrabold text-gray-900 mb-2">{title}</h2>
                     <p className="text-gray-500 leading-relaxed px-4">
-                        Are you sure you want to delete <span className="font-bold text-gray-800">{assetName}</span> ({assetTag})? This action is permanent and cannot be undone.
+                        Are you sure you want to delete <span className="font-bold text-gray-800">{itemName}</span> ({itemTag})? This action is permanent and cannot be undone.
                     </p>
                 </div>
 

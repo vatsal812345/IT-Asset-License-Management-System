@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useToast } from '../context/ToastContext';
-import { Search, Plus, Filter, Edit, Trash2, Loader, MoreHorizontal, Eye, UserPlus, RotateCcw, Box } from 'lucide-react';
+import { Search, Plus, Filter, Edit, Trash2, Loader, MoreHorizontal, Eye, UserPlus, RotateCcw, Box, ShieldCheck, ShieldAlert, ShieldX, Clock } from 'lucide-react';
 import AssetForm from './AssetForm';
 import ReturnConfirmModal from './ReturnConfirmModal';
 import DeleteConfirmModal from './DeleteConfirmModal';
+import { getExpiryStatus } from '../utils/warrantyUtils';
 
 
 
@@ -17,6 +18,7 @@ const AssetList = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const location = useLocation();
     const [statusFilter, setStatusFilter] = useState('All');
+    const [warrantyFilter, setWarrantyFilter] = useState('All');
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingAsset, setEditingAsset] = useState(null);
     const [isReturnModalOpen, setIsReturnModalOpen] = useState(false);
@@ -32,6 +34,13 @@ const AssetList = () => {
             const response = await fetch('https://itam-backend.onrender.com/api/assets');
             const data = await response.json();
             if (data.success) {
+                console.log('Fetched assets from API:', data.data); // Debug log
+                // Log warranty dates specifically
+                data.data.forEach(asset => {
+                    if (asset.warrantyExpiryDate) {
+                        console.log(`Asset ${asset.assetTag} warranty:`, asset.warrantyExpiryDate);
+                    }
+                });
                 setAssets(data.data);
                 setFilteredAssets(data.data);
             }
@@ -61,6 +70,17 @@ const AssetList = () => {
             result = result.filter(asset => asset.status === statusFilter);
         }
 
+        if (warrantyFilter !== 'All') {
+            result = result.filter(asset => {
+                const status = getExpiryStatus(asset.warrantyExpiryDate);
+                if (warrantyFilter === 'Active') return status.status === 'active';
+                if (warrantyFilter === 'Expiring Soon') return status.status === 'expiring';
+                if (warrantyFilter === 'Expired') return status.status === 'expired';
+                if (warrantyFilter === 'No Warranty') return status.status === 'none';
+                return true;
+            });
+        }
+
         if (searchQuery) {
             const query = searchQuery.toLowerCase();
             result = result.filter(asset =>
@@ -71,7 +91,7 @@ const AssetList = () => {
         }
 
         setFilteredAssets(result);
-    }, [assets, searchQuery, statusFilter]);
+    }, [assets, searchQuery, statusFilter, warrantyFilter]);
 
     const handleCreateUpdate = async (formData) => {
         try {
@@ -114,6 +134,13 @@ const AssetList = () => {
                 payload.imageUrl = payload.imageUrl.url || payload.imageUrl.imageUrl || '';
             }
 
+            // 5. Ensure warrantyExpiryDate is included (if provided)
+            if (payload.warrantyExpiryDate === '') {
+                delete payload.warrantyExpiryDate; // Remove empty string, let backend handle null
+            }
+
+            console.log('Sending payload to backend:', payload); // Debug log
+
             const response = await fetch(url, {
                 method,
                 headers: {
@@ -143,13 +170,20 @@ const AssetList = () => {
                     }
                 }
 
-                fetchAssets(); // Refresh list
+                // Close form first
                 setIsFormOpen(false);
                 setEditingAsset(null);
+                
+                // Show success message
                 showToast(
                     editingAsset ? 'Asset updated successfully' : 'New asset added successfully',
                     'success'
                 );
+
+                // Refresh data with slight delay to ensure backend has processed the update
+                setTimeout(() => {
+                    fetchAssets();
+                }, 300);
             } else {
                 showToast(data.message || 'Operation failed', 'error');
             }
@@ -298,6 +332,17 @@ const AssetList = () => {
                         <option value="Under Repair">Under Repair</option>
                         <option value="Retired">Retired</option>
                     </select>
+                    <select
+                        value={warrantyFilter}
+                        onChange={(e) => setWarrantyFilter(e.target.value)}
+                        className="px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none bg-white min-w-[170px] cursor-pointer transition-all duration-200 focus:shadow-md hover:shadow-sm hover:border-emerald-300"
+                    >
+                        <option value="All">All Warranty</option>
+                        <option value="Active">Active</option>
+                        <option value="Expiring Soon">Expiring Soon</option>
+                        <option value="Expired">Expired</option>
+                        <option value="No Warranty">No Warranty</option>
+                    </select>
                 </div>
             </div>
 
@@ -316,6 +361,7 @@ const AssetList = () => {
                                     <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Asset Name</th>
                                     <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Category</th>
                                     <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Warranty</th>
                                     <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Assigned To</th>
                                     <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">Actions</th>
                                 </tr>
@@ -356,6 +402,28 @@ const AssetList = () => {
                                                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(asset.status)}`}>
                                                     {asset.status}
                                                 </span>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                {(() => {
+                                                    const warrantyStatus = getExpiryStatus(asset.warrantyExpiryDate);
+                                                    const Icon = warrantyStatus.icon;
+                                                    return (
+                                                        <span 
+                                                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 hover:scale-105 ${
+                                                                warrantyStatus.status === 'active' 
+                                                                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' 
+                                                                    : warrantyStatus.status === 'expiring' 
+                                                                    ? 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100' 
+                                                                    : warrantyStatus.status === 'expired'
+                                                                    ? 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100'
+                                                                    : 'bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100'
+                                                            }`}
+                                                        >
+                                                            <Icon className="w-3.5 h-3.5" />
+                                                            {warrantyStatus.label}
+                                                        </span>
+                                                    );
+                                                })()}
                                             </td>
                                             <td className="px-6 py-4">
                                                 {asset.currentAssignedTo ? (
@@ -467,8 +535,9 @@ const AssetList = () => {
                 isOpen={isDeleteModalOpen}
                 onClose={() => setIsDeleteModalOpen(false)}
                 onConfirm={confirmDelete}
-                assetName={selectedDeleteAsset?.name}
-                assetTag={selectedDeleteAsset?.assetTag}
+                title="Delete Asset?"
+                itemName={selectedDeleteAsset?.name}
+                itemTag={selectedDeleteAsset?.assetTag}
                 isDeleting={isDeleting}
             />
         </div>

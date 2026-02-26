@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../context/ToastContext';
-import { Search, Plus, Filter, Edit, Trash2, Loader, Users, Mail, Phone, Building2, Briefcase, UserPlus } from 'lucide-react';
+import { Search, Plus, Filter, Edit, Trash2, Loader, Users, Mail, Phone, Building2, Briefcase, UserPlus, Eye } from 'lucide-react';
 import EmployeeForm from './EmployeeForm';
 import DeleteConfirmModal from './DeleteConfirmModal';
 
@@ -253,7 +253,7 @@ const EmployeeList = () => {
                                                 <div className="flex items-center space-x-4">
                                                     <div className="w-12 h-12 bg-blue-50 rounded-2xl overflow-hidden flex items-center justify-center text-blue-600 border border-blue-100 group-hover:bg-white transition-colors shrink-0">
                                                         {emp.profileImage ? (
-                                                            <img src={emp.profileImage} alt={emp.firstName} className="w-full h-full object-cover" />
+                                                            <img src={emp.profileImage} alt={emp.profileImage} className="w-full h-full object-cover" />
                                                         ) : (
                                                             <span className="text-lg font-bold">{emp.firstName.charAt(0)}{emp.lastName.charAt(0)}</span>
                                                         )}
@@ -299,14 +299,25 @@ const EmployeeList = () => {
                                                 <span className="text-sm font-bold text-gray-700">{new Date(emp.joiningDate).toLocaleDateString()}</span>
                                             </td>
                                             <td className="px-8 py-6 text-right">
-                                                <div className="flex items-center justify-end space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <div className="flex items-center justify-end space-x-2 transition-opacity">
                                                     <button
                                                         onClick={(e) => {
                                                             e.stopPropagation();
                                                             setEditingEmployee(emp);
                                                             setIsFormOpen(true);
                                                         }}
-                                                        className="p-3 text-blue-600 bg-white border border-gray-100 rounded-2xl hover:bg-blue-600 hover:text-white hover:border-blue-600 hover:shadow-lg hover:shadow-blue-200 transition-all duration-300"
+                                                        className="p-3 text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-2xl hover:bg-indigo-600 hover:text-white hover:border-indigo-600 hover:shadow-lg hover:shadow-indigo-200 transition-all duration-300"
+                                                        title="View"
+                                                    >
+                                                        <Eye className="w-4 h-4" />
+                                                    </button>
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setEditingEmployee(emp);
+                                                            setIsFormOpen(true);
+                                                        }}
+                                                        className="p-3 text-blue-600 bg-blue-50 border border-blue-100 rounded-2xl hover:bg-blue-600 hover:text-white hover:border-blue-600 hover:shadow-lg hover:shadow-blue-200 transition-all duration-300"
                                                         title="Edit"
                                                     >
                                                         <Edit className="w-4 h-4" />
@@ -316,7 +327,7 @@ const EmployeeList = () => {
                                                             e.stopPropagation();
                                                             handleDeleteClick(emp);
                                                         }}
-                                                        className="p-3 text-red-500 bg-white border border-gray-100 rounded-2xl hover:bg-red-500 hover:text-white hover:border-red-500 hover:shadow-lg hover:shadow-red-200 transition-all duration-300"
+                                                        className="p-3 text-red-500 bg-red-50 border border-red-100 rounded-2xl hover:bg-red-500 hover:text-white hover:border-red-500 hover:shadow-lg hover:shadow-red-200 transition-all duration-300"
                                                         title="Delete"
                                                     >
                                                         <Trash2 className="w-4 h-4" />
@@ -357,8 +368,9 @@ const EmployeeList = () => {
                 isOpen={isDeleteModalOpen}
                 onClose={() => setIsDeleteModalOpen(false)}
                 onConfirm={confirmDelete}
-                assetName={`${selectedDeleteEmployee?.firstName} ${selectedDeleteEmployee?.lastName}`}
-                assetTag={selectedDeleteEmployee?.employeeId}
+                title="Delete Employee?"
+                itemName={`${selectedDeleteEmployee?.firstName} ${selectedDeleteEmployee?.lastName}`}
+                itemTag={selectedDeleteEmployee?.employeeId}
                 isDeleting={isDeleting}
             />
         </div>

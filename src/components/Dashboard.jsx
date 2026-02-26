@@ -13,12 +13,17 @@ import {
     Tag,
     History,
     ShieldCheck,
+    ShieldAlert,
+    ShieldX,
     BarChart3,
     Activity,
     Smartphone,
     Monitor,
     Laptop,
-    AlertTriangle
+    AlertTriangle,
+    AlertCircle,
+    CheckCircle2,
+    XCircle
 } from 'lucide-react';
 import { 
     PieChart, 
@@ -33,6 +38,7 @@ import {
     YAxis,
     CartesianGrid
 } from 'recharts';
+import { getExpiryStatus, calculateExpiryStats } from '../utils/warrantyUtils';
 import AssetForm from './AssetForm';
 
 //header cards
@@ -63,6 +69,11 @@ const Dashboard = () => {
         totalLicenses: 0,
         expiringLicenses: 0
     });
+    const [warrantyStats, setWarrantyStats] = useState({
+        assets: { active: 0, expiring: 0, expired: 0, noDate: 0 },
+        licenses: { active: 0, expiring: 0, expired: 0, noDate: 0 }
+    });
+    const [expiringItems, setExpiringItems] = useState({ assets: [], licenses: [] });
     const [licenseStats, setLicenseStats] = useState([]);
     const [recentActivities, setRecentActivities] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -108,6 +119,34 @@ const Dashboard = () => {
                     .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
                     .slice(0, 5);
                 setRecentActivities(sorted);
+                
+                // Calculate warranty statistics for assets
+                const assetWarrantyStats = calculateExpiryStats(assetsData.data, 'warrantyExpiryDate');
+                setWarrantyStats(prev => ({ ...prev, assets: assetWarrantyStats }));
+                
+                // Get expiring assets
+                const expiringAssets = assetsData.data
+                    .filter(asset => {
+                        const status = getExpiryStatus(asset.warrantyExpiryDate);
+                        return status.status === 'expiring';
+                    })
+                    .slice(0, 5);
+                setExpiringItems(prev => ({ ...prev, assets: expiringAssets }));
+            }
+            
+            // Calculate license expiry statistics
+            if (licensesData.success) {
+                const licenseExpiryStats = calculateExpiryStats(licensesData.data, 'expiryDate');
+                setWarrantyStats(prev => ({ ...prev, licenses: licenseExpiryStats }));
+                
+                // Get expiring licenses
+                const expiringLicenses = licensesData.data
+                    .filter(license => {
+                        const status = getExpiryStatus(license.expiryDate);
+                        return status.status === 'expiring';
+                    })
+                    .slice(0, 5);
+                setExpiringItems(prev => ({ ...prev, licenses: expiringLicenses }));
             }
         } catch (err) {
             console.error('Error fetching dashboard data:', err);
@@ -182,6 +221,130 @@ const Dashboard = () => {
                     </div>
                 ))}
             </div>
+
+            {/* Warranty / Expiry Alerts Section */}
+            {(expiringItems.assets.length > 0 || expiringItems.licenses.length > 0) && (
+                <div className="bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 rounded-2xl shadow-lg p-6 mb-10 animate-slide-up">
+                    <div className="flex items-center gap-3 mb-6">
+                        <AlertTriangle className="w-6 h-6 text-amber-600" />
+                        <h2 className="text-xl font-bold text-amber-900">Warranty & Expiry Alerts</h2>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        {/* Expiring Assets */}
+                        {expiringItems.assets.length > 0 && (
+                            <div className="bg-white rounded-xl p-5 shadow-sm border border-amber-100">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                                        <ShieldAlert className="w-5 h-5 text-amber-600" />
+                                        Expiring Assets ({expiringItems.assets.length})
+                                    </h3>
+                                    <button 
+                                        onClick={() => navigate('/assets')}
+                                        className="text-xs font-bold text-amber-600 hover:text-amber-700 uppercase tracking-widest"
+                                    >
+                                        View All
+                                    </button>
+                                </div>
+                                <div className="space-y-3 max-h-64 overflow-y-auto pr-2">
+                                    {expiringItems.assets.map(asset => {
+                                        const status = getExpiryStatus(asset.warrantyExpiryDate);
+                                        return (
+                                            <div 
+                                                key={asset._id} 
+                                                className="p-3 rounded-lg border border-gray-100 hover:border-amber-200 hover:shadow-md transition-all duration-200 cursor-pointer group"
+                                                onClick={() => navigate(`/assets/${asset._id}`)}
+                                            >
+                                                <div className="flex items-start justify-between mb-2">
+                                                    <div className="flex-1">
+                                                        <p className="font-semibold text-gray-800 text-sm group-hover:text-amber-700 transition-colors">
+                                                            {asset.name}
+                                                        </p>
+                                                        <p className="text-xs text-gray-500 mt-1">
+                                                            {asset.assetTag} • {asset.category}
+                                                        </p>
+                                                    </div>
+                                                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                                                        status.status === 'expired' 
+                                                            ? 'bg-red-100 text-red-700' 
+                                                            : 'bg-amber-100 text-amber-700'
+                                                    }`}>
+                                                        {status.label}
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <Clock className="w-3 h-3 text-gray-400" />
+                                                    <span className="text-xs text-gray-600">
+                                                        {status.daysRemaining > 0 
+                                                            ? `${status.daysRemaining} days remaining` 
+                                                            : `Expired ${Math.abs(status.daysRemaining)} days ago`}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Expiring Licenses */}
+                        {expiringItems.licenses.length > 0 && (
+                            <div className="bg-white rounded-xl p-5 shadow-sm border border-amber-100">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                                        <ShieldAlert className="w-5 h-5 text-amber-600" />
+                                        Expiring Licenses ({expiringItems.licenses.length})
+                                    </h3>
+                                    <button 
+                                        onClick={() => navigate('/licenses')}
+                                        className="text-xs font-bold text-amber-600 hover:text-amber-700 uppercase tracking-widest"
+                                    >
+                                        View All
+                                    </button>
+                                </div>
+                                <div className="space-y-3 max-h-64 overflow-y-auto pr-2">
+                                    {expiringItems.licenses.map(license => {
+                                        const status = getExpiryStatus(license.expiryDate);
+                                        return (
+                                            <div 
+                                                key={license._id} 
+                                                className="p-3 rounded-lg border border-gray-100 hover:border-amber-200 hover:shadow-md transition-all duration-200 cursor-pointer group"
+                                                onClick={() => navigate('/licenses')}
+                                            >
+                                                <div className="flex items-start justify-between mb-2">
+                                                    <div className="flex-1">
+                                                        <p className="font-semibold text-gray-800 text-sm group-hover:text-amber-700 transition-colors">
+                                                            {license.softwareName}
+                                                        </p>
+                                                        <p className="text-xs text-gray-500 mt-1">
+                                                            {license.vendor} • {license.licenseKey?.slice(0, 8)}...
+                                                        </p>
+                                                    </div>
+                                                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                                                        status.status === 'expired' 
+                                                            ? 'bg-red-100 text-red-700' 
+                                                            : 'bg-amber-100 text-amber-700'
+                                                    }`}>
+                                                        {status.label}
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <Clock className="w-3 h-3 text-gray-400" />
+                                                    <span className="text-xs text-gray-600">
+                                                        {status.daysRemaining > 0 
+                                                            ? `${status.daysRemaining} days remaining` 
+                                                            : `Expired ${Math.abs(status.daysRemaining)} days ago`}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
                 {/* License Utilization */}
