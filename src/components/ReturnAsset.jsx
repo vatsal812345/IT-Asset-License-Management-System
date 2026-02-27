@@ -14,7 +14,7 @@ const ReturnAsset = () => {
     const fetchAssignedAssets = async () => {
         setLoading(true);
         try {
-            const response = await fetch('https://itam-backend.onrender.com/api/assets');
+            const response = await fetch('http://localhost:5000/api/assets');
             const data = await response.json();
             if (data.success) {
                 // Filter only assigned assets
@@ -44,7 +44,7 @@ const ReturnAsset = () => {
         setReturningId(assetId);
         try {
             // First, try the general asset update since we know it works for editing
-            const response = await fetch(`https://itam-backend.onrender.com/api/assets/${assetId}`, {
+            const response = await fetch(`http://localhost:5000/api/assets/${assetId}`, {
                 method: 'PUT',
                 headers: { 
                     'Content-Type': 'application/json' 

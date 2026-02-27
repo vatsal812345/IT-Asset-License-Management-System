@@ -65,7 +65,7 @@ const AssetDetails = () => {
     const confirmReturn = async () => {
         setIsReturning(true);
         try {
-            const response = await fetch(`https://itam-backend.onrender.com/api/assets/${id}`, {
+            const response = await fetch(`http://localhost:5000/api/assets/${id}`, {
                 method: 'PUT',
                 headers: { 
                     'Content-Type': 'application/json' 
@@ -106,11 +106,11 @@ const AssetDetails = () => {
 
     const fetchAssetDetails = async () => {
         try {
-            const response = await fetch(`https://itam-backend.onrender.com/api/assets/${id}`);
+            const response = await fetch(`http://localhost:5000/api/assets/${id}`);
             const data = await response.json();
             if (data.success) {
                 console.log('Fetched asset details:', data.data); // Debug log
-                console.log('Warranty Expiry Date:', data.data.warrantyExpiryDate); // Specific warranty log
+                console.log('Warranty Expiry Date:', data.data.warrantyExpiry); // Specific warranty log
                 setAsset(data.data);
             } else {
                 setError('Asset not found');
@@ -158,14 +158,14 @@ const AssetDetails = () => {
                 payload.imageUrl = payload.imageUrl.url || payload.imageUrl.imageUrl || '';
             }
 
-            // 5. Ensure warrantyExpiryDate is included (if provided)
-            if (payload.warrantyExpiryDate === '') {
-                delete payload.warrantyExpiryDate; // Remove empty string, let backend handle null
+            // 5. Ensure warrantyExpiry is included (if provided)
+            if (payload.warrantyExpiry === '') {
+                delete payload.warrantyExpiry; // Remove empty string, let backend handle null
             }
 
             console.log('Updating asset with payload:', payload); // Debug log
 
-            const response = await fetch(`https://itam-backend.onrender.com/api/assets/${id}`, {
+            const response = await fetch(`http://localhost:5000/api/assets/${id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -194,7 +194,7 @@ const AssetDetails = () => {
     const confirmDelete = async () => {
         setIsDeleting(true);
         try {
-            const response = await fetch(`https://itam-backend.onrender.com/api/assets/${id}`, {
+            const response = await fetch(`http://localhost:5000/api/assets/${id}`, {
                 method: 'DELETE',
             });
             const data = await response.json();
@@ -306,7 +306,7 @@ const AssetDetails = () => {
                             <div className="p-8">
                                 <ImageUpload 
                                     label="Upload Asset Image"
-                                    uploadUrl={`https://itam-backend.onrender.com/api/assets/${id}/image`}
+                                    uploadUrl={`http://localhost:5000/api/assets/${id}/image`}
                                     fieldName="image"
                                     initialImage={asset.imageUrl}
                                     onUploadSuccess={(imageUrl) => {
@@ -341,7 +341,7 @@ const AssetDetails = () => {
                             </div>
                             <div className="p-8">
                                 {(() => {
-                                    const warrantyStatus = getExpiryStatus(asset.warrantyExpiryDate);
+                                    const warrantyStatus = getExpiryStatus(asset.warrantyExpiry);
                                     const Icon = warrantyStatus.icon;
                                     
                                     return (
@@ -396,8 +396,8 @@ const AssetDetails = () => {
                                                                 ? 'text-red-700'
                                                                 : 'text-gray-500'
                                                         }`}>
-                                                            {asset.warrantyExpiryDate 
-                                                                ? `Expires: ${new Date(asset.warrantyExpiryDate).toLocaleDateString()}`
+                                                            {asset.warrantyExpiry 
+                                                                ? `Expires: ${new Date(asset.warrantyExpiry).toLocaleDateString()}`
                                                                 : 'No warranty information available'}
                                                         </p>
                                                     </div>
@@ -416,7 +416,7 @@ const AssetDetails = () => {
                                                     </div>
                                                 )}
                                             </div>
-                                            {asset.purchaseDate && asset.warrantyExpiryDate && (
+                                            {asset.purchaseDate && asset.warrantyExpiry && (
                                                 <div className="mt-4 pt-4 border-t border-current border-opacity-20">
                                                     <div className="flex items-center gap-2 text-sm font-medium opacity-75">
                                                         <Calendar className="w-4 h-4" />

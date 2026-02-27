@@ -34,7 +34,7 @@ const AssignLicense = () => {
 
     const fetchLicenses = async () => {
         try {
-            const licensesRes = await fetch('https://itam-backend.onrender.com/api/licenses');
+            const licensesRes = await fetch('http://localhost:5000/api/licenses');
             const licensesData = await licensesRes.json();
             if (licensesData.success) {
                 const available = licensesData.data.filter(l => l.status === 'Active' && (l.totalSeats - (l.usedSeats || 0)) > 0 || l._id === id);
@@ -92,7 +92,7 @@ const AssignLicense = () => {
         
         setSubmitting(true);
         try {
-            const response = await fetch('https://itam-backend.onrender.com/api/licenses/assign', {
+            const response = await fetch('http://localhost:5000/api/licenses/assign', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

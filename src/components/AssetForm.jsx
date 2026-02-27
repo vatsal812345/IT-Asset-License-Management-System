@@ -26,7 +26,7 @@ const AssetForm = ({ isOpen, onClose, onSubmit, initialData }) => {
     model: '',
     serialNumber: '',
     purchaseDate: '',
-    warrantyExpiryDate: '',
+    warrantyExpiry: '',
     status: 'Available',
     location: '',
     imageFile: null,
@@ -37,7 +37,7 @@ const AssetForm = ({ isOpen, onClose, onSubmit, initialData }) => {
       setFormData({
         ...initialData,
         purchaseDate: initialData.purchaseDate ? initialData.purchaseDate.split('T')[0] : '',
-        warrantyExpiryDate: initialData.warrantyExpiryDate ? initialData.warrantyExpiryDate.split('T')[0] : '',
+        warrantyExpiry: initialData.warrantyExpiry ? initialData.warrantyExpiry.split('T')[0] : '',
       });
     } else {
         setFormData({
@@ -48,7 +48,7 @@ const AssetForm = ({ isOpen, onClose, onSubmit, initialData }) => {
             model: '',
             serialNumber: '',
             purchaseDate: '',
-            warrantyExpiryDate: '',
+            warrantyExpiry: '',
             status: 'Available',
             location: '',
             imageFile: null,
@@ -94,7 +94,7 @@ const AssetForm = ({ isOpen, onClose, onSubmit, initialData }) => {
           <div className="mb-6">
             <ImageUpload
               label="Asset Image"
-              uploadUrl={initialData ? `https://itam-backend.onrender.com/api/assets/${initialData._id}/image` : null}
+              uploadUrl={initialData ? `http://localhost:5000/api/assets/${initialData._id}/image` : null}
               fieldName="image"
               initialImage={initialData ? initialData.imageUrl : null}
               onUploadSuccess={(imageUrl) => {
@@ -202,8 +202,8 @@ const AssetForm = ({ isOpen, onClose, onSubmit, initialData }) => {
               <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Warranty Expiry Date</label>
               <input
                 type="date"
-                name="warrantyExpiryDate"
-                value={formData.warrantyExpiryDate}
+                name="warrantyExpiry"
+                value={formData.warrantyExpiry}
                 onChange={handleChange}
                 className="w-full h-12 px-5 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-emerald-100 focus:border-emerald-500 outline-none transition-all duration-300 font-bold text-gray-800 cursor-pointer"
               />

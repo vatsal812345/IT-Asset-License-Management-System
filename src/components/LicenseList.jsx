@@ -41,7 +41,7 @@ const LicenseList = () => {
     const fetchLicenses = async () => {
         setLoading(true);
         try {
-            const response = await fetch('https://itam-backend.onrender.com/api/licenses');
+            const response = await fetch('http://localhost:5000/api/licenses');
             const data = await response.json();
             if (data.success) {
                 setLicenses(data.data);
@@ -93,8 +93,8 @@ const LicenseList = () => {
     const handleCreateUpdate = async (formData) => {
         try {
             const url = editingLicense
-                ? `https://itam-backend.onrender.com/api/licenses/${editingLicense._id}`
-                : 'https://itam-backend.onrender.com/api/licenses';
+                ? `http://localhost:5000/api/licenses/${editingLicense._id}`
+                : 'http://localhost:5000/api/licenses';
             
             const method = editingLicense ? 'PUT' : 'POST';
 
@@ -127,7 +127,7 @@ const LicenseList = () => {
         if (!selectedDeleteLicense) return;
         setIsDeleting(true);
         try {
-            const response = await fetch(`https://itam-backend.onrender.com/api/licenses/${selectedDeleteLicense._id}`, {
+            const response = await fetch(`http://localhost:5000/api/licenses/${selectedDeleteLicense._id}`, {
                 method: 'DELETE',
             });
             const data = await response.json();

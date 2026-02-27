@@ -37,7 +37,7 @@ const AssignAsset = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const assetsRes = await fetch('https://itam-backend.onrender.com/api/assets');
+                const assetsRes = await fetch('http://localhost:5000/api/assets');
                 const assetsData = await assetsRes.json();
                 if (assetsData.success) {
                     const available = assetsData.data.filter(a => a.status === 'Available' || a._id === id);
@@ -87,7 +87,7 @@ const AssignAsset = () => {
         setSubmitting(true);
         try {
             // Using the new centralized assignments endpoint
-            const response = await fetch(`https://itam-backend.onrender.com/api/assignments/assign`, {
+            const response = await fetch(`http://localhost:5000/api/assignments/assign`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

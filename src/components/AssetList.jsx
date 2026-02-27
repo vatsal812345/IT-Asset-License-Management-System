@@ -31,14 +31,14 @@ const AssetList = () => {
     const fetchAssets = async () => {
         setLoading(true);
         try {
-            const response = await fetch('https://itam-backend.onrender.com/api/assets');
+            const response = await fetch('http://localhost:5000/api/assets');
             const data = await response.json();
             if (data.success) {
                 console.log('Fetched assets from API:', data.data); // Debug log
                 // Log warranty dates specifically
                 data.data.forEach(asset => {
-                    if (asset.warrantyExpiryDate) {
-                        console.log(`Asset ${asset.assetTag} warranty:`, asset.warrantyExpiryDate);
+                    if (asset.warrantyExpiry) {
+                        console.log(`Asset ${asset.assetTag} warranty:`, asset.warrantyExpiry);
                     }
                 });
                 setAssets(data.data);
@@ -72,7 +72,7 @@ const AssetList = () => {
 
         if (warrantyFilter !== 'All') {
             result = result.filter(asset => {
-                const status = getExpiryStatus(asset.warrantyExpiryDate);
+                const status = getExpiryStatus(asset.warrantyExpiry);
                 if (warrantyFilter === 'Active') return status.status === 'active';
                 if (warrantyFilter === 'Expiring Soon') return status.status === 'expiring';
                 if (warrantyFilter === 'Expired') return status.status === 'expired';
@@ -96,8 +96,8 @@ const AssetList = () => {
     const handleCreateUpdate = async (formData) => {
         try {
             const url = editingAsset
-                ? `https://itam-backend.onrender.com/api/assets/${editingAsset._id}`
-                : 'https://itam-backend.onrender.com/api/assets';
+                ? `http://localhost:5000/api/assets/${editingAsset._id}`
+                : 'http://localhost:5000/api/assets';
             
             const method = editingAsset ? 'PUT' : 'POST';
 
@@ -134,9 +134,9 @@ const AssetList = () => {
                 payload.imageUrl = payload.imageUrl.url || payload.imageUrl.imageUrl || '';
             }
 
-            // 5. Ensure warrantyExpiryDate is included (if provided)
-            if (payload.warrantyExpiryDate === '') {
-                delete payload.warrantyExpiryDate; // Remove empty string, let backend handle null
+            // 5. Ensure warrantyExpiry is included (if provided)
+            if (payload.warrantyExpiry === '') {
+                delete payload.warrantyExpiry; // Remove empty string, let backend handle null
             }
 
             console.log('Sending payload to backend:', payload); // Debug log
@@ -155,7 +155,7 @@ const AssetList = () => {
                 // Upload image if selected during creation
                 if (!editingAsset && imageFile) {
                     const newAssetId = data.data._id;
-                    const uploadUrl = `https://itam-backend.onrender.com/api/assets/${newAssetId}/image`;
+                    const uploadUrl = `http://localhost:5000/api/assets/${newAssetId}/image`;
                     const imgFormData = new FormData();
                     imgFormData.append('image', imageFile);
 
@@ -203,7 +203,7 @@ const AssetList = () => {
         
         setIsDeleting(true);
         try {
-            const response = await fetch(`https://itam-backend.onrender.com/api/assets/${selectedDeleteAsset._id}`, {
+            const response = await fetch(`http://localhost:5000/api/assets/${selectedDeleteAsset._id}`, {
                 method: 'DELETE',
             });
             const data = await response.json();
@@ -234,7 +234,7 @@ const AssetList = () => {
         setIsReturning(true);
         const id = selectedReturnAsset._id;
         try {
-            const response = await fetch(`https://itam-backend.onrender.com/api/assets/${id}`, {
+            const response = await fetch(`http://localhost:5000/api/assets/${id}`, {
                 method: 'PUT',
                 headers: { 
                     'Content-Type': 'application/json' 
@@ -405,7 +405,7 @@ const AssetList = () => {
                                             </td>
                                             <td className="px-6 py-4">
                                                 {(() => {
-                                                    const warrantyStatus = getExpiryStatus(asset.warrantyExpiryDate);
+                                                    const warrantyStatus = getExpiryStatus(asset.warrantyExpiry);
                                                     const Icon = warrantyStatus.icon;
                                                     return (
                                                         <span 

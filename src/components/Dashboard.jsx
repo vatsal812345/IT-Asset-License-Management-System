@@ -83,7 +83,7 @@ const Dashboard = () => {
 
     const fetchData = async () => {
         try {
-            const statsRes = await fetch('https://itam-backend.onrender.com/api/dashboard/stats');
+            const statsRes = await fetch('http://localhost:5000/api/dashboard/stats');
             const statsData = await statsRes.json();
             
             if (statsData.success) {
@@ -95,7 +95,7 @@ const Dashboard = () => {
                 });
             }
 
-            const licensesRes = await fetch('https://itam-backend.onrender.com/api/licenses');
+            const licensesRes = await fetch('http://localhost:5000/api/licenses');
             const licensesData = await licensesRes.json();
             if (licensesData.success) {
                 const total = licensesData.data.length;
@@ -112,7 +112,7 @@ const Dashboard = () => {
                 setLicenseStats(utilized);
             }
 
-            const assetsRes = await fetch('https://itam-backend.onrender.com/api/assets');
+            const assetsRes = await fetch('http://localhost:5000/api/assets');
             const assetsData = await assetsRes.json();
             if (assetsData.success) {
                 const sorted = [...assetsData.data]
@@ -121,13 +121,13 @@ const Dashboard = () => {
                 setRecentActivities(sorted);
                 
                 // Calculate warranty statistics for assets
-                const assetWarrantyStats = calculateExpiryStats(assetsData.data, 'warrantyExpiryDate');
+                const assetWarrantyStats = calculateExpiryStats(assetsData.data, 'warrantyExpiry');
                 setWarrantyStats(prev => ({ ...prev, assets: assetWarrantyStats }));
                 
                 // Get expiring assets
                 const expiringAssets = assetsData.data
                     .filter(asset => {
-                        const status = getExpiryStatus(asset.warrantyExpiryDate);
+                        const status = getExpiryStatus(asset.warrantyExpiry);
                         return status.status === 'expiring';
                     })
                     .slice(0, 5);
@@ -173,7 +173,7 @@ const Dashboard = () => {
 
     const handleCreateAsset = async (formData) => {
         try {
-            const response = await fetch('https://itam-backend.onrender.com/api/assets', {
+            const response = await fetch('http://localhost:5000/api/assets', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData),
@@ -248,7 +248,7 @@ const Dashboard = () => {
                                 </div>
                                 <div className="space-y-3 max-h-64 overflow-y-auto pr-2">
                                     {expiringItems.assets.map(asset => {
-                                        const status = getExpiryStatus(asset.warrantyExpiryDate);
+                                        const status = getExpiryStatus(asset.warrantyExpiry);
                                         return (
                                             <div 
                                                 key={asset._id} 

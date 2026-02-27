@@ -25,7 +25,7 @@ const EmployeeList = () => {
     const fetchEmployees = async () => {
         setLoading(true);
         try {
-            const response = await fetch('https://itam-backend.onrender.com/api/employees');
+            const response = await fetch('http://localhost:5000/api/employees');
             const data = await response.json();
             if (data.success) {
                 setEmployees(data.data);
@@ -66,8 +66,8 @@ const EmployeeList = () => {
     const handleCreateUpdate = async (formData) => {
         try {
             const url = editingEmployee
-                ? `https://itam-backend.onrender.com/api/employees/${editingEmployee._id}`
-                : 'https://itam-backend.onrender.com/api/employees';
+                ? `http://localhost:5000/api/employees/${editingEmployee._id}`
+                : 'http://localhost:5000/api/employees';
 
             const method = editingEmployee ? 'PUT' : 'POST';
 
@@ -142,7 +142,7 @@ const EmployeeList = () => {
         if (!selectedDeleteEmployee) return;
         setIsDeleting(true);
         try {
-            const response = await fetch(`https://itam-backend.onrender.com/api/employees/${selectedDeleteEmployee._id}`, {
+            const response = await fetch(`http://localhost:5000/api/employees/${selectedDeleteEmployee._id}`, {
                 method: 'DELETE',
             });
             const data = await response.json();

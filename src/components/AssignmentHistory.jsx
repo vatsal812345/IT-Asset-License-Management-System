@@ -23,7 +23,7 @@ const AssignmentHistory = () => {
     const fetchAssetHistory = async () => {
         setLoading(true);
         try {
-            const response = await fetch('https://itam-backend.onrender.com/api/assets');
+            const response = await fetch('http://localhost:5000/api/assets');
             const data = await response.json();
             
             if (data.success) {
@@ -49,7 +49,7 @@ const AssignmentHistory = () => {
     const fetchLicenseHistory = async () => {
         setLoading(true);
         try {
-            const response = await fetch('https://itam-backend.onrender.com/api/licenses');
+            const response = await fetch('http://localhost:5000/api/licenses');
             const data = await response.json();
             
             if (data.success) {
