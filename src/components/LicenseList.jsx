@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Plus, Filter, Edit, Trash2, Loader, BarChart3, ShieldCheck, Clock, Users, Package, UserPlus, ChevronDown, ChevronRight, User, ShieldAlert, ShieldX } from 'lucide-react';
+import { Search, Plus, Filter, Edit, Trash2, Loader, BarChart3, ShieldCheck, Clock, Users, Package, UserPlus, ChevronDown, ChevronRight, User, ShieldAlert, ShieldX, Download } from 'lucide-react';
 import LicenseForm from './LicenseForm';
 import DeleteConfirmModal from './DeleteConfirmModal';
+import Pagination from './Pagination';
 import { getExpiryStatus } from '../utils/warrantyUtils';
+import { exportToCSV, formatDateForCSV } from '../utils/csvExport';
 
 const LicenseList = () => {
     const navigate = useNavigate();
@@ -20,6 +22,9 @@ const LicenseList = () => {
     const [selectedDeleteLicense, setSelectedDeleteLicense] = useState(null);
     const [isDeleting, setIsDeleting] = useState(false);
     const [expandedRows, setExpandedRows] = useState({});
+    const [currentPage, setCurrentPage] = useState(1);
+    const [isExporting, setIsExporting] = useState(false);
+    const itemsPerPage = 10;
 
     const toggleRow = (id) => {
         setExpandedRows(prev => ({ ...prev, [id]: !prev[id] }));
@@ -88,6 +93,7 @@ const LicenseList = () => {
             );
         }
         setFilteredLicenses(result);
+        setCurrentPage(1); // Reset to first page when filters change
     }, [licenses, searchQuery, categoryFilter, expiryFilter]);
 
     const handleCreateUpdate = async (formData) => {
@@ -155,6 +161,43 @@ const LicenseList = () => {
         }
     };
 
+    // CSV Export Handler
+    const handleExportCSV = () => {
+        setIsExporting(true);
+        try {
+            const columns = [
+                { key: 'softwareName', header: 'Software Name' },
+                { key: 'vendor', header: 'Vendor' },
+                { key: 'licenseKey', header: 'License Key' },
+                { key: 'category', header: 'Category' },
+                { key: 'totalSeats', header: 'Total Seats' },
+                { key: 'usedSeats', header: 'Used Seats' },
+                { 
+                    key: 'utilization', 
+                    header: 'Utilization %',
+                    accessor: (license) => Math.round((license.usedSeats || 0) / license.totalSeats * 100) || 0
+                },
+                { key: 'status', header: 'Status' },
+                { key: 'purchaseDate', header: 'Purchase Date', accessor: (license) => formatDateForCSV(license.purchaseDate) },
+                { key: 'expiryDate', header: 'Expiry Date', accessor: (license) => formatDateForCSV(license.expiryDate) },
+                { key: 'cost', header: 'Cost' },
+            ];
+
+            const filename = `licenses_export_${new Date().toISOString().split('T')[0]}.csv`;
+            exportToCSV(filteredLicenses, columns, filename);
+        } catch (error) {
+            console.error('Export failed:', error);
+        } finally {
+            setIsExporting(false);
+        }
+    };
+
+    // Pagination calculations
+    const totalPages = Math.ceil(filteredLicenses.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentLicenses = filteredLicenses.slice(startIndex, endIndex);
+
     const UtilizationBar = ({ used, total }) => {
         const percentage = Math.min(Math.round((used / total) * 100), 100) || 0;
         let barColor = 'bg-blue-500';
@@ -184,13 +227,27 @@ const LicenseList = () => {
                     <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Software Licenses</h1>
                     <p className="text-gray-500 mt-1 font-medium">Manage and track software license utilization across the organization.</p>
                 </div>
-                <button
-                    onClick={() => navigate('/licenses/register')}
-                    className="flex items-center space-x-2 bg-linear-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-2xl font-bold shadow-xl shadow-blue-100 hover:shadow-blue-200 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 w-full md:w-auto justify-center"
-                >
-                    <Plus className="w-5 h-5" />
-                    <span>Add New License</span>
-                </button>
+                <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                    <button
+                        onClick={handleExportCSV}
+                        disabled={isExporting || filteredLicenses.length === 0}
+                        className="flex items-center justify-center space-x-2 bg-white border-2 border-emerald-500 text-emerald-600 px-6 py-3 rounded-2xl font-bold shadow-sm hover:bg-emerald-50 hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {isExporting ? (
+                            <Loader className="w-5 h-5 animate-spin" />
+                        ) : (
+                            <Download className="w-5 h-5" />
+                        )}
+                        <span>{isExporting ? 'Exporting...' : 'Export CSV'}</span>
+                    </button>
+                    <button
+                        onClick={() => navigate('/licenses/register')}
+                        className="flex items-center space-x-2 bg-linear-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-2xl font-bold shadow-xl shadow-blue-100 hover:shadow-blue-200 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 w-full md:w-auto justify-center"
+                    >
+                        <Plus className="w-5 h-5" />
+                        <span>Add New License</span>
+                    </button>
+                </div>
             </div>
 
             {/* Stats Overview */}
@@ -275,8 +332,8 @@ const LicenseList = () => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-50">
-                                {filteredLicenses.length > 0 ? (
-                                    filteredLicenses.map((license, index) => {
+                                {currentLicenses.length > 0 ? (
+                                    currentLicenses.map((license, index) => {
                                         const employees = getEmployees(license);
                                         const isExpanded = expandedRows[license._id];
                                         return (
@@ -476,6 +533,17 @@ const LicenseList = () => {
                             </tbody>
                         </table>
                     </div>
+                )}
+                
+                {/* Pagination */}
+                {!loading && filteredLicenses.length > 0 && (
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        itemsPerPage={itemsPerPage}
+                        totalItems={filteredLicenses.length}
+                        onPageChange={setCurrentPage}
+                    />
                 )}
             </div>
 

@@ -2,9 +2,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../context/ToastContext';
-import { Search, Plus, Filter, Edit, Trash2, Loader, Users, Mail, Phone, Building2, Briefcase, UserPlus, Eye } from 'lucide-react';
+import { Search, Plus, Filter, Edit, Trash2, Loader, Users, Mail, Phone, Building2, Briefcase, UserPlus, Eye, Download } from 'lucide-react';
 import EmployeeForm from './EmployeeForm';
 import DeleteConfirmModal from './DeleteConfirmModal';
+import Pagination from './Pagination';
+import { exportToCSV, formatDateForCSV } from '../utils/csvExport';
+import getDisplayImageUrl from '../utils/imageUtils';
 
 
 const EmployeeList = () => {
@@ -21,6 +24,9 @@ const EmployeeList = () => {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedDeleteEmployee, setSelectedDeleteEmployee] = useState(null);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [isExporting, setIsExporting] = useState(false);
+    const itemsPerPage = 10;
 
     const fetchEmployees = async () => {
         setLoading(true);
@@ -61,6 +67,7 @@ const EmployeeList = () => {
             );
         }
         setFilteredEmployees(result);
+        setCurrentPage(1); // Reset to first page when filters change
     }, [employees, searchQuery, deptFilter]);
 
     const handleCreateUpdate = async (formData) => {
@@ -172,6 +179,37 @@ const EmployeeList = () => {
         }
     };
 
+    // CSV Export Handler
+    const handleExportCSV = () => {
+        setIsExporting(true);
+        try {
+            const columns = [
+                { key: 'employeeId', header: 'Employee ID' },
+                { key: 'firstName', header: 'First Name' },
+                { key: 'lastName', header: 'Last Name' },
+                { key: 'email', header: 'Email' },
+                { key: 'phone', header: 'Phone' },
+                { key: 'department', header: 'Department' },
+                { key: 'designation', header: 'Designation' },
+                { key: 'status', header: 'Status' },
+                { key: 'joiningDate', header: 'Joining Date', accessor: (emp) => formatDateForCSV(emp.joiningDate) },
+            ];
+
+            const filename = `employees_export_${new Date().toISOString().split('T')[0]}.csv`;
+            exportToCSV(filteredEmployees, columns, filename);
+        } catch (error) {
+            console.error('Export failed:', error);
+        } finally {
+            setIsExporting(false);
+        }
+    };
+
+    // Pagination calculations
+    const totalPages = Math.ceil(filteredEmployees.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentEmployees = filteredEmployees.slice(startIndex, endIndex);
+
     const departments = ['All', ...new Set(employees.map(emp => emp.department))];
 
     return (
@@ -181,16 +219,30 @@ const EmployeeList = () => {
                     <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Organization Employees</h1>
                     <p className="text-gray-500 mt-1 font-medium">Manage and track all employees within the organization.</p>
                 </div>
-                <button
-                    onClick={() => {
-                        setEditingEmployee(null);
-                        setIsFormOpen(true);
-                    }}
-                    className="flex items-center space-x-2 bg-linear-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-2xl font-bold shadow-xl shadow-blue-100 hover:shadow-blue-200 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 w-full md:w-auto justify-center"
-                >
-                    <Plus className="w-5 h-5" />
-                    <span>Add New Employee</span>
-                </button>
+                <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                    <button
+                        onClick={handleExportCSV}
+                        disabled={isExporting || filteredEmployees.length === 0}
+                        className="flex items-center justify-center space-x-2 bg-white border-2 border-emerald-500 text-emerald-600 px-6 py-3 rounded-2xl font-bold shadow-sm hover:bg-emerald-50 hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {isExporting ? (
+                            <Loader className="w-5 h-5 animate-spin" />
+                        ) : (
+                            <Download className="w-5 h-5" />
+                        )}
+                        <span>{isExporting ? 'Exporting...' : 'Export CSV'}</span>
+                    </button>
+                    <button
+                        onClick={() => {
+                            setEditingEmployee(null);
+                            setIsFormOpen(true);
+                        }}
+                        className="flex items-center space-x-2 bg-linear-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-2xl font-bold shadow-xl shadow-blue-100 hover:shadow-blue-200 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 w-full md:w-auto justify-center"
+                    >
+                        <Plus className="w-5 h-5" />
+                        <span>Add New Employee</span>
+                    </button>
+                </div>
             </div>
 
             {/* Filters */}
@@ -243,8 +295,8 @@ const EmployeeList = () => {
                             </thead>
 
                             <tbody className="divide-y divide-gray-50">
-                                {filteredEmployees.length > 0 ? (
-                                    filteredEmployees.map((emp, index) => (
+                                {currentEmployees.length > 0 ? (
+                                    currentEmployees.map((emp, index) => (
                                         <tr
                                             key={emp._id}
                                             className="hover:bg-blue-50/40 transition-colors group cursor-pointer"
@@ -253,7 +305,7 @@ const EmployeeList = () => {
                                                 <div className="flex items-center space-x-4">
                                                     <div className="w-12 h-12 bg-blue-50 rounded-2xl overflow-hidden flex items-center justify-center text-blue-600 border border-blue-100 group-hover:bg-white transition-colors shrink-0">
                                                         {emp.profileImage ? (
-                                                            <img src={emp.profileImage} alt={emp.profileImage} className="w-full h-full object-cover" />
+                                                            <img src={getDisplayImageUrl(emp.profileImage)} alt={emp.fullName} className="w-full h-full object-cover" />
                                                         ) : (
                                                             <span className="text-lg font-bold">{emp.firstName.charAt(0)}{emp.lastName.charAt(0)}</span>
                                                         )}
@@ -354,6 +406,17 @@ const EmployeeList = () => {
                             </tbody>
                         </table>
                     </div>
+                )}
+                
+                {/* Pagination */}
+                {!loading && filteredEmployees.length > 0 && (
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        itemsPerPage={itemsPerPage}
+                        totalItems={filteredEmployees.length}
+                        onPageChange={setCurrentPage}
+                    />
                 )}
             </div>
 

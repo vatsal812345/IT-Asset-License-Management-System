@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useToast } from '../context/ToastContext';
-import { Search, Plus, Filter, Edit, Trash2, Loader, MoreHorizontal, Eye, UserPlus, RotateCcw, Box, ShieldCheck, ShieldAlert, ShieldX, Clock } from 'lucide-react';
+import { Search, Plus, Filter, Edit, Trash2, Loader, MoreHorizontal, Eye, UserPlus, RotateCcw, Box, ShieldCheck, ShieldAlert, ShieldX, Clock, Download } from 'lucide-react';
 import AssetForm from './AssetForm';
 import ReturnConfirmModal from './ReturnConfirmModal';
 import DeleteConfirmModal from './DeleteConfirmModal';
+import Pagination from './Pagination';
 import { getExpiryStatus } from '../utils/warrantyUtils';
+import { exportToCSV, formatDateForCSV } from '../utils/csvExport';
+import getDisplayImageUrl from '../utils/imageUtils';
 
 
 
@@ -27,6 +30,9 @@ const AssetList = () => {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedDeleteAsset, setSelectedDeleteAsset] = useState(null);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [isExporting, setIsExporting] = useState(false);
+    const itemsPerPage = 10;
 
     const fetchAssets = async () => {
         setLoading(true);
@@ -91,6 +97,7 @@ const AssetList = () => {
         }
 
         setFilteredAssets(result);
+        setCurrentPage(1); // Reset to first page when filters change
     }, [assets, searchQuery, statusFilter, warrantyFilter]);
 
     const handleCreateUpdate = async (formData) => {
@@ -285,6 +292,48 @@ const AssetList = () => {
         }
     };
 
+    // CSV Export Handler
+    const handleExportCSV = () => {
+        setIsExporting(true);
+        try {
+            const columns = [
+                { key: 'assetTag', header: 'Asset Tag' },
+                { key: 'name', header: 'Asset Name' },
+                { key: 'category', header: 'Category' },
+                { key: 'model', header: 'Model' },
+                { key: 'manufacturer', header: 'Manufacturer' },
+                { key: 'serialNumber', header: 'Serial Number' },
+                { key: 'status', header: 'Status' },
+                { 
+                    key: 'currentAssignedTo', 
+                    header: 'Assigned To',
+                    accessor: (asset) => asset.currentAssignedTo ? asset.currentAssignedTo.fullName : 'Unassigned'
+                },
+                { 
+                    key: 'warrantyExpiry', 
+                    header: 'Warranty Expiry',
+                    accessor: (asset) => formatDateForCSV(asset.warrantyExpiry)
+                },
+                { key: 'purchaseDate', header: 'Purchase Date', accessor: (asset) => formatDateForCSV(asset.purchaseDate) },
+                { key: 'purchaseCost', header: 'Purchase Cost' },
+                { key: 'location', header: 'Location' },
+            ];
+
+            const filename = `assets_export_${new Date().toISOString().split('T')[0]}.csv`;
+            exportToCSV(filteredAssets, columns, filename);
+        } catch (error) {
+            console.error('Export failed:', error);
+        } finally {
+            setIsExporting(false);
+        }
+    };
+
+    // Pagination calculations
+    const totalPages = Math.ceil(filteredAssets.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentAssets = filteredAssets.slice(startIndex, endIndex);
+
     return (
         <div className="p-4 md:p-8">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
@@ -292,16 +341,30 @@ const AssetList = () => {
                     <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Assets Inventory</h1>
                     <p className="text-gray-500 mt-1">Manage all your hardware and software assets.</p>
                 </div>
-                <button
-                    onClick={() => {
-                        setEditingAsset(null);
-                        setIsFormOpen(true);
-                    }}
-                    className="flex items-center space-x-2 bg-linear-to-r from-blue-600 to-blue-500 text-white px-5 py-2.5 rounded-xl font-medium shadow-lg shadow-blue-200 hover:shadow-blue-300 hover:scale-105 transition-all duration-200 active:scale-95 w-full md:w-auto justify-center"
-                >
-                    <Plus className="w-5 h-5" />
-                    <span>Add New Asset</span>
-                </button>
+                <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                    <button
+                        onClick={handleExportCSV}
+                        disabled={isExporting || filteredAssets.length === 0}
+                        className="flex items-center justify-center space-x-2 bg-white border-2 border-emerald-500 text-emerald-600 px-5 py-2.5 rounded-xl font-medium shadow-sm hover:bg-emerald-50 hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {isExporting ? (
+                            <Loader className="w-5 h-5 animate-spin" />
+                        ) : (
+                            <Download className="w-5 h-5" />
+                        )}
+                        <span>{isExporting ? 'Exporting...' : 'Export CSV'}</span>
+                    </button>
+                    <button
+                        onClick={() => {
+                            setEditingAsset(null);
+                            setIsFormOpen(true);
+                        }}
+                        className="flex items-center space-x-2 bg-linear-to-r from-blue-600 to-blue-500 text-white px-5 py-2.5 rounded-xl font-medium shadow-lg shadow-blue-200 hover:shadow-blue-300 hover:scale-105 transition-all duration-200 active:scale-95 w-full md:w-auto justify-center"
+                    >
+                        <Plus className="w-5 h-5" />
+                        <span>Add New Asset</span>
+                    </button>
+                </div>
             </div>
 
             {/* Filters */}
@@ -367,8 +430,8 @@ const AssetList = () => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-50">
-                                {filteredAssets.length > 0 ? (
-                                    filteredAssets.map((asset, index) => (
+                                {currentAssets.length > 0 ? (
+                                    currentAssets.map((asset, index) => (
                                         <tr 
                                             key={asset._id} 
                                             className="hover:bg-blue-50/50 transition-all duration-200 group hover:shadow-md cursor-pointer animate-slide-up"
@@ -382,7 +445,7 @@ const AssetList = () => {
                                                 <div className="flex items-center space-x-3">
                                                     <div className="w-10 h-10 bg-gray-100 rounded-lg overflow-hidden border border-gray-100 shrink-0">
                                                         {asset.imageUrl ? (
-                                                            <img src={asset.imageUrl} alt={asset.name} className="w-full h-full object-cover" />
+                                                            <img src={getDisplayImageUrl(asset.imageUrl)} alt={asset.name} className="w-full h-full object-cover" />
                                                         ) : (
                                                             <div className="w-full h-full flex items-center justify-center text-gray-400">
                                                                 <Box className="w-5 h-5" />
@@ -512,6 +575,17 @@ const AssetList = () => {
                             </tbody>
                         </table>
                     </div>
+                )}
+                
+                {/* Pagination */}
+                {!loading && filteredAssets.length > 0 && (
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        itemsPerPage={itemsPerPage}
+                        totalItems={filteredAssets.length}
+                        onPageChange={setCurrentPage}
+                    />
                 )}
             </div>
 

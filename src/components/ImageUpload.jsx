@@ -1,6 +1,7 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { Upload, X, Loader2, Image as ImageIcon, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
+import { getDisplayImageUrl } from '../utils/imageUtils';
 
 const ImageUpload = ({ 
     uploadUrl, 
@@ -11,7 +12,7 @@ const ImageUpload = ({
     fieldName = "file" // Default field name
 }) => {
     const [dragActive, setDragActive] = useState(false);
-    const [preview, setPreview] = useState(initialImage || null);
+    const [preview, setPreview] = useState(initialImage ? getDisplayImageUrl(initialImage) : null);
     const [uploading, setUploading] = useState(false);
     const [fileName, setFileName] = useState('');
     const fileInputRef = useRef(null);
@@ -20,7 +21,7 @@ const ImageUpload = ({
     // Sync preview with initialImage when it changes from outside
     React.useEffect(() => {
         if (initialImage) {
-            setPreview(initialImage);
+            setPreview(getDisplayImageUrl(initialImage));
         }
     }, [initialImage]);
 
