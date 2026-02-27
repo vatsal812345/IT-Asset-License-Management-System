@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useNotifications } from '../context/NotificationContext';
 import { 
     Box, 
     CheckCircle, 
@@ -81,7 +80,6 @@ const Dashboard = () => {
     const [error, setError] = useState(null);
     const [isAssetFormOpen, setIsAssetFormOpen] = useState(false);
     const navigate = useNavigate();
-    const { checkItemAndNotify } = useNotifications();
 
     const fetchData = async () => {
         try {
@@ -183,7 +181,6 @@ const Dashboard = () => {
             const data = await response.json();
             if (data.success) {
                 setIsAssetFormOpen(false);
-                checkItemAndNotify(formData, 'asset');
                 fetchData();
             } else {
                 alert('Error creating asset: ' + data.message);
