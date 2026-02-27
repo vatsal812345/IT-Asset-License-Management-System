@@ -14,10 +14,12 @@ import RegisterLicense from './components/RegisterLicense';
 import EmployeeList from './components/EmployeeList';
 
 import { ToastProvider } from './context/ToastContext';
+import { NotificationProvider } from './context/NotificationContext';
 
 const App = () => {
   return (
     <ToastProvider>
+      <NotificationProvider>
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Layout />}>
@@ -35,6 +37,7 @@ const App = () => {
           </Route>
         </Routes>
       </BrowserRouter>
+      </NotificationProvider>
     </ToastProvider>
   );
 };

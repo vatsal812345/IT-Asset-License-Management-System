@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useToast } from '../context/ToastContext';
+import { useNotifications } from '../context/NotificationContext';
 import { Search, Plus, Filter, Edit, Trash2, Loader, MoreHorizontal, Eye, UserPlus, RotateCcw, Box, ShieldCheck, ShieldAlert, ShieldX, Clock, Download } from 'lucide-react';
 import AssetForm from './AssetForm';
 import ReturnConfirmModal from './ReturnConfirmModal';
@@ -15,6 +16,7 @@ import getDisplayImageUrl from '../utils/imageUtils';
 const AssetList = () => {
     const navigate = useNavigate();
     const { showToast } = useToast();
+    const { checkItemAndNotify } = useNotifications();
     const [assets, setAssets] = useState([]);
     const [filteredAssets, setFilteredAssets] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -32,7 +34,7 @@ const AssetList = () => {
     const [isDeleting, setIsDeleting] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [isExporting, setIsExporting] = useState(false);
-    const itemsPerPage = 10;
+    const itemsPerPage = 5;
 
     const fetchAssets = async () => {
         setLoading(true);
@@ -173,6 +175,9 @@ const AssetList = () => {
                     editingAsset ? 'Asset updated successfully' : 'New asset added successfully',
                     'success'
                 );
+
+                // Immediately check and notify for warranty expiry
+                checkItemAndNotify(formData, 'asset');
 
                 // Refresh data with slight delay to ensure backend has processed the update
                 setTimeout(() => {
@@ -396,6 +401,16 @@ const AssetList = () => {
                 </div>
             </div>
 
+            {/* Results Count */}
+            {!loading && filteredAssets.length > 0 && (
+                <div className="flex justify-end mb-4">
+                    <div className="text-sm text-gray-600 font-medium">
+                        Showing <span className="font-bold text-gray-900">{currentPage}</span> of{' '}
+                        <span className="font-bold text-gray-900">{totalPages}</span> results
+                    </div>
+                </div>
+            )}
+
             {/* Table */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 {loading ? (
@@ -562,7 +577,15 @@ const AssetList = () => {
                         </table>
                     </div>
                 )}
-
+                {/* Bottom Results Count */}
+                {!loading && filteredAssets.length > 0 && (
+                    <div className="px-8 py-4 border-t border-gray-100">
+                        <div className="text-sm text-gray-600 font-medium">
+                            Showing <span className="font-bold text-gray-900">{currentPage}</span> of{' '}
+                            <span className="font-bold text-gray-900">{totalPages}</span> results
+                        </div>
+                    </div>
+                )}
                 {/* Pagination */}
                 {!loading && filteredAssets.length > 0 && (
                     <Pagination

@@ -63,7 +63,7 @@ const Pagination = ({
     const pageNumbers = getPageNumbers();
 
     return (
-        <div className="bg-gradient-to-r from-gray-50 to-white border-t border-gray-200 px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="bg-gradient-to-r from-gray-50 to-white border-t border-gray-200 px-6 py-5 flex items-center justify-center gap-4">
             {/* Pagination Controls */}
             {totalPages > 1 && (
                 <div className="flex items-center gap-2">
@@ -126,12 +126,6 @@ const Pagination = ({
                     </button>
                 </div>
             )}
-            
-            {/* Showing X of Y results */}
-            <div className="text-sm text-gray-600 font-medium">
-                Showing <span className="font-bold text-gray-900">{startItem}</span> of{' '}
-                <span className="font-bold text-gray-900">{totalItems}</span> results
-            </div>
         </div>
     );
 };

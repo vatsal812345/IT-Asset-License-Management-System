@@ -1,6 +1,8 @@
 import React from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { LayoutDashboard, Package, ClipboardList, RefreshCcw, History, Menu, ShieldCheck, Users } from 'lucide-react';
+import { NotificationBell } from './NotificationPanel';
+import NotificationPanel from './NotificationPanel';
 
 
 
@@ -62,9 +64,19 @@ const Layout = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto bg-gray-50/50">
-          <Outlet />
-      </main>
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Top Header Bar */}
+        <header className="h-16 bg-white border-b border-gray-100 flex items-center justify-end px-6 shrink-0">
+          <div className="relative">
+            <NotificationBell />
+            <NotificationPanel />
+          </div>
+        </header>
+
+        <main className="flex-1 overflow-y-auto bg-gray-50/50">
+            <Outlet />
+        </main>
+      </div>
     </div>
   );
 };

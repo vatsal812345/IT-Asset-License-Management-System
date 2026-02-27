@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useNotifications } from '../context/NotificationContext';
 import { Search, Plus, Filter, Edit, Trash2, Loader, BarChart3, ShieldCheck, Clock, Users, Package, UserPlus, ChevronDown, ChevronRight, User, ShieldAlert, ShieldX, Download } from 'lucide-react';
 import LicenseForm from './LicenseForm';
 import DeleteConfirmModal from './DeleteConfirmModal';
@@ -9,6 +10,7 @@ import { exportToCSV, formatDateForCSV } from '../utils/csvExport';
 
 const LicenseList = () => {
     const navigate = useNavigate();
+    const { checkItemAndNotify } = useNotifications();
     const [licenses, setLicenses] = useState([]);
     const [filteredLicenses, setFilteredLicenses] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -24,7 +26,7 @@ const LicenseList = () => {
     const [expandedRows, setExpandedRows] = useState({});
     const [currentPage, setCurrentPage] = useState(1);
     const [isExporting, setIsExporting] = useState(false);
-    const itemsPerPage = 10;
+    const itemsPerPage = 5;
 
     const toggleRow = (id) => {
         setExpandedRows(prev => ({ ...prev, [id]: !prev[id] }));
@@ -112,6 +114,8 @@ const LicenseList = () => {
 
             const data = await response.json();
             if (data.success) {
+                // Immediately check and notify for license expiry
+                checkItemAndNotify(formData, 'license');
                 fetchLicenses();
                 setIsFormOpen(false);
                 setEditingLicense(null);
@@ -311,6 +315,16 @@ const LicenseList = () => {
                     </select>
                 </div>
             </div>
+
+            {/* Results Count */}
+            {!loading && filteredLicenses.length > 0 && (
+                <div className="flex justify-end mb-4">
+                    <div className="text-sm text-gray-600 font-medium">
+                        Showing <span className="font-bold text-gray-900">{currentPage}</span> of{' '}
+                        <span className="font-bold text-gray-900">{totalPages}</span> results
+                    </div>
+                </div>
+            )}
 
             {/* Table */}
             <div className="bg-white rounded-4xl shadow-sm border border-gray-100 overflow-hidden">
@@ -534,8 +548,16 @@ const LicenseList = () => {
                         </table>
                     </div>
                 )}
-                
-                {/* Pagination */}
+                                {/* Bottom Results Count */}
+                {!loading && filteredLicenses.length > 0 && (
+                    <div className="px-8 py-4 border-t border-gray-100">
+                        <div className="text-sm text-gray-600 font-medium">
+                            Showing <span className="font-bold text-gray-900">{currentPage}</span> of{' '}
+                            <span className="font-bold text-gray-900">{totalPages}</span> results
+                        </div>
+                    </div>
+                )}
+                                {/* Pagination */}
                 {!loading && filteredLicenses.length > 0 && (
                     <Pagination
                         currentPage={currentPage}

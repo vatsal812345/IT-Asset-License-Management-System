@@ -26,7 +26,7 @@ const EmployeeList = () => {
     const [isDeleting, setIsDeleting] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [isExporting, setIsExporting] = useState(false);
-    const itemsPerPage = 10;
+    const itemsPerPage = 5;
 
     const fetchEmployees = async () => {
         setLoading(true);
@@ -265,6 +265,16 @@ const EmployeeList = () => {
                 </div>
             </div>
 
+            {/* Results Count */}
+            {!loading && filteredEmployees.length > 0 && (
+                <div className="flex justify-end mb-4">
+                    <div className="text-sm text-gray-600 font-medium">
+                        Showing <span className="font-bold text-gray-900">{currentPage}</span> of{' '}
+                        <span className="font-bold text-gray-900">{totalPages}</span> results
+                    </div>
+                </div>
+            )}
+
             {/* Table */}
             <div className="bg-white rounded-4xl shadow-sm border border-gray-100 overflow-hidden">
                 {loading ? (
@@ -398,7 +408,15 @@ const EmployeeList = () => {
                         </table>
                     </div>
                 )}
-
+                {/* Bottom Results Count */}
+                {!loading && filteredEmployees.length > 0 && (
+                    <div className="px-8 py-4 border-t border-gray-100">
+                        <div className="text-sm text-gray-600 font-medium">
+                            Showing <span className="font-bold text-gray-900">{currentPage}</span> of{' '}
+                            <span className="font-bold text-gray-900">{totalPages}</span> results
+                        </div>
+                    </div>
+                )}
                 {/* Pagination */}
                 {!loading && filteredEmployees.length > 0 && (
                     <Pagination
