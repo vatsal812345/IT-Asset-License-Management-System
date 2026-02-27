@@ -62,7 +62,7 @@ const AssetList = () => {
         fetchAssets();
         if (location.state?.statusFilter) {
             setStatusFilter(location.state.statusFilter);
-             // Verify if we need to clear state to avoid persistent filter on refresh (optional, usually good UX to keep it)
+            // Verify if we need to clear state to avoid persistent filter on refresh (optional, usually good UX to keep it)
         }
     }, [location.state]);
 
@@ -105,82 +105,69 @@ const AssetList = () => {
             const url = editingAsset
                 ? `http://localhost:5000/api/assets/${editingAsset._id}`
                 : 'http://localhost:5000/api/assets';
-            
+
             const method = editingAsset ? 'PUT' : 'POST';
 
-            // Sanitize payload for backend validation requirements
-            const payload = { ...formData };
-            
-            // 1. Remove internal metadata
-            delete payload.__v;
-            delete payload.createdAt;
-            delete payload.updatedAt;
-            delete payload.history;
-            delete payload._id;
+            // Create FormData for multipart/form-data request
+            const data = new FormData();
 
-            // 2. Ensure assignment fields are just IDs (if populated)
-            if (payload.currentAssignedTo && typeof payload.currentAssignedTo === 'object') {
-                payload.currentAssignedTo = payload.currentAssignedTo._id;
+            // Store imageFile if it exists and remove it from formData
+            const imageFile = formData.imageFile;
+
+            // Loop through formData and append to data
+            Object.keys(formData).forEach(key => {
+                if (key === 'imageFile') return; // Skip imageFile, we append it separately as 'image'
+
+                let value = formData[key];
+
+                // 1. Skip internal metadata
+                if (['__v', 'createdAt', 'updatedAt', 'history', '_id'].includes(key)) return;
+
+                // 2. Ensure assignment fields are just IDs (if populated)
+                if ((key === 'currentAssignedTo' || key === 'assignedTo') && value && typeof value === 'object') {
+                    value = value._id;
+                }
+
+                // 3. Status consistency: if NOT Assigned, clear assignedTo fields
+                if (formData.status !== 'Assigned' && (key === 'currentAssignedTo' || key === 'assignedTo')) {
+                    value = null;
+                }
+
+                // 4. Ensure imageUrl is a string (safeguard against weird API responses/state updates)
+                if (key === 'imageUrl' && value && typeof value === 'object') {
+                    value = value.url || value.imageUrl || '';
+                }
+
+                // 5. Ensure warrantyExpiry is handled (if empty string, don't append or set to null)
+                if (key === 'warrantyExpiry' && value === '') return;
+
+                // Append value to FormData (handle nulls as empty string or skip)
+                if (value !== null && value !== undefined) {
+                    data.append(key, value);
+                }
+            });
+
+            // Append image if selected
+            if (imageFile) {
+                data.append('image', imageFile);
             }
-            if (payload.assignedTo && typeof payload.assignedTo === 'object') {
-                payload.assignedTo = payload.assignedTo._id;
-            }
 
-            // 3. Status consistency: if NOT Assigned, clear assignedTo fields
-            if (payload.status !== 'Assigned') {
-                payload.currentAssignedTo = null;
-                payload.assignedTo = null;
-            }
-
-            // Store imageFile if it exists
-            const imageFile = payload.imageFile;
-            delete payload.imageFile;
-
-            // 4. Ensure imageUrl is a string (safeguard against weird API responses/state updates)
-            if (payload.imageUrl && typeof payload.imageUrl === 'object') {
-                payload.imageUrl = payload.imageUrl.url || payload.imageUrl.imageUrl || '';
-            }
-
-            // 5. Ensure warrantyExpiry is included (if provided)
-            if (payload.warrantyExpiry === '') {
-                delete payload.warrantyExpiry; // Remove empty string, let backend handle null
-            }
-
-            console.log('Sending payload to backend:', payload); // Debug log
+            console.log('Sending FormData to backend'); // Debug log
 
             const response = await fetch(url, {
                 method,
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(payload),
+                // Brownie point: do NOT set Content-Type header when sending FormData, 
+                // the browser will set it automatically with the correct boundary
+                body: data,
             });
 
-            const data = await response.json();
+            const responseData = await response.json();
 
-            if (data.success) {
-                // Upload image if selected during creation
-                if (!editingAsset && imageFile) {
-                    const newAssetId = data.data._id;
-                    const uploadUrl = `http://localhost:5000/api/assets/${newAssetId}/image`;
-                    const imgFormData = new FormData();
-                    imgFormData.append('image', imageFile);
-
-                    try {
-                        await fetch(uploadUrl, {
-                            method: 'POST',
-                            body: imgFormData,
-                        });
-                    } catch (uploadError) {
-                        console.error('Error uploading image for new asset:', uploadError);
-                        showToast('Asset created but image upload failed', 'warning');
-                    }
-                }
-
+            if (responseData.success) {
                 // Close form first
                 setIsFormOpen(false);
                 setEditingAsset(null);
-                
+
                 // Show success message
                 showToast(
                     editingAsset ? 'Asset updated successfully' : 'New asset added successfully',
@@ -192,7 +179,7 @@ const AssetList = () => {
                     fetchAssets();
                 }, 300);
             } else {
-                showToast(data.message || 'Operation failed', 'error');
+                showToast(responseData.message || 'Operation failed', 'error');
             }
         } catch (error) {
             console.error('Error saving asset:', error);
@@ -207,7 +194,7 @@ const AssetList = () => {
 
     const confirmDelete = async () => {
         if (!selectedDeleteAsset) return;
-        
+
         setIsDeleting(true);
         try {
             const response = await fetch(`http://localhost:5000/api/assets/${selectedDeleteAsset._id}`, {
@@ -237,16 +224,16 @@ const AssetList = () => {
 
     const confirmReturn = async () => {
         if (!selectedReturnAsset) return;
-        
+
         setIsReturning(true);
         const id = selectedReturnAsset._id;
         try {
             const response = await fetch(`http://localhost:5000/api/assets/${id}`, {
                 method: 'PUT',
-                headers: { 
-                    'Content-Type': 'application/json' 
+                headers: {
+                    'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ 
+                body: JSON.stringify({
                     status: 'Available',
                     currentAssignedTo: null,
                     assignedTo: null
@@ -304,13 +291,13 @@ const AssetList = () => {
                 { key: 'manufacturer', header: 'Manufacturer' },
                 { key: 'serialNumber', header: 'Serial Number' },
                 { key: 'status', header: 'Status' },
-                { 
-                    key: 'currentAssignedTo', 
+                {
+                    key: 'currentAssignedTo',
                     header: 'Assigned To',
                     accessor: (asset) => asset.currentAssignedTo ? asset.currentAssignedTo.fullName : 'Unassigned'
                 },
-                { 
-                    key: 'warrantyExpiry', 
+                {
+                    key: 'warrantyExpiry',
                     header: 'Warranty Expiry',
                     accessor: (asset) => formatDateForCSV(asset.warrantyExpiry)
                 },
@@ -412,7 +399,7 @@ const AssetList = () => {
             {/* Table */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 {loading ? (
-                        <div className="flex items-center justify-center p-12">
+                    <div className="flex items-center justify-center p-12">
                         <Loader className="w-8 h-8 text-blue-500 animate-spin" />
                     </div>
                 ) : (
@@ -432,8 +419,8 @@ const AssetList = () => {
                             <tbody className="divide-y divide-gray-50">
                                 {currentAssets.length > 0 ? (
                                     currentAssets.map((asset, index) => (
-                                        <tr 
-                                            key={asset._id} 
+                                        <tr
+                                            key={asset._id}
                                             className="hover:bg-blue-50/50 transition-all duration-200 group hover:shadow-md cursor-pointer animate-slide-up"
                                             style={{ animationDelay: `${index * 0.05}s` }}
                                             onClick={() => navigate(`/assets/${asset._id}`)}
@@ -471,16 +458,15 @@ const AssetList = () => {
                                                     const warrantyStatus = getExpiryStatus(asset.warrantyExpiry);
                                                     const Icon = warrantyStatus.icon;
                                                     return (
-                                                        <span 
-                                                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 hover:scale-105 ${
-                                                                warrantyStatus.status === 'active' 
-                                                                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' 
-                                                                    : warrantyStatus.status === 'expiring' 
-                                                                    ? 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100' 
-                                                                    : warrantyStatus.status === 'expired'
-                                                                    ? 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100'
-                                                                    : 'bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100'
-                                                            }`}
+                                                        <span
+                                                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 hover:scale-105 ${warrantyStatus.status === 'active'
+                                                                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+                                                                    : warrantyStatus.status === 'expiring'
+                                                                        ? 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'
+                                                                        : warrantyStatus.status === 'expired'
+                                                                            ? 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100'
+                                                                            : 'bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100'
+                                                                }`}
                                                         >
                                                             <Icon className="w-3.5 h-3.5" />
                                                             {warrantyStatus.label}
@@ -500,7 +486,7 @@ const AssetList = () => {
                                                     <div className="flex items-center space-x-2">
                                                         <span className="text-sm text-gray-400 italic">Unassigned</span>
                                                         {asset.status === 'Available' && (
-                                                            <button 
+                                                            <button
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
                                                                     navigate(`/assets/${asset._id}/assign`);
@@ -519,9 +505,9 @@ const AssetList = () => {
                                                     {asset.status === 'Assigned' && (
                                                         <button
                                                             onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    handleReturnClick(asset);
-                                                                }}
+                                                                e.stopPropagation();
+                                                                handleReturnClick(asset);
+                                                            }}
                                                             className="p-2 text-emerald-600 bg-emerald-50 rounded-lg hover:bg-emerald-100 hover:shadow-md transition-all duration-200 transform hover:scale-110"
                                                             title="Return Asset"
                                                         >
@@ -576,7 +562,7 @@ const AssetList = () => {
                         </table>
                     </div>
                 )}
-                
+
                 {/* Pagination */}
                 {!loading && filteredAssets.length > 0 && (
                     <Pagination
@@ -596,7 +582,7 @@ const AssetList = () => {
                 initialData={editingAsset}
             />
 
-            <ReturnConfirmModal 
+            <ReturnConfirmModal
                 isOpen={isReturnModalOpen}
                 onClose={() => setIsReturnModalOpen(false)}
                 onConfirm={confirmReturn}
@@ -605,7 +591,7 @@ const AssetList = () => {
                 isReturning={isReturning}
             />
 
-            <DeleteConfirmModal 
+            <DeleteConfirmModal
                 isOpen={isDeleteModalOpen}
                 onClose={() => setIsDeleteModalOpen(false)}
                 onConfirm={confirmDelete}

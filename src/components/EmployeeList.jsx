@@ -78,50 +78,41 @@ const EmployeeList = () => {
 
             const method = editingEmployee ? 'PUT' : 'POST';
 
-            // Extract the file (stored as profileImageFile by EmployeeForm)
-            const imageFile = formData.profileImageFile || null;
+            // Create FormData for multipart/form-data request
+            const data = new FormData();
 
-            let response;
+            // Store imageFile if it exists and remove it from formData
+            const imageFile = formData.profileImageFile;
 
+            // Loop through formData and append to data
+            Object.keys(formData).forEach(key => {
+                if (key === 'profileImageFile') return; // Skip file, we append it separately as 'profileImage'
+
+                let value = formData[key];
+
+                // Skip internal metadata or fields we don't want to send
+                if (key === '_id' || key === '__v' || key === 'createdAt' || key === 'updatedAt') return;
+
+                // Handle null/undefined values
+                if (value === null || value === undefined) {
+                    value = '';
+                }
+
+                data.append(key, value);
+            });
+
+            // Append the image file if selected
             if (imageFile) {
-                // ── Send as multipart/form-data so Multer can receive req.file ──
-                const payload = new FormData();
-
-                // Append every scalar field
-                const scalarFields = { ...formData };
-                delete scalarFields.profileImageFile; // don't double-send the file
-                // profileImage may already be a Cloudinary URL on update; skip if sending file
-                delete scalarFields.profileImage;
-
-                for (const [key, value] of Object.entries(scalarFields)) {
-                    if (value !== null && value !== undefined) {
-                        payload.append(key, value);
-                    }
-                }
-
-                // Append the actual file under the field name Multer expects
-                payload.append('profileImage', imageFile);
-
-                response = await fetch(url, { method, body: payload });
-            } else {
-                // ── No new file — send as JSON ──
-                const body = { ...formData };
-                delete body.profileImageFile;
-
-                // Safeguard: ensure profileImage is a plain string
-                if (body.profileImage && typeof body.profileImage === 'object') {
-                    body.profileImage = body.profileImage.url || body.profileImage.profileImage || '';
-                }
-
-                response = await fetch(url, {
-                    method,
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(body),
-                });
+                data.append('profileImage', imageFile);
             }
 
-            const data = await response.json();
-            if (data.success) {
+            const response = await fetch(url, {
+                method,
+                body: data, // Browser automatically sets multipart/form-data and boundary
+            });
+
+            const responseData = await response.json();
+            if (responseData.success) {
                 fetchEmployees();
                 setIsFormOpen(false);
                 setEditingEmployee(null);
@@ -132,7 +123,7 @@ const EmployeeList = () => {
                     'success'
                 );
             } else {
-                showToast(data.message || 'Operation failed', 'error');
+                showToast(responseData.message || 'Operation failed', 'error');
             }
         } catch (error) {
             console.error('Error saving employee:', error);
@@ -407,7 +398,7 @@ const EmployeeList = () => {
                         </table>
                     </div>
                 )}
-                
+
                 {/* Pagination */}
                 {!loading && filteredEmployees.length > 0 && (
                     <Pagination
