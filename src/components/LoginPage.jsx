@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import illustration from '../assets/auth-illustration.png';
@@ -12,18 +12,17 @@ const LoginPage = () => {
     const { login } = useAuth();
     const { showToast } = useToast();
     const navigate = useNavigate();
-    const location = useLocation();
-
-    const from = location.state?.from?.pathname || '/';
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
 
         try {
-            await login(email, password);
-            showToast('Welcome back!', 'success');
-            navigate(from, { replace: true });
+            const result = await login(email, password);
+            if (result) {
+                showToast('Welcome back!', 'success');
+                window.location.href = '/';
+            }
         } catch (err) {
             showToast(err.message || 'Invalid credentials', 'error');
         } finally {

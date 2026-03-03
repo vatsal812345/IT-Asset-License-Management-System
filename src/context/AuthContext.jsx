@@ -31,14 +31,25 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       const response = await api.post('/auth/login', { email, password });
-      const { token, user: userData } = response.data;
+      
+      // Check if response contains an error code
+      if (response.data.code && response.data.code !== 200) {
+        throw new Error(response.data.msg || response.data.message || 'Login failed');
+      }
+      
+      const { token, _id, email: userEmail, role, ...rest } = response.data;
+      const userData = { _id, email: userEmail, role, ...rest };
+
+      if (!token) {
+        throw new Error('No token received from server');
+      }
 
       localStorage.setItem('auth_token', token);
       localStorage.setItem('auth_user', JSON.stringify(userData));
       setUser(userData);
       return userData;
     } catch (error) {
-      throw new Error(error.response?.data?.message || 'Invalid email or password');
+      throw new Error(error.response?.data?.msg || error.response?.data?.message || error.message || 'Invalid email or password');
     }
   };
 
