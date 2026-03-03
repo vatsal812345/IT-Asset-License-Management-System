@@ -276,11 +276,11 @@ const AssetList = () => {
 
     const getStatusColor = (status) => {
         switch (status) {
-            case 'Available': return 'bg-green-100 text-green-700 border border-green-200';
-            case 'Assigned': return 'bg-blue-100 text-blue-700 border border-blue-200';
-            case 'Under Repair': return 'bg-orange-100 text-orange-700 border border-orange-200';
-            case 'Retired': return 'bg-red-100 text-red-700 border border-red-200';
-            default: return 'bg-gray-100 text-gray-700 border border-gray-200';
+            case 'Available': return 'bg-emerald-50 text-emerald-700 border-emerald-100';
+            case 'Assigned': return 'bg-indigo-50 text-indigo-700 border-indigo-100';
+            case 'Under Repair': return 'bg-amber-50 text-amber-700 border-amber-100';
+            case 'Retired': return 'bg-rose-50 text-rose-700 border-rose-100';
+            default: return 'bg-slate-50 text-slate-700 border-slate-100';
         }
     };
 
@@ -327,34 +327,38 @@ const AssetList = () => {
     const currentAssets = filteredAssets.slice(startIndex, endIndex);
 
     return (
-        <div className="p-4 md:p-8">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div className="p-8 animate-fade-in-up">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Assets Inventory</h1>
-                    <p className="text-gray-500 mt-1">Manage all your hardware and software assets.</p>
+                    <div className="flex items-center gap-2 mb-2">
+                        <div className="w-6 h-1 bg-brand-primary rounded-full"></div>
+                        <span className="text-brand-primary font-bold text-[10px] uppercase tracking-widest">Global Inventory</span>
+                    </div>
+                    <h1 className="text-4xl font-black text-slate-900 tracking-tight">Assets Management</h1>
+                    <p className="text-slate-500 font-medium mt-1">Enterprise-grade tracking for all managed hardware resources.</p>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
                     <button
                         onClick={handleExportCSV}
                         disabled={isExporting || filteredAssets.length === 0}
-                        className="flex items-center justify-center space-x-2 bg-white border-2 border-emerald-500 text-emerald-600 px-5 py-2.5 rounded-xl font-medium shadow-sm hover:bg-emerald-50 hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex items-center justify-center space-x-2 bg-white border border-slate-200 text-slate-600 px-6 py-3 rounded-2xl font-bold text-sm shadow-premium hover:shadow-hover hover:-translate-y-1 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed group"
                     >
                         {isExporting ? (
                             <Loader className="w-5 h-5 animate-spin" />
                         ) : (
-                            <Download className="w-5 h-5" />
+                            <Download className="w-5 h-5 group-hover:scale-110 transition-transform" />
                         )}
-                        <span>{isExporting ? 'Exporting...' : 'Export CSV'}</span>
+                        <span>{isExporting ? 'Generating...' : 'Export Data'}</span>
                     </button>
                     <button
                         onClick={() => {
                             setEditingAsset(null);
                             setIsFormOpen(true);
                         }}
-                        className="flex items-center space-x-2 bg-linear-to-r from-blue-600 to-blue-500 text-white px-5 py-2.5 rounded-xl font-medium shadow-lg shadow-blue-200 hover:shadow-blue-300 hover:scale-105 transition-all duration-200 active:scale-95 w-full md:w-auto justify-center"
+                        className="flex items-center space-x-2 bg-brand-primary text-white px-6 py-3 rounded-2xl font-bold text-sm shadow-premium shadow-indigo-200 hover:shadow-hover hover:-translate-y-1 hover:scale-[1.02] transition-all duration-300 active:scale-95 w-full md:w-auto justify-center group"
                     >
-                        <Plus className="w-5 h-5" />
-                        <span>Add New Asset</span>
+                        <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
+                        <span>Register New Asset</span>
                     </button>
                 </div>
             </div>

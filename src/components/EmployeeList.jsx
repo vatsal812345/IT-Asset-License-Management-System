@@ -162,11 +162,11 @@ const EmployeeList = () => {
 
     const getStatusColor = (status) => {
         switch (status) {
-            case 'Active': return 'bg-emerald-100 text-emerald-700 border-emerald-200';
-            case 'Inactive': return 'bg-amber-100 text-amber-700 border-amber-200';
-            case 'On Leave': return 'bg-blue-100 text-blue-700 border-blue-200';
-            case 'Terminated': return 'bg-red-100 text-red-700 border-red-200';
-            default: return 'bg-gray-100 text-gray-700 border-gray-200';
+            case 'Active': return 'bg-emerald-50 text-emerald-700 border-emerald-100';
+            case 'Inactive': return 'bg-slate-50 text-slate-700 border-slate-100';
+            case 'On Leave': return 'bg-amber-50 text-amber-700 border-amber-100';
+            case 'Terminated': return 'bg-rose-50 text-rose-700 border-rose-100';
+            default: return 'bg-slate-50 text-slate-700 border-slate-100';
         }
     };
 
@@ -204,59 +204,63 @@ const EmployeeList = () => {
     const departments = ['All', ...new Set(employees.map(emp => emp.department))];
 
     return (
-        <div className="p-4 md:p-8 bg-gray-50/30 min-h-screen">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div className="p-8 bg-gray-50/30 min-h-screen animate-fade-in-up">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
                 <div>
-                    <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Organization Employees</h1>
-                    <p className="text-gray-500 mt-1 font-medium">Manage and track all employees within the organization.</p>
+                    <div className="flex items-center gap-2 mb-2">
+                        <div className="w-6 h-1 bg-brand-primary rounded-full"></div>
+                        <span className="text-brand-primary font-bold text-[10px] uppercase tracking-widest">Human Capital</span>
+                    </div>
+                    <h1 className="text-4xl font-black text-slate-900 tracking-tight">Organization Talent</h1>
+                    <p className="text-slate-500 font-medium mt-1">Manage and monitor organization personnel resources.</p>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
                     <button
                         onClick={handleExportCSV}
                         disabled={isExporting || filteredEmployees.length === 0}
-                        className="flex items-center justify-center space-x-2 bg-white border-2 border-emerald-500 text-emerald-600 px-6 py-3 rounded-2xl font-bold shadow-sm hover:bg-emerald-50 hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex items-center justify-center space-x-2 bg-white border border-slate-200 text-slate-600 px-6 py-3 rounded-2xl font-bold text-sm shadow-premium hover:shadow-hover hover:-translate-y-1 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed group"
                     >
                         {isExporting ? (
                             <Loader className="w-5 h-5 animate-spin" />
                         ) : (
-                            <Download className="w-5 h-5" />
+                            <Download className="w-5 h-5 group-hover:scale-110 transition-transform" />
                         )}
-                        <span>{isExporting ? 'Exporting...' : 'Export CSV'}</span>
+                        <span>{isExporting ? 'Generating...' : 'Export Data'}</span>
                     </button>
                     <button
                         onClick={() => {
                             setEditingEmployee(null);
                             setIsFormOpen(true);
                         }}
-                        className="flex items-center space-x-2 bg-linear-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-2xl font-bold shadow-xl shadow-blue-100 hover:shadow-blue-200 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 w-full md:w-auto justify-center"
+                        className="flex items-center space-x-2 bg-brand-primary text-white px-6 py-3 rounded-2xl font-bold text-sm shadow-premium shadow-indigo-200 hover:shadow-hover hover:-translate-y-1 transition-all duration-300 w-full md:w-auto justify-center group"
                     >
-                        <Plus className="w-5 h-5" />
+                        <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
                         <span>Add New Employee</span>
                     </button>
                 </div>
             </div>
 
             {/* Filters */}
-            <div className="bg-white p-4 rounded-3xl shadow-sm border border-gray-100 mb-6 flex flex-col md:flex-row gap-4 items-center justify-between px-6">
+            <div className="bg-white p-4 rounded-3xl shadow-sm border border-slate-100 mb-8 flex flex-col md:flex-row gap-6 items-center justify-between px-8">
                 <div className="relative w-full md:w-96 group">
-                    <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-300 w-5 h-5 group-focus-within:text-blue-500 transition-colors" />
+                    <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-300 w-5 h-5 group-focus-within:text-brand-primary transition-colors" />
                     <input
                         type="text"
                         placeholder="Search by ID, name, or email..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all duration-300 font-medium text-gray-800 placeholder:text-gray-300"
+                        className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-transparent rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-100 focus:border-brand-primary outline-none transition-all duration-300 font-medium text-slate-800 placeholder:text-slate-300"
                     />
                 </div>
-                <div className="flex items-center space-x-3 w-full md:w-auto">
-                    <div className="flex items-center space-x-2 text-gray-400 px-2">
-                        <Filter className="w-5 h-5" />
+                <div className="flex items-center space-x-4 w-full md:w-auto">
+                    <div className="flex items-center space-x-2 text-slate-400 px-2">
+                        <Filter className="w-5 h-5 text-indigo-400" />
                         <span className="text-xs font-bold uppercase tracking-widest">Department</span>
                     </div>
                     <select
                         value={deptFilter}
                         onChange={(e) => setDeptFilter(e.target.value)}
-                        className="px-4 py-3 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none cursor-pointer transition-all duration-300 font-medium text-gray-800 min-w-[160px]"
+                        className="px-6 py-3.5 bg-slate-50 border border-transparent rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-100 focus:border-brand-primary outline-none cursor-pointer transition-all duration-300 font-bold text-sm text-slate-700 min-w-[180px]"
                     >
                         {departments.map(dept => (
                             <option key={dept} value={dept}>{dept}</option>

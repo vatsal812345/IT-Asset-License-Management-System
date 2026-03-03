@@ -45,18 +45,21 @@ import AssetForm from './AssetForm';
 const StatCard = ({ title, value, icon: Icon, color, onClick }) => (
   <div 
     onClick={onClick}
-    className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-5 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 cursor-pointer group relative overflow-hidden"
+    className="bg-white p-8 rounded-3xl shadow-premium border border-slate-50 flex flex-col gap-6 transition-all duration-500 hover:shadow-hover hover:-translate-y-2 cursor-pointer group relative overflow-hidden"
   >
-    <div className={`p-4 rounded-full ${color.bg} shadow-sm group-hover:scale-110 transition-transform duration-300`}>
+    <div className="absolute top-0 right-0 w-32 h-32 bg-linear-to-br from-indigo-50/50 to-transparent rounded-full -mr-16 -mt-16 transition-transform duration-700 group-hover:scale-150"></div>
+    
+    <div className={`w-14 h-14 rounded-2xl ${color.bg} flex items-center justify-center shadow-sm group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 relative z-10`}>
       <Icon className={`w-7 h-7 ${color.text}`} />
     </div>
     
-    <div>
-      <p className="text-gray-400 text-xs font-bold uppercase tracking-wider">{title}</p>
-      <p className="text-3xl font-extrabold text-gray-800 mt-1 tracking-tight group-hover:text-gray-900">{value}</p>
+    <div className="relative z-10">
+      <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">{title}</p>
+      <div className="flex items-baseline gap-2">
+        <p className="text-4xl font-black text-slate-900 tracking-tight group-hover:text-brand-primary transition-colors duration-300">{value}</p>
+        <ArrowUpRight className="w-5 h-5 text-indigo-200 opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0" />
+      </div>
     </div>
-
-    <ArrowUpRight className="absolute top-4 right-4 w-4 h-4 text-gray-300 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 -translate-y-2 group-hover:translate-x-0 group-hover:translate-y-0" />
   </div>
 );
 
@@ -209,12 +212,17 @@ const Dashboard = () => {
     }
 
     return (
-        <div className="p-4 md:p-8 bg-gray-50/50 min-h-screen">
-            <header className="mb-10">
-                <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Dashboard</h1>
+        <div className="p-8 bg-gray-50/50 min-h-screen animate-fade-in-up">
+            <header className="mb-12">
+                <div className="flex items-center gap-3 mb-2">
+                   <div className="w-8 h-1 bg-brand-primary rounded-full"></div>
+                   <h2 className="text-brand-primary font-bold text-xs uppercase tracking-[0.2em]">System Overview</h2>
+                </div>
+                <h1 className="text-4xl font-black text-slate-900 tracking-tight">IT Asset & License Management System </h1>
+                <p className="text-slate-500 font-medium mt-1 uppercase text-[10px] tracking-widest">Real-time IT Asset Intelligence & Monitoring</p>
             </header>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-10">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-12">
                 {statCards.map((stat, index) => (
                     <div key={index} className="animate-slide-up" style={{ animationDelay: `${index * 0.1}s` }}>
                         <StatCard {...stat} onClick={() => stat.title.includes('License') || stat.title === 'Expiring Soon' ? navigate('/licenses') : handleCardClick(stat.title)} />
@@ -363,58 +371,79 @@ const Dashboard = () => {
                                 const total = license.totalSeats || 1;
                                 const percentage = Math.round((used / total) * 100);
                                 
-                                // Color indicators
-                                let barColor = '#3b82f6'; // blue
-                                let bgColor = 'bg-blue-50';
-                                if (percentage > 90) {
-                                    barColor = '#ef4444'; // red
-                                    bgColor = 'bg-red-50';
-                                } else if (percentage > 70) {
-                                    barColor = '#f59e0b'; // orange
-                                    bgColor = 'bg-amber-50';
-                                } else {
-                                    barColor = '#10b981'; // green
-                                    bgColor = 'bg-emerald-50';
+                                // Enhanced Color and Gradient Logic
+                                let gradientClass = 'from-emerald-400 to-teal-500';
+                                let badgeClass = 'bg-emerald-50 text-emerald-700 border-emerald-100';
+                                let glowColor = 'rgba(16, 185, 129, 0.4)';
+                                
+                                if (percentage > 80) {
+                                    gradientClass = 'from-rose-500 to-red-600';
+                                    badgeClass = 'bg-red-50 text-red-700 border-red-100';
+                                    glowColor = 'rgba(239, 68, 68, 0.4)';
+                                } else if (percentage > 60) {
+                                    gradientClass = 'from-amber-400 to-orange-500';
+                                    badgeClass = 'bg-amber-50 text-amber-700 border-amber-100';
+                                    glowColor = 'rgba(245, 158, 11, 0.4)';
                                 }
 
                                 return (
-                                    <div key={license._id} className="p-4 rounded-xl border border-gray-50 hover:border-blue-100 hover:shadow-md transition-all duration-300 group">
-                                        <div className="flex justify-between items-start mb-3">
+                                    <div 
+                                        key={license._id} 
+                                        className="p-5 rounded-2xl border border-slate-50 hover:border-indigo-100 hover:shadow-xl hover:scale-[1.02] transition-all duration-500 group relative bg-white overflow-hidden"
+                                    >
+                                        <div className="flex justify-between items-start mb-4 relative z-10">
                                             <div>
-                                                <p className="text-sm font-extrabold text-gray-800 group-hover:text-blue-600 transition-colors">{license.softwareName}</p>
-                                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{license.vendor}</p>
+                                                <h3 className="text-sm font-black text-slate-800 group-hover:text-indigo-600 transition-colors duration-300 flex items-center gap-2">
+                                                    {license.softwareName}
+                                                </h3>
+                                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.15em] mt-0.5">{license.vendor}</p>
                                             </div>
-                                            <div className={`px-2 py-1 rounded-md ${bgColor} border border-opacity-50 flex items-center gap-1`}>
-                                                <span className="text-[10px] font-bold text-gray-700">{percentage}% USED</span>
+                                            <div className={`px-3 py-1 rounded-full border ${badgeClass} text-[10px] font-black tracking-wider shadow-sm animate-pulse-subtle`}>
+                                                {percentage}% USED
                                             </div>
                                         </div>
                                         
-                                        <div className="relative pt-1">
-                                    <div className="flex mb-2 items-center justify-between">
+                                        <div className="relative pt-1 z-10">
+                                            <div className="flex mb-2.5 items-center justify-between">
                                                 <div>
-                                                    <span className="text-[10px] font-bold inline-block py-1 px-2 uppercase rounded-full text-blue-600 bg-blue-50">
-                                                        Utilization
+                                                    <span className="text-[9px] font-black inline-block py-1 px-2.5 uppercase rounded-full text-indigo-600 bg-indigo-50/50 border border-indigo-100/50 tracking-widest">
+                                                        UTILIZATION
                                                     </span>
                                                 </div>
                                                 <div className="text-right">
-                                                    <span className="text-[10px] font-bold inline-block text-gray-600">
-                                                        {used} / {total} Seats
+                                                    <span className="text-[11px] font-black text-slate-600">
+                                                        {used} <span className="text-slate-300 mx-0.5">/</span> {total} <span className="text-[9px] text-slate-400 uppercase tracking-tighter ml-0.5 font-bold">Seats</span>
                                                     </span>
                                                 </div>
                                             </div>
-                                            <div className="overflow-hidden h-2 mb-1 text-xs flex rounded-full bg-gray-100 border border-gray-50">
+                                            
+                                            <div className="relative h-3 w-full bg-slate-100 rounded-full overflow-hidden border border-slate-50 shadow-inner">
+                                                {/* Animated Bar */}
                                                 <div 
-                                                    style={{ width: `${percentage}%`, backgroundColor: barColor }} 
-                                                    className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center transition-all duration-1000 ease-out"
-                                                ></div>
+                                                    style={{ 
+                                                        width: `${percentage}%`,
+                                                        boxShadow: `0 0 15px ${glowColor}`
+                                                    }} 
+                                                    className={`absolute top-0 left-0 h-full bg-linear-to-r ${gradientClass} rounded-full transition-all duration-1000 ease-in-out group-hover:brightness-110`}
+                                                >
+                                                    {/* Shimmer Effect */}
+                                                    <div className="absolute inset-0 w-full h-full bg-size-[30px_30px] bg-linear-to-r from-transparent via-white/20 to-transparent animate-shimmer"></div>
+                                                    
+                                                    {/* Striped pattern overlay */}
+                                                    <div className="absolute inset-0 opacity-20 bg-[linear-gradient(45deg,rgba(255,255,255,.15)_25%,transparent_25%,transparent_50%,rgba(255,255,255,.15)_50%,rgba(255,255,255,.15)_75%,transparent_75%,transparent)] bg-size-[1rem_1rem]"></div>
+                                                </div>
                                             </div>
                                         </div>
+                                        
+                                        {/* Background Decoration */}
+                                        <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-slate-50 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-700 scale-0 group-hover:scale-150 z-0"></div>
                                     </div>
                                 );
                             })
                         ) : (
-                            <div className="text-center py-12 text-gray-400">
-                                No license data available.
+                            <div className="text-center py-16 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                                <ShieldAlert className="w-10 h-10 text-slate-300 mx-auto mb-3 opacity-50" />
+                                <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">No Active Licenses</p>
                             </div>
                         )}
                     </div>
@@ -515,26 +544,26 @@ const Dashboard = () => {
                                 const timeAgo = new Date(activity.updatedAt).toLocaleString();
 
                                 return (
-                                    <div key={activity._id} className="flex gap-4 p-4 rounded-xl hover:bg-gray-50 transition-all border border-transparent hover:border-gray-100 group animate-slide-up" style={{ animationDelay: `${index * 0.05}s` }}>
-                                        <div className={`w-12 h-12 rounded-xl overflow-hidden flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 transition-transform ${activity.image ? 'border border-gray-100' : iconColor}`}>
+                                    <div key={activity._id} className="flex gap-4 p-5 rounded-2xl hover:bg-white hover:shadow-premium transition-all duration-300 border border-transparent hover:border-slate-50 group animate-slide-up" style={{ animationDelay: `${index * 0.05}s` }}>
+                                        <div className={`w-14 h-14 rounded-2xl overflow-hidden flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 transition-transform duration-500 ${activity.image ? 'p-0.5 bg-slate-50' : iconColor}`}>
                                             {activity.image ? (
-                                                <img src={activity.image} alt={activity.name} className="w-full h-full object-cover" />
+                                                <img src={activity.image} alt={activity.name} className="w-full h-full object-cover rounded-xl" />
                                             ) : (
                                                 <Icon className="w-6 h-6" />
                                             )}
                                         </div>
                                         <div className="flex-1">
                                             <div className="flex justify-between items-start">
-                                                <h4 className="text-sm font-bold text-gray-800">{typeLabel}</h4>
-                                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1">
-                                                    <Clock className="w-3 h-3" />
+                                                <h4 className="text-sm font-bold text-slate-800 mb-1 group-hover:text-brand-primary transition-colors">{typeLabel}</h4>
+                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                                                    <Clock className="w-3 h-3 text-indigo-400" />
                                                     {timeAgo}
                                                 </span>
                                             </div>
-                                            <p className="text-sm text-gray-500 mt-1">{actionMessage}</p>
-                                            <div className="mt-2 flex items-center gap-2">
-                                                <span className="text-[10px] font-mono bg-white border border-gray-100 px-2 py-0.5 rounded text-gray-400">{activity.assetTag}</span>
-                                                <span className="text-[10px] font-bold text-blue-500 hover:underline cursor-pointer" onClick={(e) => { e.stopPropagation(); navigate(`/assets/${activity._id}`); }}>View Details</span>
+                                            <p className="text-sm text-slate-500 line-clamp-1">{actionMessage}</p>
+                                            <div className="mt-3 flex items-center gap-3">
+                                                <span className="text-[10px] font-bold bg-slate-50 text-slate-500 px-2.5 py-1 rounded-lg uppercase tracking-wider">{activity.assetTag}</span>
+                                                <button onClick={(e) => { e.stopPropagation(); navigate(`/assets/${activity._id}`); }} className="text-[10px] font-bold text-brand-primary hover:tracking-widest transition-all duration-300 uppercase">View Record →</button>
                                             </div>
                                         </div>
                                     </div>
@@ -601,6 +630,20 @@ const Dashboard = () => {
                 }
                 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
                     background: #cbd5e1;
+                }
+                @keyframes shimmer {
+                    0% { transform: translateX(-100%); }
+                    100% { transform: translateX(100%); }
+                }
+                .animate-shimmer {
+                    animation: shimmer 2s infinite linear;
+                }
+                @keyframes pulse-subtle {
+                    0%, 100% { transform: scale(1); opacity: 1; }
+                    50% { transform: scale(1.05); opacity: 0.9; }
+                }
+                .animate-pulse-subtle {
+                    animation: pulse-subtle 3s infinite ease-in-out;
                 }
                 @keyframes slide-up {
                     from { opacity: 0; transform: translateY(20px); }

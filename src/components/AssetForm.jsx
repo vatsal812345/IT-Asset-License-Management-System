@@ -72,20 +72,24 @@ const AssetForm = ({ isOpen, onClose, onSubmit, initialData }) => {
   const CategoryIcon = selectedCategory ? selectedCategory.icon : Box;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-md p-4 animate-fade-in">
-      <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl max-h-[95vh] overflow-hidden animate-scale-in border border-gray-100 flex flex-col">
-        <div className="flex items-center justify-between p-8 border-b border-gray-50 bg-gray-50/30 flex-shrink-0">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-md p-4 animate-fade-in">
+      <div className="bg-white/95 backdrop-blur-xl rounded-[2.5rem] shadow-premium w-full max-w-2xl max-h-[95vh] overflow-hidden animate-scale-in border border-white/50 flex flex-col">
+        <div className="flex items-center justify-between p-8 border-b border-slate-100 bg-slate-50/50 backdrop-blur-sm shrink-0">
           <div>
-            <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">
-              {initialData ? 'Edit Asset' : 'Add New Asset'}
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-2 h-2 bg-brand-primary rounded-full animate-pulse"></div>
+              <span className="text-brand-primary font-bold text-[10px] uppercase tracking-widest leading-none">Resource Tracking</span>
+            </div>
+            <h2 className="text-3xl font-black text-slate-900 tracking-tight leading-tight">
+              {initialData ? 'Refine Asset' : 'Register New Asset'}
             </h2>
-            <p className="text-sm text-gray-500 mt-1 font-medium">Please fill in the details below to {initialData ? 'update' : 'create'} the asset.</p>
+            <p className="text-sm text-slate-500 mt-1 font-medium">Capture essential hardware details for enterprise inventory.</p>
           </div>
           <button
             onClick={onClose}
-            className="p-2.5 hover:bg-gray-100 rounded-2xl transition-all duration-200 group border border-transparent hover:border-gray-200"
+            className="p-3 hover:bg-slate-100/80 rounded-2xl transition-all duration-300 group border border-transparent hover:border-slate-200"
           >
-            <X className="w-5 h-5 text-gray-400 group-hover:text-gray-900" />
+            <X className="w-5 h-5 text-slate-400 group-hover:text-slate-900" />
           </button>
         </div>
 
@@ -239,19 +243,20 @@ const AssetForm = ({ isOpen, onClose, onSubmit, initialData }) => {
             </div>
           </div>
 
-          <div className="flex items-center justify-end space-x-4 p-6 border-t border-gray-100 bg-gray-50/30 flex-shrink-0">
+          <div className="flex items-center justify-end space-x-4 p-8 border-t border-slate-100 bg-slate-50/50 backdrop-blur-sm shrink-0">
             <button
               type="button"
               onClick={onClose}
-              className="px-8 py-3.5 rounded-2xl text-gray-500 font-bold text-sm hover:bg-gray-100 hover:text-gray-900 transition-all duration-300"
+              className="px-8 py-3.5 rounded-2xl text-slate-500 font-bold text-sm hover:bg-slate-100 hover:text-slate-900 transition-all duration-300"
             >
-              Cancel
+              Discard
             </button>
             <button
               type="submit"
-              className="px-8 py-3.5 rounded-2xl bg-linear-to-r from-blue-600 to-indigo-600 text-white font-bold text-sm shadow-xl shadow-blue-100 hover:shadow-blue-200 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-10 py-3.5 rounded-2xl bg-brand-primary text-white font-bold text-sm shadow-premium shadow-indigo-100 hover:shadow-hover hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed group flex items-center gap-2"
             >
-              {initialData ? 'Update Asset' : 'Save Asset'}
+              <span>{initialData ? 'Update Asset' : 'Register Asset'}</span>
+              <Check className="w-4 h-4 group-hover:scale-125 transition-transform" />
             </button>
           </div>
         </form>

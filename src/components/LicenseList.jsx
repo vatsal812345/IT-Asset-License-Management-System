@@ -158,10 +158,10 @@ const LicenseList = () => {
 
     const getStatusColor = (status) => {
         switch (status) {
-            case 'Active': return 'bg-emerald-100 text-emerald-700 border-emerald-200';
-            case 'Expired': return 'bg-red-100 text-red-700 border-red-200';
-            case 'Suspended': return 'bg-amber-100 text-amber-700 border-amber-200';
-            default: return 'bg-gray-100 text-gray-700 border-gray-200';
+            case 'Active': return 'bg-emerald-50 text-emerald-700 border-emerald-100';
+            case 'Expired': return 'bg-rose-50 text-rose-700 border-rose-100';
+            case 'Suspended': return 'bg-amber-50 text-amber-700 border-amber-100';
+            default: return 'bg-slate-50 text-slate-700 border-slate-100';
         }
     };
 
@@ -225,51 +225,55 @@ const LicenseList = () => {
     };
 
     return (
-        <div className="p-4 md:p-8 bg-gray-50/30 min-h-screen">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div className="p-8 bg-gray-50/30 min-h-screen animate-fade-in-up">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
                 <div>
-                    <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Software Licenses</h1>
-                    <p className="text-gray-500 mt-1 font-medium">Manage and track software license utilization across the organization.</p>
+                    <div className="flex items-center gap-2 mb-2">
+                        <div className="w-6 h-1 bg-brand-primary rounded-full"></div>
+                        <span className="text-brand-primary font-bold text-[10px] uppercase tracking-widest">Digital Assets</span>
+                    </div>
+                    <h1 className="text-4xl font-black text-slate-900 tracking-tight">Software Licenses</h1>
+                    <p className="text-slate-500 font-medium mt-1">Enterprise license compliance and utilization monitoring.</p>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
                     <button
                         onClick={handleExportCSV}
                         disabled={isExporting || filteredLicenses.length === 0}
-                        className="flex items-center justify-center space-x-2 bg-white border-2 border-emerald-500 text-emerald-600 px-6 py-3 rounded-2xl font-bold shadow-sm hover:bg-emerald-50 hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex items-center justify-center space-x-2 bg-white border border-slate-200 text-slate-600 px-6 py-3 rounded-2xl font-bold text-sm shadow-premium hover:shadow-hover hover:-translate-y-1 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed group"
                     >
                         {isExporting ? (
                             <Loader className="w-5 h-5 animate-spin" />
                         ) : (
-                            <Download className="w-5 h-5" />
+                            <Download className="w-5 h-5 group-hover:scale-110 transition-transform" />
                         )}
-                        <span>{isExporting ? 'Exporting...' : 'Export CSV'}</span>
+                        <span>{isExporting ? 'Generating...' : 'Export Data'}</span>
                     </button>
                     <button
                         onClick={() => navigate('/licenses/register')}
-                        className="flex items-center space-x-2 bg-linear-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-2xl font-bold shadow-xl shadow-blue-100 hover:shadow-blue-200 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 w-full md:w-auto justify-center"
+                        className="flex items-center space-x-2 bg-brand-primary text-white px-6 py-3 rounded-2xl font-bold text-sm shadow-premium shadow-indigo-200 hover:shadow-hover hover:-translate-y-1 transition-all duration-300 w-full md:w-auto justify-center group"
                     >
-                        <Plus className="w-5 h-5" />
-                        <span>Add New License</span>
+                        <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
+                        <span>Register License</span>
                     </button>
                 </div>
             </div>
 
             {/* Stats Overview */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
                 {[
-                    { label: 'Total Licenses', value: licenses.length, icon: ShieldCheck, color: 'text-blue-600', bg: 'bg-blue-50' },
+                    { label: 'Total Licenses', value: licenses.length, icon: ShieldCheck, color: 'text-indigo-600', bg: 'bg-indigo-50' },
                     { label: 'Active Seats', value: licenses.reduce((acc, curr) => acc + (curr.totalSeats - (curr.usedSeats || 0)), 0), icon: Users, color: 'text-emerald-600', bg: 'bg-emerald-50' },
                     { label: 'Expiring Soon', value: licenses.filter(l => new Date(l.expiryDate) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)).length, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50' },
                     { label: 'Avg utilization', value: `${Math.round(licenses.reduce((acc, curr) => acc + ((curr.usedSeats || 0) / curr.totalSeats * 100), 0) / (licenses.length || 1))}%`, icon: BarChart3, color: 'text-purple-600', bg: 'bg-purple-50' },
                 ].map((stat, i) => (
-                    <div key={i} className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                    <div key={i} className="bg-white p-6 rounded-3xl border border-slate-50 shadow-premium hover:shadow-hover transition-all duration-500 hover:-translate-y-1 group">
                         <div className="flex items-center justify-between mb-4">
-                            <div className={`p-3 rounded-2xl ${stat.bg} ${stat.color}`}>
+                            <div className={`p-3 rounded-2xl ${stat.bg} ${stat.color} group-hover:scale-110 transition-transform duration-500`}>
                                 <stat.icon className="w-6 h-6" />
                             </div>
                         </div>
-                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">{stat.label}</p>
-                        <p className="text-2xl font-extrabold text-gray-900 mt-1">{stat.value}</p>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">{stat.label}</p>
+                        <p className="text-3xl font-black text-slate-900 mt-1 tracking-tight">{stat.value}</p>
                     </div>
                 ))}
             </div>

@@ -46,26 +46,26 @@ const EmployeeForm = ({ isOpen, onClose, onSubmit, initialData }) => {
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm animate-fade-in">
-            <div className="bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl overflow-hidden border border-gray-100 animate-scale-up">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-md p-4 animate-fade-in">
+            <div className="bg-white/95 backdrop-blur-xl rounded-[2.5rem] shadow-premium w-full max-w-2xl max-h-[95vh] overflow-hidden animate-scale-in border border-white/50 flex flex-col">
                 {/* Header */}
-                <div className="p-8 pb-4 relative">
+                <div className="flex items-center justify-between p-8 border-b border-slate-100 bg-slate-50/50 backdrop-blur-sm shrink-0">
+                    <div>
+                        <div className="flex items-center gap-2 mb-1">
+                            <div className="w-2 h-2 bg-brand-primary rounded-full animate-pulse"></div>
+                            <span className="text-brand-primary font-bold text-[10px] uppercase tracking-widest leading-none">Human Resources</span>
+                        </div>
+                        <h2 className="text-3xl font-black text-slate-900 tracking-tight leading-tight">
+                            {initialData ? 'Refine Employee' : 'Onboard Talent'}
+                        </h2>
+                        <p className="text-sm text-slate-500 mt-1 font-medium">Capture essential personnel details for organizational records.</p>
+                    </div>
                     <button
                         onClick={onClose}
-                        className="absolute right-8 top-8 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-all"
+                        className="p-3 hover:bg-slate-100/80 rounded-2xl transition-all duration-300 group border border-transparent hover:border-slate-200"
                     >
-                        <X className="w-6 h-6" />
+                        <X className="w-5 h-5 text-slate-400 group-hover:text-slate-900" />
                     </button>
-                    <div className="flex items-center space-x-3 mb-2">
-                        <div className="p-2 bg-blue-50 rounded-xl">
-                            <User className="w-5 h-5 text-blue-600" />
-                        </div>
-                        <span className="text-xs font-bold text-blue-600 uppercase tracking-widest">HR Management</span>
-                    </div>
-                    <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">
-                        {initialData ? 'Update Employee' : 'Add New Employee'}
-                    </h2>
-                    <p className="text-gray-500 mt-1 font-medium">Enter employee details to maintain your organization records.</p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-8 pt-4 space-y-6 overflow-y-auto max-h-[70vh]">
@@ -226,20 +226,20 @@ const EmployeeForm = ({ isOpen, onClose, onSubmit, initialData }) => {
                     </div>
 
                     {/* Footer */}
-                    <div className="flex items-center justify-end space-x-4 pt-4">
+                    <div className="flex items-center justify-end space-x-4 p-8 border-t border-slate-100 bg-slate-50/50 backdrop-blur-sm shrink-0">
                         <button
                             type="button"
                             onClick={onClose}
-                            className="px-8 py-3.5 bg-white text-gray-500 rounded-2xl font-bold text-sm hover:bg-gray-50 transition-all border border-gray-100"
+                            className="px-8 py-3.5 rounded-2xl text-slate-500 font-bold text-sm hover:bg-slate-100 hover:text-slate-900 transition-all duration-300"
                         >
-                            Cancel
+                            Discard
                         </button>
                         <button
                             type="submit"
-                            className="px-10 py-3.5 bg-linear-to-r from-blue-600 to-indigo-600 text-white rounded-2xl font-bold text-sm shadow-xl shadow-blue-100 hover:shadow-blue-200 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2"
+                            className="px-10 py-3.5 rounded-2xl bg-brand-primary text-white font-bold text-sm shadow-premium shadow-indigo-100 hover:shadow-hover hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 group flex items-center gap-2"
                         >
-                            <CheckCircle2 className="w-5 h-5" />
-                            <span>{initialData ? 'Update Employee' : 'Create Employee'}</span>
+                            <span>{initialData ? 'Update Record' : 'Onboard Employee'}</span>
+                            <CheckCircle2 className="w-4 h-4 group-hover:scale-125 transition-transform" />
                         </button>
                     </div>
                 </form>
