@@ -33,7 +33,9 @@ const Layout = () => {
 
   const getInitials = (name) => {
     if (!name) return 'AD';
-    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+    const parts = name.trim().split(/\s+/);
+    if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
   };
 
   return (

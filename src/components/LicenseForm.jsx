@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Calendar, Hash, Tag, Globe, Package } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 
 const LicenseForm = ({ isOpen, onClose, onSubmit, initialData }) => {
     const [formData, setFormData] = useState({

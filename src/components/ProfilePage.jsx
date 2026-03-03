@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import api from '../utils/api';
 
 const ProfilePage = () => {
   const { user, updateProfile } = useAuth();
@@ -13,17 +14,38 @@ const ProfilePage = () => {
     avatar: user?.avatar || '',
   });
 
+  const [counts, setCounts] = useState({ assets: 0, licenses: 0 });
+
   // Sync formData with user context when it updates (critical for persistence across navs)
   React.useEffect(() => {
     if (user) {
       setFormData({
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        avatar: user.avatar,
+        name: user.name || user.fullName || '',
+        email: user.email || '',
+        role: user.role || '',
+        avatar: user.avatar || '',
       });
     }
   }, [user]);
+
+  React.useEffect(() => {
+    const fetchCounts = async () => {
+      try {
+        const statsRes = await api.get('/dashboard/stats');
+        const statsData = statsRes.data;
+        const licensesRes = await api.get('/licenses');
+        const licensesData = licensesRes.data;
+        
+        setCounts({
+          assets: statsData.success ? statsData.data.assets.total : 0,
+          licenses: licensesData.success ? licensesData.data.length : 0
+        });
+      } catch (err) {
+        console.error('Failed to fetch profile stats:', err);
+      }
+    };
+    fetchCounts();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -52,6 +74,25 @@ const ProfilePage = () => {
     } catch (err) {
       showToast(err.message || 'Failed to update profile', 'error');
     }
+  };
+
+  const getOrdinalSuffix = (day) => {
+    if (day > 3 && day < 21) return 'th';
+    switch (day % 10) {
+      case 1:  return "st";
+      case 2:  return "nd";
+      case 3:  return "rd";
+      default: return "th";
+    }
+  };
+
+  const formatMemberSince = (dateString) => {
+    if (!dateString) return 'March 2026';
+    const date = new Date(dateString);
+    const day = date.getDate();
+    const month = date.toLocaleDateString('en-US', { month: 'long' });
+    const year = date.getFullYear();
+    return `${day}${getOrdinalSuffix(day)} ${month} ${year}`;
   };
 
   return (
@@ -112,11 +153,11 @@ const ProfilePage = () => {
               </p>
               <div className="mt-8 pt-8 border-t border-slate-50 flex justify-around">
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-slate-800">12</p>
+                  <p className="text-2xl font-bold text-slate-800">{counts.assets}</p>
                   <p className="text-xs text-slate-400 uppercase tracking-wider font-semibold">Assets</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-slate-800">4</p>
+                  <p className="text-2xl font-bold text-slate-800">{counts.licenses}</p>
                   <p className="text-xs text-slate-400 uppercase tracking-wider font-semibold">Licenses</p>
                 </div>
               </div>
@@ -176,7 +217,9 @@ const ProfilePage = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-slate-600 mb-2 ml-1">Member Since</label>
-                  <p className="px-4 py-3.5 bg-slate-50 text-slate-700 font-medium rounded-xl">January 2024</p>
+                  <p className="px-4 py-3.5 bg-slate-50 text-slate-700 font-medium rounded-xl">
+                    {formatMemberSince(user?.createdAt)}
+                  </p>
                 </div>
               </div>
 

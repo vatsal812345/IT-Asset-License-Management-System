@@ -13,8 +13,9 @@ export const AuthProvider = ({ children }) => {
       if (token) {
         try {
           const response = await api.get('/auth/me');
-          setUser(response.data);
-          localStorage.setItem('auth_user', JSON.stringify(response.data));
+          const userData = { ...response.data, name: response.data.name || response.data.fullName };
+          setUser(userData);
+          localStorage.setItem('auth_user', JSON.stringify(userData));
         } catch (error) {
           console.error('Initial auth check failed:', error);
           localStorage.removeItem('auth_token');
@@ -38,7 +39,7 @@ export const AuthProvider = ({ children }) => {
       }
       
       const { token, _id, email: userEmail, role, ...rest } = response.data;
-      const userData = { _id, email: userEmail, role, ...rest };
+      const userData = { _id, email: userEmail, role, ...rest, name: response.data.name || response.data.fullName };
 
       if (!token) {
         throw new Error('No token received from server');
@@ -101,7 +102,7 @@ export const AuthProvider = ({ children }) => {
   const updateProfile = async (updatedData) => {
     try {
       const response = await api.put('/auth/profile', updatedData);
-      const newUser = response.data;
+      const newUser = { ...response.data, name: response.data.name || response.data.fullName };
       localStorage.setItem('auth_user', JSON.stringify(newUser));
       setUser(newUser);
       return newUser;
