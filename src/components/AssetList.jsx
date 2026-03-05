@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useNotifications } from '../context/NotificationContext';
 import { Search, Plus, Filter, Edit, Trash2, Loader, MoreHorizontal, Eye, UserPlus, RotateCcw, Box, ShieldCheck, ShieldAlert, ShieldX, Clock, Download } from 'lucide-react';
@@ -10,11 +11,13 @@ import Pagination from './Pagination';
 import { getExpiryStatus } from '../utils/warrantyUtils';
 import { exportToCSV, formatDateForCSV } from '../utils/csvExport';
 import getDisplayImageUrl from '../utils/imageUtils';
+import api from '../utils/api';
 
 
 
 const AssetList = () => {
     const navigate = useNavigate();
+    const { user } = useAuth();
     const { showToast } = useToast();
     const { checkItemAndNotify } = useNotifications();
     const [assets, setAssets] = useState([]);
@@ -39,8 +42,8 @@ const AssetList = () => {
     const fetchAssets = async () => {
         setLoading(true);
         try {
-            const response = await fetch('http://localhost:5000/api/assets');
-            const data = await response.json();
+            const response = await api.get('/assets');
+            const data = response.data;
             if (data.success) {
                 console.log('Fetched assets from API:', data.data); // Debug log
                 // Log warranty dates specifically
@@ -104,13 +107,6 @@ const AssetList = () => {
 
     const handleCreateUpdate = async (formData) => {
         try {
-            const url = editingAsset
-                ? `http://localhost:5000/api/assets/${editingAsset._id}`
-                : 'http://localhost:5000/api/assets';
-
-            const method = editingAsset ? 'PUT' : 'POST';
-
-            // Create FormData for multipart/form-data request
             const data = new FormData();
 
             // Store imageFile if it exists and remove it from formData
@@ -156,14 +152,14 @@ const AssetList = () => {
 
             console.log('Sending FormData to backend'); // Debug log
 
-            const response = await fetch(url, {
-                method,
-                // Brownie point: do NOT set Content-Type header when sending FormData, 
-                // the browser will set it automatically with the correct boundary
-                body: data,
-            });
+            let response;
+            if (editingAsset) {
+                response = await api.put(`/assets/${editingAsset._id}`, data);
+            } else {
+                response = await api.post('/assets', data);
+            }
 
-            const responseData = await response.json();
+            const responseData = response.data;
 
             if (responseData.success) {
                 // Close form first
@@ -202,10 +198,8 @@ const AssetList = () => {
 
         setIsDeleting(true);
         try {
-            const response = await fetch(`http://localhost:5000/api/assets/${selectedDeleteAsset._id}`, {
-                method: 'DELETE',
-            });
-            const data = await response.json();
+            const response = await api.delete(`/assets/${selectedDeleteAsset._id}`);
+            const data = response.data;
             if (data.success) {
                 fetchAssets(); // Refresh list
                 setIsDeleteModalOpen(false);
@@ -233,25 +227,13 @@ const AssetList = () => {
         setIsReturning(true);
         const id = selectedReturnAsset._id;
         try {
-            const response = await fetch(`http://localhost:5000/api/assets/${id}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    status: 'Available',
-                    currentAssignedTo: null,
-                    assignedTo: null
-                })
+            const response = await api.put(`/assets/${id}`, {
+                status: 'Available',
+                currentAssignedTo: null,
+                assignedTo: null
             });
 
-            const text = await response.text();
-            let data;
-            try {
-                data = JSON.parse(text);
-            } catch (e) {
-                throw new Error('Invalid server response');
-            }
+            const data = response.data;
 
             if (data.success) {
                 fetchAssets();
@@ -350,16 +332,18 @@ const AssetList = () => {
                         )}
                         <span>{isExporting ? 'Generating...' : 'Export Data'}</span>
                     </button>
-                    <button
-                        onClick={() => {
-                            setEditingAsset(null);
-                            setIsFormOpen(true);
-                        }}
-                        className="flex items-center space-x-2 bg-brand-primary text-white px-6 py-3 rounded-2xl font-bold text-sm shadow-premium shadow-indigo-200 hover:shadow-hover hover:-translate-y-1 hover:scale-[1.02] transition-all duration-300 active:scale-95 w-full md:w-auto justify-center group"
-                    >
-                        <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
-                        <span>Register New Asset</span>
-                    </button>
+                    {['Admin', 'Manager'].includes(user?.role) && (
+                        <button
+                            onClick={() => {
+                                setEditingAsset(null);
+                                setIsFormOpen(true);
+                            }}
+                            className="flex items-center space-x-2 bg-brand-primary text-white px-6 py-3 rounded-2xl font-bold text-sm shadow-premium shadow-indigo-200 hover:shadow-hover hover:-translate-y-1 hover:scale-[1.02] transition-all duration-300 active:scale-95 w-full md:w-auto justify-center group"
+                        >
+                            <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
+                            <span>Register New Asset</span>
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -479,12 +463,12 @@ const AssetList = () => {
                                                     return (
                                                         <span
                                                             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 hover:scale-105 ${warrantyStatus.status === 'active'
-                                                                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
-                                                                    : warrantyStatus.status === 'expiring'
-                                                                        ? 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'
-                                                                        : warrantyStatus.status === 'expired'
-                                                                            ? 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100'
-                                                                            : 'bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100'
+                                                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+                                                                : warrantyStatus.status === 'expiring'
+                                                                    ? 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'
+                                                                    : warrantyStatus.status === 'expired'
+                                                                        ? 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100'
+                                                                        : 'bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100'
                                                                 }`}
                                                         >
                                                             <Icon className="w-3.5 h-3.5" />
@@ -504,7 +488,7 @@ const AssetList = () => {
                                                 ) : (
                                                     <div className="flex items-center space-x-2">
                                                         <span className="text-sm text-gray-400 italic">Unassigned</span>
-                                                        {asset.status === 'Available' && (
+                                                        {asset.status === 'Available' && ['Admin', 'Manager'].includes(user?.role) && (
                                                             <button
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
@@ -521,48 +505,44 @@ const AssetList = () => {
                                             </td>
                                             <td className="px-6 py-4 text-right">
                                                 <div className="flex items-center justify-end space-x-2">
-                                                    {asset.status === 'Assigned' && (
+                                                    {['Admin', 'Manager'].includes(user?.role) && (
+                                                        <>
+                                                            {asset.status === 'Assigned' && (
+                                                                <button
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        handleReturnClick(asset);
+                                                                    }}
+                                                                    className="p-2 text-emerald-600 bg-emerald-50 rounded-lg hover:bg-emerald-100 hover:shadow-md transition-all duration-200 transform hover:scale-110"
+                                                                    title="Return Asset"
+                                                                >
+                                                                    <RotateCcw className="w-4 h-4" />
+                                                                </button>
+                                                            )}
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    openEditForm(asset);
+                                                                }}
+                                                                className="p-2 text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 hover:shadow-md transition-all duration-200 transform hover:scale-110"
+                                                                title="Edit Asset"
+                                                            >
+                                                                <Edit className="w-4 h-4" />
+                                                            </button>
+                                                        </>
+                                                    )}
+                                                    {user?.role === 'Admin' && (
                                                         <button
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
-                                                                handleReturnClick(asset);
+                                                                handleDeleteClick(asset);
                                                             }}
-                                                            className="p-2 text-emerald-600 bg-emerald-50 rounded-lg hover:bg-emerald-100 hover:shadow-md transition-all duration-200 transform hover:scale-110"
-                                                            title="Return Asset"
+                                                            className="p-2 text-red-600 bg-red-50 rounded-lg hover:bg-red-100 hover:shadow-md transition-all duration-200 transform hover:scale-110"
+                                                            title="Delete Asset"
                                                         >
-                                                            <RotateCcw className="w-4 h-4" />
+                                                            <Trash2 className="w-4 h-4" />
                                                         </button>
                                                     )}
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            navigate(`/assets/${asset._id}`);
-                                                        }}
-                                                        className="p-2 text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 hover:shadow-md transition-all duration-200 transform hover:scale-110"
-                                                        title="View Details"
-                                                    >
-                                                        <Eye className="w-4 h-4" />
-                                                    </button>
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            openEditForm(asset);
-                                                        }}
-                                                        className="p-2 text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 hover:shadow-md transition-all duration-200 transform hover:scale-110"
-                                                        title="Edit Asset"
-                                                    >
-                                                        <Edit className="w-4 h-4" />
-                                                    </button>
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handleDeleteClick(asset);
-                                                        }}
-                                                        className="p-2 text-red-600 bg-red-50 rounded-lg hover:bg-red-100 hover:shadow-md transition-all duration-200 transform hover:scale-110"
-                                                        title="Delete Asset"
-                                                    >
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </button>
                                                 </div>
                                             </td>
                                         </tr>

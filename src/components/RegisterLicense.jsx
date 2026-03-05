@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ShieldCheck, Tag, Globe, Package, Calendar, Hash, CheckCircle2 } from 'lucide-react';
+import api from '../utils/api';
 
 const RegisterLicense = () => {
     const navigate = useNavigate();
@@ -27,13 +28,9 @@ const RegisterLicense = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            const response = await fetch('http://localhost:5000/api/licenses', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData),
-            });
+            const response = await api.post('/licenses', formData);
 
-            const data = await response.json();
+            const data = response.data;
             if (data.success) {
                 navigate('/licenses');
             } else {
@@ -52,7 +49,7 @@ const RegisterLicense = () => {
             <div className="max-w-4xl mx-auto">
                 {/* Header */}
                 <div className="flex items-center space-x-5 mb-10">
-                    <button 
+                    <button
                         onClick={() => navigate('/licenses')}
                         className="p-3 bg-white border border-gray-100 rounded-2xl hover:bg-gray-50 transition-all shadow-sm group"
                     >

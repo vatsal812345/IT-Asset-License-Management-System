@@ -9,10 +9,9 @@ const SidebarItem = ({ to, icon: Icon, label }) => (
   <NavLink
     to={to}
     className={({ isActive }) =>
-      `flex items-center space-x-3 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${
-        isActive
-          ? 'bg-brand-primary text-white shadow-premium shadow-indigo-200/50 scale-[1.02]'
-          : 'text-slate-500 hover:bg-indigo-50 hover:text-brand-primary hover:translate-x-1'
+      `flex items-center space-x-3 px-4 py-3.5 rounded-2xl transition-all duration-300 group ${isActive
+        ? 'bg-brand-primary text-white shadow-premium shadow-indigo-200/50 scale-[1.02]'
+        : 'text-slate-500 hover:bg-indigo-50 hover:text-brand-primary hover:translate-x-1'
       }`
     }
   >
@@ -47,17 +46,17 @@ const Layout = () => {
             <div className="bg-brand-primary p-2.5 rounded-xl shadow-lg shadow-indigo-100 rotate-3 group-hover:rotate-0 transition-transform duration-500">
               <Package className="w-6 h-6 text-white" />
             </div>
-            <span className ="text-2xl font-black text-slate-900 tracking-tight" >ITAM</span>
+            <span className="text-2xl font-black text-slate-900 tracking-tight" >ITAM</span>
           </div>
         </div>
 
         <nav className="flex-1 p-4 space-y-4 overflow-y-auto ">
           <SidebarItem to="/" icon={LayoutDashboard} label="Dashboard" />
           <SidebarItem to="/assets" icon={Package} label="Assets" />
-          <SidebarItem to="/employees" icon={Users} label="Employees" />
-          <SidebarItem to="/assignments" icon={ClipboardList} label="Assignments" />
+          {user?.role !== 'Employee' && <SidebarItem to="/employees" icon={Users} label="Employees" />}
+          {['Admin', 'Manager'].includes(user?.role) && <SidebarItem to="/assignments" icon={ClipboardList} label="Assignments" />}
           <SidebarItem to="/licenses" icon={ShieldCheck} label="Licenses" />
-          <SidebarItem to="/return-asset" icon={RefreshCcw} label="Return Asset" />
+          {['Admin', 'Manager'].includes(user?.role) && <SidebarItem to="/return-asset" icon={RefreshCcw} label="Return Asset" />}
           <SidebarItem to="/history" icon={History} label="Assignment History" />
         </nav>
       </aside>
@@ -75,10 +74,10 @@ const Layout = () => {
               <NotificationPanel />
             </div>
             <div className="h-10 w-px bg-slate-100 mx-2"></div>
-            
+
             {/* User Dropdown */}
             <div className="relative">
-              <div 
+              <div
                 className="flex items-center space-x-3 pl-2 cursor-pointer group"
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
               >
@@ -101,8 +100,8 @@ const Layout = () => {
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setIsDropdownOpen(false)}></div>
                   <div className="absolute right-0 mt-4 w-56 bg-white rounded-2xl shadow-premium border border-slate-100 py-2 z-50 animate-fadeInUp">
-                    <NavLink 
-                      to="/profile" 
+                    <NavLink
+                      to="/profile"
                       className="flex items-center space-x-3 px-4 py-3 text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-colors"
                       onClick={() => setIsDropdownOpen(false)}
                     >
@@ -110,7 +109,7 @@ const Layout = () => {
                       <span className="text-sm font-semibold">My Profile</span>
                     </NavLink>
                     <div className="h-px bg-slate-50 my-2 mx-4"></div>
-                    <button 
+                    <button
                       onClick={handleLogout}
                       className="w-full flex items-center space-x-3 px-4 py-3 text-red-500 hover:bg-red-50 transition-colors"
                     >
@@ -125,7 +124,7 @@ const Layout = () => {
         </header>
 
         <main className="flex-1 overflow-y-auto bg-gray-50/50">
-            <Outlet />
+          <Outlet />
         </main>
       </div>
     </div>

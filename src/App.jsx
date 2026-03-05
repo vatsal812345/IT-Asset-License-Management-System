@@ -34,22 +34,26 @@ const App = () => {
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/forget-password" element={<ForgetPassword />} />
               <Route path="/verify-code" element={<VerifyCode />} />
-              
+
               {/* Protected Routes */}
               <Route element={<ProtectedRoute />}>
                 <Route path="/" element={<Layout />}>
                   <Route index element={<Dashboard />} />
                   <Route path="assets" element={<AssetList />} />
                   <Route path="assets/:id" element={<AssetDetails />} />
-                  <Route path="assignments" element={<AssignAsset />} />
-                  <Route path="assets/:id/assign" element={<AssignAsset />} />
                   <Route path="employees" element={<EmployeeList />} />
-                  <Route path="return-asset" element={<ReturnAsset />} />
                   <Route path="history" element={<AssignmentHistory />} />
                   <Route path="licenses" element={<LicenseList />} />
-                  <Route path="licenses/register" element={<RegisterLicense />} />
-                  <Route path="licenses/:id/assign" element={<AssignLicense />} />
                   <Route path="profile" element={<ProfilePage />} />
+
+                  {/* Management Only Routes */}
+                  <Route element={<ProtectedRoute allowedRoles={['Admin', 'Manager']} />}>
+                    <Route path="assignments" element={<AssignAsset />} />
+                    <Route path="assets/:id/assign" element={<AssignAsset />} />
+                    <Route path="return-asset" element={<ReturnAsset />} />
+                    <Route path="licenses/register" element={<RegisterLicense />} />
+                    <Route path="licenses/:id/assign" element={<AssignLicense />} />
+                  </Route>
                 </Route>
               </Route>
             </Routes>

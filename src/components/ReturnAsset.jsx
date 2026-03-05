@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Loader, RefreshCcw, RotateCcw, AlertCircle, User } from 'lucide-react';
+import api from '../utils/api';
 
 import ReturnConfirmModal from './ReturnConfirmModal';
 
@@ -14,8 +15,8 @@ const ReturnAsset = () => {
     const fetchAssignedAssets = async () => {
         setLoading(true);
         try {
-            const response = await fetch('http://localhost:5000/api/assets');
-            const data = await response.json();
+            const response = await api.get('/assets');
+            const data = response.data;
             if (data.success) {
                 // Filter only assigned assets
                 const assigned = data.data.filter(asset => asset.status === 'Assigned');
@@ -39,30 +40,18 @@ const ReturnAsset = () => {
 
     const confirmReturn = async () => {
         if (!selectedAsset) return;
-        
+
         const assetId = selectedAsset._id;
         setReturningId(assetId);
         try {
             // First, try the general asset update since we know it works for editing
-            const response = await fetch(`http://localhost:5000/api/assets/${assetId}`, {
-                method: 'PUT',
-                headers: { 
-                    'Content-Type': 'application/json' 
-                },
-                body: JSON.stringify({ 
-                    status: 'Available',
-                    currentAssignedTo: null,
-                    assignedTo: null // For backend compatibility
-                })
+            const response = await api.put(`/assets/${assetId}`, {
+                status: 'Available',
+                currentAssignedTo: null,
+                assignedTo: null // For backend compatibility
             });
 
-            const text = await response.text();
-            let data;
-            try {
-                data = JSON.parse(text);
-            } catch (e) {
-                throw new Error('Invalid server response');
-            }
+            const data = response.data;
 
             if (data.success) {
                 setAssets(assets.filter(a => a._id !== assetId));
@@ -80,7 +69,7 @@ const ReturnAsset = () => {
         }
     };
 
-    const filteredAssets = assets.filter(asset => 
+    const filteredAssets = assets.filter(asset =>
         asset.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         asset.assetTag.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (asset.currentAssignedTo?.fullName.toLowerCase().includes(searchQuery.toLowerCase()))
@@ -108,7 +97,7 @@ const ReturnAsset = () => {
                             className="w-full pl-12 pr-4 py-3 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                         />
                     </div>
-                    <button 
+                    <button
                         onClick={fetchAssignedAssets}
                         className="flex items-center justify-center space-x-2 bg-white border border-gray-100 text-gray-600 px-6 py-3 rounded-xl font-bold text-sm shadow-sm hover:bg-gray-50 transition-all"
                     >
@@ -132,9 +121,9 @@ const ReturnAsset = () => {
                                     </div>
                                     <span className="text-xs font-mono font-bold text-gray-400 bg-gray-50 px-3 py-1 rounded-full uppercase tracking-wider">{asset.assetTag}</span>
                                 </div>
-                                
+
                                 <h3 className="text-xl font-bold text-gray-900 mb-2">{asset.name}</h3>
-                                
+
                                 <div className="flex items-center space-x-3 p-4 bg-gray-50/50 rounded-2xl mb-6">
                                     <div className="w-10 h-10 rounded-full bg-linear-to-tr from-blue-500 to-indigo-600 flex items-center justify-center text-white text-sm font-bold shadow-sm">
                                         {asset.currentAssignedTo?.firstName[0]}{asset.currentAssignedTo?.lastName[0]}
@@ -145,7 +134,7 @@ const ReturnAsset = () => {
                                     </div>
                                 </div>
 
-                                <button 
+                                <button
                                     onClick={() => handleReturnClick(asset)}
                                     disabled={returningId === asset._id}
                                     className="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold text-sm shadow-lg shadow-blue-100 hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center space-x-2"
@@ -169,7 +158,7 @@ const ReturnAsset = () => {
                         </div>
                         <h3 className="text-2xl font-bold text-gray-800">No Assigned Assets Found</h3>
                         <p className="text-gray-400 mt-2 max-w-sm">All assets are currently in stock or no records match your search criteria.</p>
-                        <button 
+                        <button
                             onClick={() => setSearchQuery('')}
                             className="mt-8 text-blue-600 font-bold hover:underline"
                         >
@@ -179,7 +168,7 @@ const ReturnAsset = () => {
                 )}
             </div>
 
-            <ReturnConfirmModal 
+            <ReturnConfirmModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 onConfirm={confirmReturn}

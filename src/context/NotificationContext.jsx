@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import React, { createContext, useState, useRef, useCallback, useEffect, useContext } from 'react';
 import { getExpiryStatus } from '../utils/warrantyUtils';
+import api from '../utils/api';
 
 const NotificationContext = createContext(null);
 
@@ -54,7 +55,7 @@ export const NotificationProvider = ({ children }) => {
     const sendBrowserNotification = useCallback((title, body, icon = '⚠️') => {
         if (typeof Notification === 'undefined') return;
         if (Notification.permission !== 'granted') return;
-        
+
         try {
             const notification = new Notification(title, {
                 body,
@@ -68,7 +69,7 @@ export const NotificationProvider = ({ children }) => {
             if (navigator.serviceWorker?.ready) {
                 navigator.serviceWorker.ready.then(reg => {
                     reg.showNotification(title, { body, icon: '/vite.svg' });
-                }).catch(() => {});
+                }).catch(() => { });
             }
             console.warn('Browser notification failed:', e);
         }
@@ -78,11 +79,11 @@ export const NotificationProvider = ({ children }) => {
     const fetchAlerts = useCallback(async () => {
         try {
             const [assetsRes, licensesRes] = await Promise.all([
-                fetch('http://localhost:5000/api/assets'),
-                fetch('http://localhost:5000/api/licenses'),
+                api.get('/assets'),
+                api.get('/licenses'),
             ]);
-            const assetsData = await assetsRes.json();
-            const licensesData = await licensesRes.json();
+            const assetsData = assetsRes.data;
+            const licensesData = licensesRes.data;
 
             const newAlerts = [];
 
@@ -160,7 +161,7 @@ export const NotificationProvider = ({ children }) => {
             if (enabled && permissionState === 'granted') {
                 const notifiedIds = getNotifiedIds();
                 const currentIds = new Set(newAlerts.map(a => a.id));
-                
+
                 newAlerts.forEach(alert => {
                     if (!notifiedIds.has(alert.id) && !previousAlertsRef.current.has(alert.id)) {
                         sendBrowserNotification(alert.title, alert.message);

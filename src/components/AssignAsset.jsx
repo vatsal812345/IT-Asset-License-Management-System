@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useToast } from '../context/ToastContext';
-import { 
-    X, 
-    Calendar as CalendarIcon, 
-    ChevronDown, 
-    Loader, 
+import {
+    X,
+    Calendar as CalendarIcon,
+    ChevronDown,
+    Loader,
     AlertCircle,
     CheckCircle2,
     Box,
@@ -14,6 +14,7 @@ import {
     Tag
 } from 'lucide-react';
 import EmployeeAutocomplete from './EmployeeAutocomplete';
+import api from '../utils/api';
 
 const AssignAsset = () => {
     const { id } = useParams();
@@ -37,15 +38,15 @@ const AssignAsset = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const assetsRes = await fetch('http://localhost:5000/api/assets');
-                const assetsData = await assetsRes.json();
+                const assetsRes = await api.get('/assets');
+                const assetsData = assetsRes.data;
                 if (assetsData.success) {
                     const available = assetsData.data.filter(a => a.status === 'Available' || a._id === id);
                     setAvailableAssets(available);
                     if (id && id !== 'any') {
                         const current = available.find(a => a._id === id);
                         if (current) setSelectedAssetId(current._id);
-                    }                                                                
+                    }
                 }
             } catch (err) {
                 console.error('Error fetching data:', err);
@@ -83,22 +84,18 @@ const AssignAsset = () => {
         e.preventDefault();
         if (!selectedAssetId || selectedAssetId === 'any') return alert('Please select an asset');
         if (!formData.assignedToId) return alert('Please select an employee');
-        
+
         setSubmitting(true);
         try {
             // Using the new centralized assignments endpoint
-            const response = await fetch(`http://localhost:5000/api/assignments/assign`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    assetId: selectedAssetId, // Include assetId explicitly
-                    employeeId: formData.assignedToId, // Changed from assignedTo to employeeId
-                    notes: formData.notes,
-                    assignmentDate: formData.assignmentDate
-                }),
+            const response = await api.post(`/assignments/assign`, {
+                assetId: selectedAssetId, // Include assetId explicitly
+                employeeId: formData.assignedToId, // Changed from assignedTo to employeeId
+                notes: formData.notes,
+                assignmentDate: formData.assignmentDate
             });
 
-            const data = await response.json();
+            const data = response.data;
             if (data.success) {
                 showToast('Asset assigned successfully', 'success');
                 // Return to asset list or details
@@ -139,7 +136,7 @@ const AssignAsset = () => {
                     <div className="space-y-2">
                         <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Select Hardware Asset</label>
                         <div className="relative group">
-                            <select 
+                            <select
                                 value={selectedAssetId}
                                 onChange={(e) => setSelectedAssetId(e.target.value)}
                                 className="w-full h-14 pl-12 pr-12 bg-gray-50 border border-gray-200 rounded-2xl appearance-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all outline-none font-bold text-gray-800"
@@ -159,13 +156,13 @@ const AssignAsset = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div className="space-y-2">
                             <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Employee Name</label>
-                            <EmployeeAutocomplete 
+                            <EmployeeAutocomplete
                                 onSelect={handleEmployeeSelect}
                             />
                         </div>
                         <div className="space-y-2">
                             <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Employee ID</label>
-                            <input 
+                            <input
                                 readOnly
                                 type="text"
                                 value={formData.employeeId}
@@ -179,7 +176,7 @@ const AssignAsset = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div className="space-y-2">
                             <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Department</label>
-                            <input 
+                            <input
                                 readOnly
                                 type="text"
                                 value={formData.department}
@@ -190,10 +187,10 @@ const AssignAsset = () => {
                         <div className="space-y-2 relative">
                             <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Assignment Date</label>
                             <div className="relative">
-                                <input 
+                                <input
                                     type="date"
                                     value={formData.assignmentDate}
-                                    onChange={(e) => setFormData({...formData, assignmentDate: e.target.value})}
+                                    onChange={(e) => setFormData({ ...formData, assignmentDate: e.target.value })}
                                     className="w-full h-14 px-5 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all font-bold text-gray-800"
                                 />
                             </div>
@@ -203,10 +200,10 @@ const AssignAsset = () => {
                     {/* Notes */}
                     <div className="space-y-2">
                         <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Notes</label>
-                        <textarea 
+                        <textarea
                             rows="3"
                             value={formData.notes}
-                            onChange={(e) => setFormData({...formData, notes: e.target.value})}
+                            onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                             placeholder="Add hardware condition, setup notes, or special instructions..."
                             className="w-full p-5 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all font-medium resize-none text-gray-800"
                         />
@@ -214,21 +211,20 @@ const AssignAsset = () => {
 
                     {/* Footer Actions */}
                     <div className="flex items-center justify-end gap-4 pt-4 pb-4">
-                        <button 
+                        <button
                             type="button"
                             onClick={() => navigate(-1)}
                             className="px-8 py-4 bg-white text-gray-500 rounded-2xl font-bold text-sm hover:bg-gray-100 transition-all border border-gray-100"
                         >
                             Cancel
                         </button>
-                        <button 
+                        <button
                             type="submit"
                             disabled={submitting || !isEmployeeSelected || !selectedAssetId}
-                            className={`px-10 py-4 rounded-2xl font-bold text-sm shadow-xl transition-all flex items-center gap-2 ${
-                                submitting || !isEmployeeSelected || !selectedAssetId
-                                ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
-                                : 'bg-linear-to-r from-blue-600 to-indigo-600 text-white shadow-blue-100 hover:shadow-blue-200 hover:scale-[1.02] active:scale-[0.98]'
-                            }`}
+                            className={`px-10 py-4 rounded-2xl font-bold text-sm shadow-xl transition-all flex items-center gap-2 ${submitting || !isEmployeeSelected || !selectedAssetId
+                                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                    : 'bg-linear-to-r from-blue-600 to-indigo-600 text-white shadow-blue-100 hover:shadow-blue-200 hover:scale-[1.02] active:scale-[0.98]'
+                                }`}
                         >
                             {submitting ? <Loader className="w-5 h-5 animate-spin" /> : (
                                 <>

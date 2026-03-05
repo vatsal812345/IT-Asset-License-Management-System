@@ -1,13 +1,14 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Upload, X, Loader2, Image as ImageIcon, CheckCircle2, AlertCircle } from 'lucide-react';
+import api from '../utils/api';
 import { useToast } from '../context/ToastContext';
 import { getDisplayImageUrl } from '../utils/imageUtils';
 
-const ImageUpload = ({ 
-    uploadUrl, 
-    onUploadSuccess, 
-    onFileSelect, 
-    initialImage, 
+const ImageUpload = ({
+    uploadUrl,
+    onUploadSuccess,
+    onFileSelect,
+    initialImage,
     label = "Profile Picture",
     fieldName = "file" // Default field name
 }) => {
@@ -48,7 +49,7 @@ const ImageUpload = ({
             showToast('Image size must be less than 5MB', 'error');
             return false;
         }
-        
+
         setFileName(file.name);
         const reader = new FileReader();
         reader.onload = (e) => setPreview(e.target.result);
@@ -93,19 +94,20 @@ const ImageUpload = ({
         formData.append(fieldName, file);
 
         try {
-            const response = await fetch(uploadUrl, {
-                method: 'POST',
-                body: formData,
+            const response = await api.post(uploadUrl, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
             });
 
-            const data = await response.json();
+            const data = response.data;
 
             if (data.success) {
                 showToast('Image uploaded successfully', 'success');
                 if (onUploadSuccess) {
                     // Normalize the URL from the response
-                    const url = typeof data.data === 'string' 
-                        ? data.data 
+                    const url = typeof data.data === 'string'
+                        ? data.data
                         : (data.data?.url || data.data?.imageUrl || data.url);
                     onUploadSuccess(url);
                 }
@@ -135,11 +137,11 @@ const ImageUpload = ({
     return (
         <div className="w-full space-y-4">
             <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">{label}</label>
-            
-            <div 
+
+            <div
                 className={`relative group flex flex-col items-center justify-center w-full min-h-[200px] rounded-4xl border-2 border-dashed transition-all duration-500 overflow-hidden cursor-pointer
-                    ${dragActive 
-                        ? 'border-blue-500 bg-blue-50/50 scale-[1.01] shadow-xl shadow-blue-100/50' 
+                    ${dragActive
+                        ? 'border-blue-500 bg-blue-50/50 scale-[1.01] shadow-xl shadow-blue-100/50'
                         : 'border-gray-200 bg-gray-50/50 hover:border-blue-400 hover:bg-white hover:shadow-lg hover:shadow-gray-100/50'
                     }`}
                 onDragEnter={handleDrag}
@@ -159,10 +161,10 @@ const ImageUpload = ({
                 {preview ? (
                     <div className="relative w-full h-full flex flex-col items-center p-6 animate-scale-up">
                         <div className="relative group/preview">
-                            <img 
-                                src={preview} 
-                                alt="Preview" 
-                                className="max-h-48 rounded-2xl shadow-2xl object-cover ring-4 ring-white group-hover:ring-blue-50 transition-all duration-300" 
+                            <img
+                                src={preview}
+                                alt="Preview"
+                                className="max-h-48 rounded-2xl shadow-2xl object-cover ring-4 ring-white group-hover:ring-blue-50 transition-all duration-300"
                             />
                             {!uploading && (
                                 <button
@@ -208,7 +210,7 @@ const ImageUpload = ({
 
                 {/* Border Glow Effect */}
                 <div className={`absolute inset-0 pointer-events-none transition-opacity duration-500 bg-linear-to-br from-blue-500/5 to-transparent
-                    ${dragActive || preview ? 'opacity-100' : 'opacity-0'}`} 
+                    ${dragActive || preview ? 'opacity-100' : 'opacity-0'}`}
                 />
             </div>
         </div>

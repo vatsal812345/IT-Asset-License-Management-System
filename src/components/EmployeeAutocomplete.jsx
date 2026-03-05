@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, User, Loader, X } from 'lucide-react';
+import api from '../utils/api';
 
 const EmployeeAutocomplete = ({ onSelect, initialData }) => {
     const [query, setQuery] = useState('');
@@ -37,12 +38,12 @@ const EmployeeAutocomplete = ({ onSelect, initialData }) => {
 
         setLoading(true);
         try {
-            const response = await fetch(`http://localhost:5000/api/employees`);
-            const data = await response.json();
-            
+            const response = await api.get('/employees');
+            const data = response.data;
+
             if (data.success) {
                 const searchLower = searchTerm.toLowerCase();
-                const filtered = data.data.filter(emp => 
+                const filtered = data.data.filter(emp =>
                     emp.firstName.toLowerCase().includes(searchLower) ||
                     emp.lastName.toLowerCase().includes(searchLower) ||
                     emp.employeeId.toLowerCase().includes(searchLower) ||
@@ -62,7 +63,7 @@ const EmployeeAutocomplete = ({ onSelect, initialData }) => {
         const value = e.target.value;
         setQuery(value);
         setSelectedEmployee(null); // Clear selection if typing continues
-        
+
         // Reset results if empty
         if (!value.trim()) {
             setResults([]);
@@ -89,7 +90,7 @@ const EmployeeAutocomplete = ({ onSelect, initialData }) => {
         const parts = text.split(new RegExp(`(${highlight})`, 'gi'));
         return (
             <span>
-                {parts.map((part, i) => 
+                {parts.map((part, i) =>
                     part.toLowerCase() === highlight.toLowerCase() ? (
                         <span key={i} className="text-blue-600 font-extrabold">{part}</span>
                     ) : (
@@ -118,7 +119,7 @@ const EmployeeAutocomplete = ({ onSelect, initialData }) => {
                     </div>
                 )}
                 {!loading && query && (
-                    <button 
+                    <button
                         onClick={() => { setQuery(''); setResults([]); onSelect(null); }}
                         className="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-200 rounded-full transition-colors"
                     >

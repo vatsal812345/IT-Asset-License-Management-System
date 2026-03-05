@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useToast } from '../context/ToastContext';
-import { 
-    X, 
-    Calendar as CalendarIcon, 
-    ChevronDown, 
-    Loader, 
+import {
+    X,
+    Calendar as CalendarIcon,
+    ChevronDown,
+    Loader,
     AlertCircle,
     CheckCircle2,
     ShieldCheck
 } from 'lucide-react';
 import EmployeeAutocomplete from './EmployeeAutocomplete';
+import api from '../utils/api';
 
 const AssignLicense = () => {
     const { id } = useParams();
@@ -34,15 +35,15 @@ const AssignLicense = () => {
 
     const fetchLicenses = async () => {
         try {
-            const licensesRes = await fetch('http://localhost:5000/api/licenses');
-            const licensesData = await licensesRes.json();
+            const licensesRes = await api.get('/licenses');
+            const licensesData = licensesRes.data;
             if (licensesData.success) {
                 const available = licensesData.data.filter(l => l.status === 'Active' && (l.totalSeats - (l.usedSeats || 0)) > 0 || l._id === id);
                 setAvailableLicenses(available);
                 if (id) {
                     const current = available.find(l => l._id === id);
                     if (current) setSelectedLicenseId(current._id);
-                }                                                                
+                }
             }
         } catch (err) {
             console.error('Error fetching data:', err);
@@ -79,7 +80,7 @@ const AssignLicense = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+
         // Validation
         if (!selectedLicenseId) {
             showToast('Please select a software license', 'error');
@@ -89,25 +90,21 @@ const AssignLicense = () => {
             showToast('Please select an employee', 'error');
             return;
         }
-        
+
         setSubmitting(true);
         try {
-            const response = await fetch('http://localhost:5000/api/licenses/assign', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    licenseId: selectedLicenseId,
-                    employeeId: formData.assignedToId,
-                    assignmentDate: formData.assignmentDate,
-                    notes: formData.notes
-                }),
+            const response = await api.post('/licenses/assign', {
+                licenseId: selectedLicenseId,
+                employeeId: formData.assignedToId,
+                assignmentDate: formData.assignmentDate,
+                notes: formData.notes
             });
 
-            const data = await response.json();
-            
+            const data = response.data;
+
             if (data.success) {
                 showToast('License assigned successfully', 'success');
-                
+
                 // Reset Form
                 setFormData({
                     employeeName: '',
@@ -119,7 +116,7 @@ const AssignLicense = () => {
                 });
                 setSelectedLicenseId('');
                 setIsEmployeeSelected(false);
-                
+
                 // Re-fetch licenses to update counts in UI (dropdown)
                 fetchLicenses();
             } else {
@@ -158,7 +155,7 @@ const AssignLicense = () => {
                     <div className="space-y-2">
                         <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Select Software License</label>
                         <div className="relative group">
-                            <select 
+                            <select
                                 value={selectedLicenseId}
                                 onChange={(e) => setSelectedLicenseId(e.target.value)}
                                 className="w-full h-14 pl-5 pr-12 bg-gray-50 border border-gray-200 rounded-2xl appearance-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all outline-none font-bold text-gray-800"
@@ -176,13 +173,13 @@ const AssignLicense = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div className="space-y-2">
                             <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Employee Name</label>
-                            <EmployeeAutocomplete 
+                            <EmployeeAutocomplete
                                 onSelect={handleEmployeeSelect}
                             />
                         </div>
                         <div className="space-y-2">
                             <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Employee ID</label>
-                            <input 
+                            <input
                                 readOnly
                                 type="text"
                                 value={formData.employeeId}
@@ -196,7 +193,7 @@ const AssignLicense = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div className="space-y-2">
                             <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Department</label>
-                            <input 
+                            <input
                                 readOnly
                                 type="text"
                                 value={formData.department}
@@ -206,10 +203,10 @@ const AssignLicense = () => {
                         </div>
                         <div className="space-y-2">
                             <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Assignment Date</label>
-                            <input 
+                            <input
                                 type="date"
                                 value={formData.assignmentDate}
-                                onChange={(e) => setFormData({...formData, assignmentDate: e.target.value})}
+                                onChange={(e) => setFormData({ ...formData, assignmentDate: e.target.value })}
                                 className="w-full h-14 px-5 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all font-bold text-gray-800 cursor-pointer"
                             />
                         </div>
@@ -218,10 +215,10 @@ const AssignLicense = () => {
                     {/* Notes */}
                     <div className="space-y-2">
                         <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Notes</label>
-                        <textarea 
+                        <textarea
                             rows="3"
                             value={formData.notes}
-                            onChange={(e) => setFormData({...formData, notes: e.target.value})}
+                            onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                             placeholder="Add any specific licensing notes or hardware restrictions..."
                             className="w-full p-5 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all font-medium resize-none text-gray-800"
                         />
@@ -229,21 +226,20 @@ const AssignLicense = () => {
 
                     {/* Footer Actions */}
                     <div className="flex items-center justify-end gap-4 pt-4 pb-4">
-                        <button 
+                        <button
                             type="button"
                             onClick={() => navigate(-1)}
                             className="px-8 py-4 bg-white text-gray-500 rounded-2xl font-bold text-sm hover:bg-gray-100 transition-all border border-gray-100"
                         >
                             Cancel
                         </button>
-                        <button 
+                        <button
                             type="submit"
                             disabled={submitting || !isEmployeeSelected}
-                            className={`px-10 py-4 rounded-2xl font-bold text-sm shadow-xl transition-all flex items-center gap-2 ${
-                                submitting || !isEmployeeSelected 
-                                ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
-                                : 'bg-linear-to-r from-blue-600 to-indigo-600 text-white shadow-blue-100 hover:shadow-blue-200 hover:scale-[1.02] active:scale-[0.98]'
-                            }`}
+                            className={`px-10 py-4 rounded-2xl font-bold text-sm shadow-xl transition-all flex items-center gap-2 ${submitting || !isEmployeeSelected
+                                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                    : 'bg-linear-to-r from-blue-600 to-indigo-600 text-white shadow-blue-100 hover:shadow-blue-200 hover:scale-[1.02] active:scale-[0.98]'
+                                }`}
                         >
                             {submitting ? <Loader className="w-5 h-5 animate-spin" /> : (
                                 <>

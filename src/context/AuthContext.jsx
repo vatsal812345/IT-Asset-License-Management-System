@@ -32,12 +32,12 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       const response = await api.post('/auth/login', { email, password });
-      
+
       // Check if response contains an error code
       if (response.data.code && response.data.code !== 200) {
         throw new Error(response.data.msg || response.data.message || 'Login failed');
       }
-      
+
       const { token, _id, email: userEmail, role, ...rest } = response.data;
       const userData = { _id, email: userEmail, role, ...rest, name: response.data.name || response.data.fullName };
 
@@ -54,9 +54,9 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const register = async (fullName, email, password, confirmPassword) => {
+  const register = async (name, email, password, confirmPassword, role) => {
     try {
-      const response = await api.post('/auth/register', { fullName, email, password, confirmPassword });
+      const response = await api.post('/auth/register', { fullName: name, email, password, confirmPassword, role });
       return response.data;
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Registration failed');

@@ -3,11 +3,12 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import illustration from '../assets/auth-illustration.png';
-import { User, Mail, Lock, ArrowRight, ShieldCheck, Eye, EyeOff, Check, X, Info } from 'lucide-react';
+import { User, Mail, Lock, ArrowRight, ShieldCheck, Eye, EyeOff, Check, X, Info, ChevronDown, UserCog } from 'lucide-react';
 
 const RegisterPage = () => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
+    const [role, setRole] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -42,7 +43,7 @@ const RegisterPage = () => {
 
     const passwordsMatch = password === confirmPassword && confirmPassword.length > 0;
     const isPasswordStrong = passwordCriteria.every(c => c.met);
-    const canSubmit = name && email && isPasswordStrong && passwordsMatch;
+    const canSubmit = name && email && role && isPasswordStrong && passwordsMatch;
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -50,7 +51,7 @@ const RegisterPage = () => {
 
         setIsSubmitting(true);
         try {
-            await register(name, email, password, confirmPassword);
+            await register(name, email, password, confirmPassword, role);
             showToast('Account created successfully! Please log in.', 'success');
             navigate('/login');
         } catch (err) {
@@ -91,7 +92,7 @@ const RegisterPage = () => {
             <div className="w-full lg:w-1/2 flex items-center justify-center p-6 md:p-12 lg:p-20 relative overflow-y-auto">
                 <div className="w-full max-w-md">
                     <div className="mb-8">
-                        <h1 className="text-4xl font-black text-slate-900 mb-3 tracking-tight">Create Admin Account</h1>
+                        <h1 className="text-4xl font-black text-slate-900 mb-3 tracking-tight">Create Account</h1>
                         <p className="text-slate-500 font-medium">Elevate your asset management standards today.</p>
                     </div>
 
@@ -127,6 +128,30 @@ const RegisterPage = () => {
                                     className="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-2xl text-slate-900 font-semibold focus:outline-none focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all duration-300 shadow-sm"
                                     required
                                 />
+                            </div>
+                        </div>
+
+                        <div className="group">
+                            <label className="block text-sm font-extrabold text-slate-700 mb-1.5 ml-1">Select Role</label>
+                            <div className="relative">
+                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors pointer-events-none">
+                                    <UserCog className="w-5 h-5" />
+                                </span>
+                                <select
+                                    value={role}
+                                    onChange={(e) => setRole(e.target.value)}
+                                    className={`w-full pl-12 pr-10 py-4 bg-white border border-slate-200 rounded-2xl font-semibold focus:outline-none focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all duration-300 shadow-sm appearance-none cursor-pointer ${role ? 'text-slate-900' : 'text-slate-400'}`}
+                                    required
+                                >
+                                    <option value="" disabled>Choose your role</option>
+                                    <option value="Admin">Admin</option>
+                                    <option value="Manager">Manager</option>
+                                    <option value="Employee">Employee</option>
+                                    <option value="Auditor">Auditor</option>
+                                </select>
+                                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                                    <ChevronDown className="w-5 h-5" />
+                                </span>
                             </div>
                         </div>
 

@@ -1,7 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import api from '../utils/api';
 import { Search, Plus, Filter, Edit, Trash2, Loader, Users, Mail, Phone, Building2, Briefcase, UserPlus, Eye, Download } from 'lucide-react';
 import EmployeeForm from './EmployeeForm';
 import DeleteConfirmModal from './DeleteConfirmModal';
@@ -12,6 +13,7 @@ import getDisplayImageUrl from '../utils/imageUtils';
 
 const EmployeeList = () => {
     const navigate = useNavigate();
+    const { user } = useAuth();
     const { showToast } = useToast();
     const [employees, setEmployees] = useState([]);
     const [filteredEmployees, setFilteredEmployees] = useState([]);
@@ -31,8 +33,8 @@ const EmployeeList = () => {
     const fetchEmployees = async () => {
         setLoading(true);
         try {
-            const response = await fetch('http://localhost:5000/api/employees');
-            const data = await response.json();
+            const response = await api.get('/employees');
+            const data = response.data;
             if (data.success) {
                 setEmployees(data.data);
                 setFilteredEmployees(data.data);
@@ -72,12 +74,6 @@ const EmployeeList = () => {
 
     const handleCreateUpdate = async (formData) => {
         try {
-            const url = editingEmployee
-                ? `http://localhost:5000/api/employees/${editingEmployee._id}`
-                : 'http://localhost:5000/api/employees';
-
-            const method = editingEmployee ? 'PUT' : 'POST';
-
             // Create FormData for multipart/form-data request
             const data = new FormData();
 
@@ -106,12 +102,14 @@ const EmployeeList = () => {
                 data.append('profileImage', imageFile);
             }
 
-            const response = await fetch(url, {
-                method,
-                body: data, // Browser automatically sets multipart/form-data and boundary
-            });
+            let response;
+            if (editingEmployee) {
+                response = await api.put(`/employees/${editingEmployee._id}`, data);
+            } else {
+                response = await api.post('/employees', data);
+            }
 
-            const responseData = await response.json();
+            const responseData = response.data;
             if (responseData.success) {
                 fetchEmployees();
                 setIsFormOpen(false);
@@ -140,10 +138,8 @@ const EmployeeList = () => {
         if (!selectedDeleteEmployee) return;
         setIsDeleting(true);
         try {
-            const response = await fetch(`http://localhost:5000/api/employees/${selectedDeleteEmployee._id}`, {
-                method: 'DELETE',
-            });
-            const data = await response.json();
+            const response = await api.delete(`/employees/${selectedDeleteEmployee._id}`);
+            const data = response.data;
             if (data.success) {
                 fetchEmployees();
                 setIsDeleteModalOpen(false);
@@ -227,16 +223,18 @@ const EmployeeList = () => {
                         )}
                         <span>{isExporting ? 'Generating...' : 'Export Data'}</span>
                     </button>
-                    <button
-                        onClick={() => {
-                            setEditingEmployee(null);
-                            setIsFormOpen(true);
-                        }}
-                        className="flex items-center space-x-2 bg-brand-primary text-white px-6 py-3 rounded-2xl font-bold text-sm shadow-premium shadow-indigo-200 hover:shadow-hover hover:-translate-y-1 transition-all duration-300 w-full md:w-auto justify-center group"
-                    >
-                        <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
-                        <span>Add New Employee</span>
-                    </button>
+                    {['Admin', 'Manager'].includes(user?.role) && (
+                        <button
+                            onClick={() => {
+                                setEditingEmployee(null);
+                                setIsFormOpen(true);
+                            }}
+                            className="flex items-center space-x-2 bg-brand-primary text-white px-6 py-3 rounded-2xl font-bold text-sm shadow-premium shadow-indigo-200 hover:shadow-hover hover:-translate-y-1 transition-all duration-300 w-full md:w-auto justify-center group"
+                        >
+                            <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
+                            <span>Add New Employee</span>
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -368,27 +366,31 @@ const EmployeeList = () => {
                                                     >
                                                         <Eye className="w-4 h-4" />
                                                     </button>
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            setEditingEmployee(emp);
-                                                            setIsFormOpen(true);
-                                                        }}
-                                                        className="p-3 text-blue-600 bg-blue-50 border border-blue-100 rounded-2xl hover:bg-blue-600 hover:text-white hover:border-blue-600 hover:shadow-lg hover:shadow-blue-200 transition-all duration-300"
-                                                        title="Edit"
-                                                    >
-                                                        <Edit className="w-4 h-4" />
-                                                    </button>
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handleDeleteClick(emp);
-                                                        }}
-                                                        className="p-3 text-red-500 bg-red-50 border border-red-100 rounded-2xl hover:bg-red-500 hover:text-white hover:border-red-500 hover:shadow-lg hover:shadow-red-200 transition-all duration-300"
-                                                        title="Delete"
-                                                    >
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </button>
+                                                    {['Admin', 'Manager'].includes(user?.role) && (
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setEditingEmployee(emp);
+                                                                setIsFormOpen(true);
+                                                            }}
+                                                            className="p-3 text-blue-600 bg-blue-50 border border-blue-100 rounded-2xl hover:bg-blue-600 hover:text-white hover:border-blue-600 hover:shadow-lg hover:shadow-blue-200 transition-all duration-300"
+                                                            title="Edit"
+                                                        >
+                                                            <Edit className="w-4 h-4" />
+                                                        </button>
+                                                    )}
+                                                    {user?.role === 'Admin' && (
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleDeleteClick(emp);
+                                                            }}
+                                                            className="p-3 text-red-500 bg-red-50 border border-red-100 rounded-2xl hover:bg-red-500 hover:text-white hover:border-red-500 hover:shadow-lg hover:shadow-red-200 transition-all duration-300"
+                                                            title="Delete"
+                                                        >
+                                                            <Trash2 className="w-4 h-4" />
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </td>
                                         </tr>
@@ -449,7 +451,7 @@ const EmployeeList = () => {
                 itemTag={selectedDeleteEmployee?.employeeId}
                 isDeleting={isDeleting}
             />
-        </div>
+        </div >
     );
 };
 

@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { 
-    ArrowLeft, 
-    Box, 
-    Calendar, 
-    Tag, 
-    Hash, 
-    MapPin, 
-    Info, 
-    User, 
-    History, 
-    UserPlus, 
-    Edit, 
+import {
+    ArrowLeft,
+    Box,
+    Calendar,
+    Tag,
+    Hash,
+    MapPin,
+    Info,
+    User,
+    History,
+    UserPlus,
+    Edit,
     Loader,
     ChevronRight,
     CheckCircle2,
@@ -32,8 +32,10 @@ import ReturnConfirmModal from './ReturnConfirmModal';
 import AssetForm from './AssetForm';
 import DeleteConfirmModal from './DeleteConfirmModal';
 import ImageUpload from './ImageUpload';
+import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { getExpiryStatus } from '../utils/warrantyUtils';
+import api from '../utils/api';
 
 
 const DetailItem = ({ icon: Icon, label, value, color = "text-gray-500" }) => (
@@ -51,6 +53,7 @@ const DetailItem = ({ icon: Icon, label, value, color = "text-gray-500" }) => (
 const AssetDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { user } = useAuth();
     const { showToast } = useToast();
     const [asset, setAsset] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -65,25 +68,13 @@ const AssetDetails = () => {
     const confirmReturn = async () => {
         setIsReturning(true);
         try {
-            const response = await fetch(`http://localhost:5000/api/assets/${id}`, {
-                method: 'PUT',
-                headers: { 
-                    'Content-Type': 'application/json' 
-                },
-                body: JSON.stringify({ 
-                    status: 'Available',
-                    currentAssignedTo: null,
-                    assignedTo: null
-                })
+            const response = await api.put(`/assets/${id}`, {
+                status: 'Available',
+                currentAssignedTo: null,
+                assignedTo: null
             });
 
-            const text = await response.text();
-            let data;
-            try {
-                data = JSON.parse(text);
-            } catch (e) {
-                throw new Error('Invalid server response');
-            }
+            const data = response.data;
 
             if (data.success) {
                 setAsset({ ...asset, status: 'Available', currentAssignedTo: null });
@@ -106,8 +97,8 @@ const AssetDetails = () => {
 
     const fetchAssetDetails = async () => {
         try {
-            const response = await fetch(`http://localhost:5000/api/assets/${id}`);
-            const data = await response.json();
+            const response = await api.get(`/assets/${id}`);
+            const data = response.data;
             if (data.success) {
                 console.log('Fetched asset details:', data.data); // Debug log
                 console.log('Warranty Expiry Date:', data.data.warrantyExpiry); // Specific warranty log
@@ -131,7 +122,7 @@ const AssetDetails = () => {
         try {
             // Sanitize payload for backend validation requirements (as in AssetList.jsx)
             const payload = { ...formData };
-            
+
             // 1. Remove internal metadata
             delete payload.__v;
             delete payload.createdAt;
@@ -165,15 +156,8 @@ const AssetDetails = () => {
 
             console.log('Updating asset with payload:', payload); // Debug log
 
-            const response = await fetch(`http://localhost:5000/api/assets/${id}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(payload),
-            });
-
-            const data = await response.json();
+            const response = await api.put(`/assets/${id}`, payload);
+            const data = response.data;
 
             if (data.success) {
                 setIsEditModalOpen(false);
@@ -194,10 +178,8 @@ const AssetDetails = () => {
     const confirmDelete = async () => {
         setIsDeleting(true);
         try {
-            const response = await fetch(`http://localhost:5000/api/assets/${id}`, {
-                method: 'DELETE',
-            });
-            const data = await response.json();
+            const response = await api.delete(`/assets/${id}`);
+            const data = response.data;
             if (data.success) {
                 showToast('Asset deleted successfully', 'success');
                 navigate('/assets');
@@ -227,7 +209,7 @@ const AssetDetails = () => {
                     <AlertCircle className="w-12 h-12 text-red-500" />
                 </div>
                 <h1 className="text-2xl font-bold text-gray-900 mb-2">{error || 'Asset Not Found'}</h1>
-                <button 
+                <button
                     onClick={() => navigate('/assets')}
                     className="flex items-center space-x-2 bg-blue-600 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:bg-blue-700 transition-all"
                 >
@@ -253,7 +235,7 @@ const AssetDetails = () => {
                 {/* Header */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
                     <div className="flex items-center space-x-5">
-                        <button 
+                        <button
                             onClick={() => navigate('/assets')}
                             className="p-3 bg-white border border-gray-100 rounded-2xl hover:bg-gray-50 transition-all shadow-sm group"
                         >
@@ -270,28 +252,32 @@ const AssetDetails = () => {
                     </div>
 
                     <div className="flex items-center space-x-3">
-                        <button 
-                            onClick={() => setIsEditModalOpen(true)}
-                            className="flex items-center space-x-2 bg-white border border-gray-100 text-gray-700 px-6 py-3 rounded-2xl font-bold text-sm shadow-sm hover:bg-gray-50 transition-all hover:border-gray-200"
-                        >
-                            <Edit className="w-4 h-4" />
-                            <span>Edit Asset</span>
-                        </button>
-                        <button 
-                            onClick={() => setIsDeleteModalOpen(true)}
-                            className="p-3 bg-white border border-red-50 text-red-500 rounded-2xl hover:bg-red-50 transition-all shadow-sm group"
-                            title="Delete Asset"
-                        >
-                            <Trash2 className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                        </button>
-                        {asset.status === 'Available' && (
-                            <button 
-                                onClick={() => navigate(`/assets/${asset._id}/assign`)}
-                                className="flex items-center space-x-2 bg-blue-600 text-white px-6 py-3 rounded-2xl font-bold text-sm shadow-lg shadow-blue-100 hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] transition-all"
-                            >
-                                <UserPlus className="w-5 h-5" />
-                                <span>Assign Asset</span>
-                            </button>
+                        {user?.role !== 'Auditor' && (
+                            <>
+                                <button
+                                    onClick={() => setIsEditModalOpen(true)}
+                                    className="flex items-center space-x-2 bg-white border border-gray-100 text-gray-700 px-6 py-3 rounded-2xl font-bold text-sm shadow-sm hover:bg-gray-50 transition-all hover:border-gray-200"
+                                >
+                                    <Edit className="w-4 h-4" />
+                                    <span>Edit Asset</span>
+                                </button>
+                                <button
+                                    onClick={() => setIsDeleteModalOpen(true)}
+                                    className="p-3 bg-white border border-red-50 text-red-500 rounded-2xl hover:bg-red-50 transition-all shadow-sm group"
+                                    title="Delete Asset"
+                                >
+                                    <Trash2 className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                                </button>
+                                {asset.status === 'Available' && (
+                                    <button
+                                        onClick={() => navigate(`/assets/${asset._id}/assign`)}
+                                        className="flex items-center space-x-2 bg-blue-600 text-white px-6 py-3 rounded-2xl font-bold text-sm shadow-lg shadow-blue-100 hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                                    >
+                                        <UserPlus className="w-5 h-5" />
+                                        <span>Assign Asset</span>
+                                    </button>
+                                )}
+                            </>
                         )}
                     </div>
                 </div>
@@ -304,16 +290,26 @@ const AssetDetails = () => {
                                 <h2 className="text-lg font-bold text-gray-800">Asset Image</h2>
                             </div>
                             <div className="p-8">
-                                <ImageUpload 
-                                    label="Upload Asset Image"
-                                    uploadUrl={`http://localhost:5000/api/assets/${id}/image`}
-                                    fieldName="image"
-                                    initialImage={asset.imageUrl}
-                                    onUploadSuccess={(imageUrl) => {
-                                        setAsset(prev => ({ ...prev, imageUrl: imageUrl }));
-                                        fetchAssetDetails();
-                                    }}
-                                />
+                                {user?.role !== 'Auditor' ? (
+                                    <ImageUpload
+                                        label="Upload Asset Image"
+                                        uploadUrl={`/assets/${id}/image`}
+                                        fieldName="image"
+                                        initialImage={asset.imageUrl}
+                                        onUploadSuccess={(imageUrl) => {
+                                            setAsset(prev => ({ ...prev, imageUrl: imageUrl }));
+                                            fetchAssetDetails();
+                                        }}
+                                    />
+                                ) : (
+                                    <div className="flex justify-center p-4">
+                                        <img
+                                            src={asset.imageUrl || 'https://via.placeholder.com/300?text=No+Image'}
+                                            alt={asset.name}
+                                            className="max-h-64 rounded-2xl shadow-sm"
+                                        />
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -343,75 +339,69 @@ const AssetDetails = () => {
                                 {(() => {
                                     const warrantyStatus = getExpiryStatus(asset.warrantyExpiry);
                                     const Icon = warrantyStatus.icon;
-                                    
+
                                     return (
-                                        <div className={`rounded-2xl border-2 p-6 transition-all duration-300 ${
-                                            warrantyStatus.status === 'active' 
-                                                ? 'bg-emerald-50 border-emerald-200' 
-                                                : warrantyStatus.status === 'expiring' 
-                                                ? 'bg-amber-50 border-amber-200' 
+                                        <div className={`rounded-2xl border-2 p-6 transition-all duration-300 ${warrantyStatus.status === 'active'
+                                            ? 'bg-emerald-50 border-emerald-200'
+                                            : warrantyStatus.status === 'expiring'
+                                                ? 'bg-amber-50 border-amber-200'
                                                 : warrantyStatus.status === 'expired'
-                                                ? 'bg-red-50 border-red-200'
-                                                : 'bg-gray-50 border-gray-200'
-                                        }`}>
+                                                    ? 'bg-red-50 border-red-200'
+                                                    : 'bg-gray-50 border-gray-200'
+                                            }`}>
                                             <div className="flex items-start justify-between mb-4">
                                                 <div className="flex items-center gap-3">
-                                                    <div className={`p-3 rounded-xl ${
-                                                        warrantyStatus.status === 'active' 
-                                                            ? 'bg-emerald-100' 
-                                                            : warrantyStatus.status === 'expiring' 
-                                                            ? 'bg-amber-100' 
+                                                    <div className={`p-3 rounded-xl ${warrantyStatus.status === 'active'
+                                                        ? 'bg-emerald-100'
+                                                        : warrantyStatus.status === 'expiring'
+                                                            ? 'bg-amber-100'
                                                             : warrantyStatus.status === 'expired'
-                                                            ? 'bg-red-100'
-                                                            : 'bg-gray-100'
-                                                    }`}>
-                                                        <Icon className={`w-6 h-6 ${
-                                                            warrantyStatus.status === 'active' 
-                                                                ? 'text-emerald-600' 
-                                                                : warrantyStatus.status === 'expiring' 
-                                                                ? 'text-amber-600' 
+                                                                ? 'bg-red-100'
+                                                                : 'bg-gray-100'
+                                                        }`}>
+                                                        <Icon className={`w-6 h-6 ${warrantyStatus.status === 'active'
+                                                            ? 'text-emerald-600'
+                                                            : warrantyStatus.status === 'expiring'
+                                                                ? 'text-amber-600'
                                                                 : warrantyStatus.status === 'expired'
-                                                                ? 'text-red-600'
-                                                                : 'text-gray-500'
-                                                        }`} />
+                                                                    ? 'text-red-600'
+                                                                    : 'text-gray-500'
+                                                            }`} />
                                                     </div>
                                                     <div>
-                                                        <h3 className={`text-lg font-bold ${
-                                                            warrantyStatus.status === 'active' 
-                                                                ? 'text-emerald-900' 
-                                                                : warrantyStatus.status === 'expiring' 
-                                                                ? 'text-amber-900' 
+                                                        <h3 className={`text-lg font-bold ${warrantyStatus.status === 'active'
+                                                            ? 'text-emerald-900'
+                                                            : warrantyStatus.status === 'expiring'
+                                                                ? 'text-amber-900'
                                                                 : warrantyStatus.status === 'expired'
-                                                                ? 'text-red-900'
-                                                                : 'text-gray-700'
-                                                        }`}>
+                                                                    ? 'text-red-900'
+                                                                    : 'text-gray-700'
+                                                            }`}>
                                                             {warrantyStatus.label}
                                                         </h3>
-                                                        <p className={`text-sm font-medium ${
-                                                            warrantyStatus.status === 'active' 
-                                                                ? 'text-emerald-700' 
-                                                                : warrantyStatus.status === 'expiring' 
-                                                                ? 'text-amber-700' 
+                                                        <p className={`text-sm font-medium ${warrantyStatus.status === 'active'
+                                                            ? 'text-emerald-700'
+                                                            : warrantyStatus.status === 'expiring'
+                                                                ? 'text-amber-700'
                                                                 : warrantyStatus.status === 'expired'
-                                                                ? 'text-red-700'
-                                                                : 'text-gray-500'
-                                                        }`}>
-                                                            {asset.warrantyExpiry 
+                                                                    ? 'text-red-700'
+                                                                    : 'text-gray-500'
+                                                            }`}>
+                                                            {asset.warrantyExpiry
                                                                 ? `Expires: ${new Date(asset.warrantyExpiry).toLocaleDateString()}`
                                                                 : 'No warranty information available'}
                                                         </p>
                                                     </div>
                                                 </div>
                                                 {warrantyStatus.daysRemaining !== null && (
-                                                    <div className={`px-4 py-2 rounded-full font-bold text-sm ${
-                                                        warrantyStatus.status === 'active' 
-                                                            ? 'bg-emerald-100 text-emerald-700' 
-                                                            : warrantyStatus.status === 'expiring' 
-                                                            ? 'bg-amber-100 text-amber-700' 
+                                                    <div className={`px-4 py-2 rounded-full font-bold text-sm ${warrantyStatus.status === 'active'
+                                                        ? 'bg-emerald-100 text-emerald-700'
+                                                        : warrantyStatus.status === 'expiring'
+                                                            ? 'bg-amber-100 text-amber-700'
                                                             : 'bg-red-100 text-red-700'
-                                                    }`}>
-                                                        {warrantyStatus.daysRemaining > 0 
-                                                            ? `${warrantyStatus.daysRemaining} days left` 
+                                                        }`}>
+                                                        {warrantyStatus.daysRemaining > 0
+                                                            ? `${warrantyStatus.daysRemaining} days left`
                                                             : `Expired ${Math.abs(warrantyStatus.daysRemaining)} days ago`}
                                                     </div>
                                                 )}
@@ -455,13 +445,15 @@ const AssetDetails = () => {
                                                 </div>
                                             </div>
                                         </div>
-                                        <button 
-                                            onClick={handleReturnClick}
-                                            className="bg-white border border-red-100 text-red-600 px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-red-50 transition-all active:scale-95 flex items-center gap-2"
-                                        >
-                                            <RotateCcw className="w-4 h-4" />
-                                            Unassign
-                                        </button>
+                                        {user?.role !== 'Auditor' && (
+                                            <button
+                                                onClick={handleReturnClick}
+                                                className="bg-white border border-red-100 text-red-600 px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-red-50 transition-all active:scale-95 flex items-center gap-2"
+                                            >
+                                                <RotateCcw className="w-4 h-4" />
+                                                Unassign
+                                            </button>
+                                        )}
                                     </div>
                                 ) : (
                                     <div className="text-center py-10">
@@ -470,12 +462,14 @@ const AssetDetails = () => {
                                         </div>
                                         <p className="text-gray-800 font-bold text-lg">Unassigned</p>
                                         <p className="text-gray-400 text-sm mt-1">This asset is ready to be assigned.</p>
-                                        <button 
-                                            onClick={() => navigate(`/assets/${asset._id}/assign`)}
-                                            className="mt-6 bg-blue-600 text-white px-8 py-3 rounded-xl font-bold text-sm shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all active:scale-95"
-                                        >
-                                            Assign Now
-                                        </button>
+                                        {user?.role !== 'Auditor' && (
+                                            <button
+                                                onClick={() => navigate(`/assets/${asset._id}/assign`)}
+                                                className="mt-6 bg-blue-600 text-white px-8 py-3 rounded-xl font-bold text-sm shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all active:scale-95"
+                                            >
+                                                Assign Now
+                                            </button>
+                                        )}
                                     </div>
                                 )}
                             </div>
@@ -519,7 +513,7 @@ const AssetDetails = () => {
                 </div>
             </div>
 
-            <ReturnConfirmModal 
+            <ReturnConfirmModal
                 isOpen={isReturnModalOpen}
                 onClose={() => setIsReturnModalOpen(false)}
                 onConfirm={confirmReturn}
@@ -535,7 +529,7 @@ const AssetDetails = () => {
                 initialData={asset}
             />
 
-            <DeleteConfirmModal 
+            <DeleteConfirmModal
                 isOpen={isDeleteModalOpen}
                 onClose={() => setIsDeleteModalOpen(false)}
                 onConfirm={confirmDelete}

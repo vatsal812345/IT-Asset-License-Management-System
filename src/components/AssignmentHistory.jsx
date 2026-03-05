@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Search, Loader, RefreshCw, AlertCircle, Monitor, KeyRound, ChevronDown, ChevronRight, Users, User } from 'lucide-react';
+import api from '../utils/api';
 
 const AssignmentHistory = () => {
     const [searchParams] = useSearchParams();
@@ -23,9 +24,9 @@ const AssignmentHistory = () => {
     const fetchAssetHistory = async () => {
         setLoading(true);
         try {
-            const response = await fetch('http://localhost:5000/api/assets');
-            const data = await response.json();
-            
+            const response = await api.get('/assets');
+            const data = response.data;
+
             if (data.success) {
                 const historyData = data.data.filter(a => a.currentAssignedTo).map(a => ({
                     _id: a._id,
@@ -36,7 +37,7 @@ const AssignmentHistory = () => {
                     status: 'Assigned',
                     type: 'assignment'
                 }));
-                
+
                 setAssignments(historyData);
             }
         } catch (error) {
@@ -49,9 +50,9 @@ const AssignmentHistory = () => {
     const fetchLicenseHistory = async () => {
         setLoading(true);
         try {
-            const response = await fetch('http://localhost:5000/api/licenses');
-            const data = await response.json();
-            
+            const response = await api.get('/licenses');
+            const data = response.data;
+
             if (data.success) {
                 // Store full license objects for utilization and expandable rows
                 const processed = data.data.map(license => {
@@ -120,7 +121,7 @@ const AssignmentHistory = () => {
         setExpandedRows(prev => ({ ...prev, [id]: !prev[id] }));
     };
 
-    const filteredAssetHistory = assignments.filter(item => 
+    const filteredAssetHistory = assignments.filter(item =>
         item.assetName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.assetTag.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.employeeName.toLowerCase().includes(searchQuery.toLowerCase())
@@ -145,9 +146,9 @@ const AssignmentHistory = () => {
                     <span>{used} / {total}</span>
                 </div>
                 <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden border border-gray-50">
-                    <div 
+                    <div
                         className={`h-full ${barColor} rounded-full shadow-sm`}
-                        style={{ 
+                        style={{
                             width: `${percentage}%`,
                             transition: 'width 1s ease-out'
                         }}
@@ -180,28 +181,26 @@ const AssignmentHistory = () => {
                         <div className="flex items-center bg-gray-100 rounded-xl p-1">
                             <button
                                 onClick={() => { setActiveView('assets'); setSearchQuery(''); }}
-                                className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-bold transition-all duration-300 ${
-                                    activeView === 'assets'
+                                className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-bold transition-all duration-300 ${activeView === 'assets'
                                         ? 'bg-white text-blue-600 shadow-sm'
                                         : 'text-gray-500 hover:text-gray-700'
-                                }`}
+                                    }`}
                             >
                                 <Monitor className="w-4 h-4" />
                                 <span>Asset History</span>
                             </button>
                             <button
                                 onClick={() => { setActiveView('licenses'); setSearchQuery(''); }}
-                                className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-bold transition-all duration-300 ${
-                                    activeView === 'licenses'
+                                className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-bold transition-all duration-300 ${activeView === 'licenses'
                                         ? 'bg-white text-indigo-600 shadow-sm'
                                         : 'text-gray-500 hover:text-gray-700'
-                                }`}
+                                    }`}
                             >
                                 <KeyRound className="w-4 h-4" />
                                 <span>License History</span>
                             </button>
                         </div>
-                        <button 
+                        <button
                             onClick={handleRefresh}
                             className="flex items-center space-x-2 bg-white border border-gray-100 text-gray-600 px-5 py-2.5 rounded-xl font-bold text-sm shadow-sm hover:bg-gray-50 transition-all"
                         >
@@ -217,8 +216,8 @@ const AssignmentHistory = () => {
                         <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                         <input
                             type="text"
-                            placeholder={activeView === 'assets' 
-                                ? 'Search by asset name, tag, or employee...' 
+                            placeholder={activeView === 'assets'
+                                ? 'Search by asset name, tag, or employee...'
                                 : 'Search by license name, key, or vendor...'}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
@@ -249,8 +248,8 @@ const AssignmentHistory = () => {
                                         </thead>
                                         <tbody className="divide-y divide-gray-50">
                                             {filteredAssetHistory.map((item, index) => (
-                                                <tr 
-                                                    key={index} 
+                                                <tr
+                                                    key={index}
                                                     className="hover:bg-blue-50/30 transition-all duration-300 group cursor-default"
                                                 >
                                                     <td className="px-8 py-5">
@@ -316,19 +315,18 @@ const AssignmentHistory = () => {
                                             {filteredLicenseHistory.map((license, index) => (
                                                 <React.Fragment key={license._id}>
                                                     {/* Main License Row */}
-                                                    <tr 
+                                                    <tr
                                                         className="hover:bg-indigo-50/30 transition-all duration-300 group cursor-pointer"
                                                         onClick={() => toggleRow(license._id)}
                                                     >
                                                         {/* Expand/Collapse Icon */}
                                                         <td className="px-4 py-5">
-                                                            <div className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all duration-300 ${
-                                                                expandedRows[license._id] 
-                                                                    ? 'bg-indigo-100 text-indigo-600' 
+                                                            <div className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all duration-300 ${expandedRows[license._id]
+                                                                    ? 'bg-indigo-100 text-indigo-600'
                                                                     : 'bg-gray-50 text-gray-400 group-hover:bg-indigo-50 group-hover:text-indigo-500'
-                                                            }`}>
-                                                                {expandedRows[license._id] 
-                                                                    ? <ChevronDown className="w-4 h-4" /> 
+                                                                }`}>
+                                                                {expandedRows[license._id]
+                                                                    ? <ChevronDown className="w-4 h-4" />
                                                                     : <ChevronRight className="w-4 h-4" />
                                                                 }
                                                             </div>
@@ -342,10 +340,10 @@ const AssignmentHistory = () => {
                                                         </td>
                                                         {/* Utilization */}
                                                         <td className="px-6 py-5">
-                                                            <UtilizationBar 
-                                                                used={license.usedSeats} 
-                                                                total={license.totalSeats} 
-                                                                percentage={license.percentage} 
+                                                            <UtilizationBar
+                                                                used={license.usedSeats}
+                                                                total={license.totalSeats}
+                                                                percentage={license.percentage}
                                                             />
                                                         </td>
                                                         {/* Assigned To Summary */}
@@ -398,7 +396,7 @@ const AssignmentHistory = () => {
                                                                         {license.employees.length > 0 ? (
                                                                             <div className="grid gap-3">
                                                                                 {license.employees.map((emp, i) => (
-                                                                                    <div 
+                                                                                    <div
                                                                                         key={emp._id}
                                                                                         className="flex items-center justify-between bg-white rounded-2xl px-5 py-4 border border-gray-100 shadow-sm hover:shadow-md hover:border-indigo-100 transition-all duration-300"
                                                                                         style={{ animationDelay: `${i * 80}ms` }}

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
+import api from '../utils/api';
 import { Search, Plus, Filter, Edit, Trash2, Loader, BarChart3, ShieldCheck, Clock, Users, Package, UserPlus, ChevronDown, ChevronRight, User, ShieldAlert, ShieldX, Download } from 'lucide-react';
 import LicenseForm from './LicenseForm';
 import DeleteConfirmModal from './DeleteConfirmModal';
@@ -10,6 +12,7 @@ import { exportToCSV, formatDateForCSV } from '../utils/csvExport';
 
 const LicenseList = () => {
     const navigate = useNavigate();
+    const { user } = useAuth();
     const { checkItemAndNotify } = useNotifications();
     const [licenses, setLicenses] = useState([]);
     const [filteredLicenses, setFilteredLicenses] = useState([]);
@@ -17,7 +20,7 @@ const LicenseList = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [categoryFilter, setCategoryFilter] = useState('All');
     const [expiryFilter, setExpiryFilter] = useState('All');
-    
+
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingLicense, setEditingLicense] = useState(null);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -48,8 +51,8 @@ const LicenseList = () => {
     const fetchLicenses = async () => {
         setLoading(true);
         try {
-            const response = await fetch('http://localhost:5000/api/licenses');
-            const data = await response.json();
+            const response = await api.get('/licenses');
+            const data = response.data;
             if (data.success) {
                 setLicenses(data.data);
                 setFilteredLicenses(data.data);
@@ -100,19 +103,14 @@ const LicenseList = () => {
 
     const handleCreateUpdate = async (formData) => {
         try {
-            const url = editingLicense
-                ? `http://localhost:5000/api/licenses/${editingLicense._id}`
-                : 'http://localhost:5000/api/licenses';
-            
-            const method = editingLicense ? 'PUT' : 'POST';
+            let response;
+            if (editingLicense) {
+                response = await api.put(`/licenses/${editingLicense._id}`, formData);
+            } else {
+                response = await api.post('/licenses', formData);
+            }
 
-            const response = await fetch(url, {
-                method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData),
-            });
-
-            const data = await response.json();
+            const data = response.data;
             if (data.success) {
                 // Immediately check and notify for license expiry
                 checkItemAndNotify(formData, 'license');
@@ -137,10 +135,8 @@ const LicenseList = () => {
         if (!selectedDeleteLicense) return;
         setIsDeleting(true);
         try {
-            const response = await fetch(`http://localhost:5000/api/licenses/${selectedDeleteLicense._id}`, {
-                method: 'DELETE',
-            });
-            const data = await response.json();
+            const response = await api.delete(`/licenses/${selectedDeleteLicense._id}`);
+            const data = response.data;
             if (data.success) {
                 fetchLicenses();
                 setIsDeleteModalOpen(false);
@@ -176,8 +172,8 @@ const LicenseList = () => {
                 { key: 'category', header: 'Category' },
                 { key: 'totalSeats', header: 'Total Seats' },
                 { key: 'usedSeats', header: 'Used Seats' },
-                { 
-                    key: 'utilization', 
+                {
+                    key: 'utilization',
                     header: 'Utilization %',
                     accessor: (license) => Math.round((license.usedSeats || 0) / license.totalSeats * 100) || 0
                 },
@@ -215,7 +211,7 @@ const LicenseList = () => {
                     <span>{used} / {total}</span>
                 </div>
                 <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden border border-gray-50">
-                    <div 
+                    <div
                         className={`h-full ${barColor} transition-all duration-1000 ease-out rounded-full shadow-sm`}
                         style={{ width: `${percentage}%` }}
                     />
@@ -248,13 +244,15 @@ const LicenseList = () => {
                         )}
                         <span>{isExporting ? 'Generating...' : 'Export Data'}</span>
                     </button>
-                    <button
-                        onClick={() => navigate('/licenses/register')}
-                        className="flex items-center space-x-2 bg-brand-primary text-white px-6 py-3 rounded-2xl font-bold text-sm shadow-premium shadow-indigo-200 hover:shadow-hover hover:-translate-y-1 transition-all duration-300 w-full md:w-auto justify-center group"
-                    >
-                        <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
-                        <span>Register License</span>
-                    </button>
+                    {['Admin', 'Manager'].includes(user?.role) && (
+                        <button
+                            onClick={() => navigate('/licenses/register')}
+                            className="flex items-center space-x-2 bg-brand-primary text-white px-6 py-3 rounded-2xl font-bold text-sm shadow-premium shadow-indigo-200 hover:shadow-hover hover:-translate-y-1 transition-all duration-300 w-full md:w-auto justify-center group"
+                        >
+                            <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
+                            <span>Register License</span>
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -355,182 +353,186 @@ const LicenseList = () => {
                                         const employees = getEmployees(license);
                                         const isExpanded = expandedRows[license._id];
                                         return (
-                                        <React.Fragment key={license._id}>
-                                        <tr 
-                                            className="hover:bg-blue-50/40 transition-colors group cursor-pointer"
-                                            onClick={() => toggleRow(license._id)}
-                                        >
-                                            <td className="px-8 py-6">
-                                                <div className="flex items-center space-x-4">
-                                                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center border transition-all duration-300 ${
-                                                        isExpanded 
-                                                            ? 'bg-indigo-100 text-indigo-600 border-indigo-200' 
-                                                            : 'bg-indigo-50 text-indigo-600 border-indigo-100 group-hover:bg-white'
-                                                    }`}>
-                                                        {isExpanded 
-                                                            ? <ChevronDown className="w-5 h-5" /> 
-                                                            : <Package className="w-6 h-6" />
-                                                        }
-                                                    </div>
-                                                    <div>
-                                                        <p 
-                                                            className="text-sm font-extrabold text-gray-900 group-hover:text-blue-600 transition-colors cursor-pointer hover:underline decoration-blue-300 underline-offset-2"
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                navigate(`/history?license=${encodeURIComponent(license.softwareName)}`);
-                                                            }}
-                                                            title="View license history"
-                                                        >{license.softwareName}</p>
-                                                        <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mt-0.5">{license.vendor || 'Unknown Vendor'}</p>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="px-8 py-6">
-                                                <span className="text-xs font-bold font-mono bg-gray-100 px-3 py-1.5 rounded-xl border border-gray-200 text-gray-600 group-hover:bg-white transition-colors">
-                                                    {license.licenseKey}
-                                                </span>
-                                            </td>
-                                            <td className="px-8 py-6 max-w-[200px]">
-                                                <UtilizationBar used={license.usedSeats || 0} total={license.totalSeats} />
-                                            </td>
-                                            <td className="px-8 py-6">
-                                                <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ${getStatusColor(license.status)}`}>
-                                                    {license.status}
-                                                </span>
-                                            </td>
-                                            <td className="px-8 py-6">
-                                                {(() => {
-                                                    const expiryStatus = getExpiryStatus(license.expiryDate);
-                                                    const Icon = expiryStatus.icon;
-                                                    return (
-                                                        <div className="flex flex-col gap-2">
-                                                            <span 
-                                                                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 hover:scale-105 w-fit ${
-                                                                    expiryStatus.status === 'active' 
-                                                                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' 
-                                                                        : expiryStatus.status === 'expiring' 
-                                                                        ? 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100' 
-                                                                        : expiryStatus.status === 'expired'
-                                                                        ? 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100'
-                                                                        : 'bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100'
-                                                                }`}
-                                                            >
-                                                                <Icon className="w-3.5 h-3.5" />
-                                                                {expiryStatus.label}
-                                                            </span>
-                                                            {license.expiryDate && (
-                                                                <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest flex items-center gap-1">
-                                                                    <Clock className="w-3 h-3" />
-                                                                    {expiryStatus.daysRemaining > 0 
-                                                                        ? `${expiryStatus.daysRemaining} days left` 
-                                                                        : expiryStatus.daysRemaining < 0
-                                                                        ? `Expired ${Math.abs(expiryStatus.daysRemaining)} days ago`
-                                                                        : 'Expires today'}
-                                                                </span>
+                                            <React.Fragment key={license._id}>
+                                                <tr
+                                                    className="hover:bg-blue-50/40 transition-colors group cursor-pointer"
+                                                    onClick={() => toggleRow(license._id)}
+                                                >
+                                                    <td className="px-8 py-6">
+                                                        <div className="flex items-center space-x-4">
+                                                            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center border transition-all duration-300 ${isExpanded
+                                                                ? 'bg-indigo-100 text-indigo-600 border-indigo-200'
+                                                                : 'bg-indigo-50 text-indigo-600 border-indigo-100 group-hover:bg-white'
+                                                                }`}>
+                                                                {isExpanded
+                                                                    ? <ChevronDown className="w-5 h-5" />
+                                                                    : <Package className="w-6 h-6" />
+                                                                }
+                                                            </div>
+                                                            <div>
+                                                                <p
+                                                                    className="text-sm font-extrabold text-gray-900 group-hover:text-blue-600 transition-colors cursor-pointer hover:underline decoration-blue-300 underline-offset-2"
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        navigate(`/history?license=${encodeURIComponent(license.softwareName)}`);
+                                                                    }}
+                                                                    title="View license history"
+                                                                >{license.softwareName}</p>
+                                                                <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mt-0.5">{license.vendor || 'Unknown Vendor'}</p>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-8 py-6">
+                                                        <span className="text-xs font-bold font-mono bg-gray-100 px-3 py-1.5 rounded-xl border border-gray-200 text-gray-600 group-hover:bg-white transition-colors">
+                                                            {license.licenseKey}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-8 py-6 max-w-[200px]">
+                                                        <UtilizationBar used={license.usedSeats || 0} total={license.totalSeats} />
+                                                    </td>
+                                                    <td className="px-8 py-6">
+                                                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ${getStatusColor(license.status)}`}>
+                                                            {license.status}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-8 py-6">
+                                                        {(() => {
+                                                            const expiryStatus = getExpiryStatus(license.expiryDate);
+                                                            const Icon = expiryStatus.icon;
+                                                            return (
+                                                                <div className="flex flex-col gap-2">
+                                                                    <span
+                                                                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 hover:scale-105 w-fit ${expiryStatus.status === 'active'
+                                                                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+                                                                            : expiryStatus.status === 'expiring'
+                                                                                ? 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'
+                                                                                : expiryStatus.status === 'expired'
+                                                                                    ? 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100'
+                                                                                    : 'bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100'
+                                                                            }`}
+                                                                    >
+                                                                        <Icon className="w-3.5 h-3.5" />
+                                                                        {expiryStatus.label}
+                                                                    </span>
+                                                                    {license.expiryDate && (
+                                                                        <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest flex items-center gap-1">
+                                                                            <Clock className="w-3 h-3" />
+                                                                            {expiryStatus.daysRemaining > 0
+                                                                                ? `${expiryStatus.daysRemaining} days left`
+                                                                                : expiryStatus.daysRemaining < 0
+                                                                                    ? `Expired ${Math.abs(expiryStatus.daysRemaining)} days ago`
+                                                                                    : 'Expires today'}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                            );
+                                                        })()}
+                                                    </td>
+                                                    <td className="px-8 py-6 text-right">
+                                                        <div className="flex items-center justify-end space-x-2 transition-opacity">
+                                                            {['Admin', 'Manager'].includes(user?.role) && (
+                                                                <>
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            navigate(`/licenses/${license._id}/assign`);
+                                                                        }}
+                                                                        className="p-3 text-emerald-600 bg-emerald-50 border border-emerald-100 rounded-2xl hover:bg-emerald-600 hover:text-white hover:border-emerald-600 hover:shadow-lg hover:shadow-emerald-200 transition-all duration-300"
+                                                                        title="Assign License"
+                                                                    >
+                                                                        <UserPlus className="w-4 h-4" />
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            setEditingLicense(license);
+                                                                            setIsFormOpen(true);
+                                                                        }}
+                                                                        className="p-3 text-blue-600 bg-blue-50 border border-blue-100 rounded-2xl hover:bg-blue-600 hover:text-white hover:border-blue-600 hover:shadow-lg hover:shadow-blue-200 transition-all duration-300"
+                                                                        title="Edit"
+                                                                    >
+                                                                        <Edit className="w-4 h-4" />
+                                                                    </button>
+                                                                </>
+                                                            )}
+                                                            {user?.role === 'Admin' && (
+                                                                <button
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        handleDeleteClick(license);
+                                                                    }}
+                                                                    className="p-3 text-red-500 bg-red-50 border border-red-100 rounded-2xl hover:bg-red-500 hover:text-white hover:border-red-500 hover:shadow-lg hover:shadow-red-200 transition-all duration-300"
+                                                                    title="Delete"
+                                                                >
+                                                                    <Trash2 className="w-4 h-4" />
+                                                                </button>
                                                             )}
                                                         </div>
-                                                    );
-                                                })()}
-                                            </td>
-                                            <td className="px-8 py-6 text-right">
-                                                <div className="flex items-center justify-end space-x-2 transition-opacity">
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            navigate(`/licenses/${license._id}/assign`);
-                                                        }}
-                                                        className="p-3 text-emerald-600 bg-emerald-50 border border-emerald-100 rounded-2xl hover:bg-emerald-600 hover:text-white hover:border-emerald-600 hover:shadow-lg hover:shadow-emerald-200 transition-all duration-300"
-                                                        title="Assign License"
-                                                    >
-                                                        <UserPlus className="w-4 h-4" />
-                                                    </button>
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            setEditingLicense(license);
-                                                            setIsFormOpen(true);
-                                                        }}
-                                                        className="p-3 text-blue-600 bg-blue-50 border border-blue-100 rounded-2xl hover:bg-blue-600 hover:text-white hover:border-blue-600 hover:shadow-lg hover:shadow-blue-200 transition-all duration-300"
-                                                        title="Edit"
-                                                    >
-                                                        <Edit className="w-4 h-4" />
-                                                    </button>
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handleDeleteClick(license);
-                                                        }}
-                                                        className="p-3 text-red-500 bg-red-50 border border-red-100 rounded-2xl hover:bg-red-500 hover:text-white hover:border-red-500 hover:shadow-lg hover:shadow-red-200 transition-all duration-300"
-                                                        title="Delete"
-                                                    >
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
+                                                    </td>
+                                                </tr>
 
-                                        {/* Expanded Employee Details */}
-                                        {isExpanded && (
-                                            <tr>
-                                                <td colSpan="6" className="px-0 py-0">
-                                                    <div className="bg-linear-to-b from-indigo-50/50 to-white border-t border-indigo-100" style={{ animation: 'slideDown 0.35s ease-out forwards', overflow: 'hidden' }}>
-                                                        <div className="px-12 py-5">
-                                                            <div className="flex items-center space-x-2 mb-4">
-                                                                <Users className="w-4 h-4 text-indigo-500" />
-                                                                <span className="text-xs font-bold text-indigo-600 uppercase tracking-widest">
-                                                                    Assigned Employees ({employees.length})
-                                                                </span>
-                                                            </div>
-                                                            {employees.length > 0 ? (
-                                                                <div className="grid gap-3">
-                                                                    {employees.map((emp, i) => (
-                                                                        <div 
-                                                                            key={emp._id}
-                                                                            className="flex items-center justify-between bg-white rounded-2xl px-5 py-4 border border-gray-100 shadow-sm hover:shadow-md hover:border-indigo-100 transition-all duration-300"
-                                                                        >
-                                                                            <div className="flex items-center space-x-4">
-                                                                                <div className="w-10 h-10 rounded-xl bg-linear-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold shadow-sm">
-                                                                                    {emp.name.split(' ').map(n => n[0]).join('')}
-                                                                                </div>
-                                                                                <div>
-                                                                                    <p className="text-sm font-bold text-gray-900">{emp.name}</p>
-                                                                                    <div className="flex items-center space-x-3 mt-0.5">
-                                                                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{emp.employeeId}</span>
-                                                                                        {emp.department !== 'N/A' && (
-                                                                                            <>
-                                                                                                <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-                                                                                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{emp.department}</span>
-                                                                                            </>
-                                                                                        )}
+                                                {/* Expanded Employee Details */}
+                                                {isExpanded && (
+                                                    <tr>
+                                                        <td colSpan="6" className="px-0 py-0">
+                                                            <div className="bg-linear-to-b from-indigo-50/50 to-white border-t border-indigo-100" style={{ animation: 'slideDown 0.35s ease-out forwards', overflow: 'hidden' }}>
+                                                                <div className="px-12 py-5">
+                                                                    <div className="flex items-center space-x-2 mb-4">
+                                                                        <Users className="w-4 h-4 text-indigo-500" />
+                                                                        <span className="text-xs font-bold text-indigo-600 uppercase tracking-widest">
+                                                                            Assigned Employees ({employees.length})
+                                                                        </span>
+                                                                    </div>
+                                                                    {employees.length > 0 ? (
+                                                                        <div className="grid gap-3">
+                                                                            {employees.map((emp, i) => (
+                                                                                <div
+                                                                                    key={emp._id}
+                                                                                    className="flex items-center justify-between bg-white rounded-2xl px-5 py-4 border border-gray-100 shadow-sm hover:shadow-md hover:border-indigo-100 transition-all duration-300"
+                                                                                >
+                                                                                    <div className="flex items-center space-x-4">
+                                                                                        <div className="w-10 h-10 rounded-xl bg-linear-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold shadow-sm">
+                                                                                            {emp.name.split(' ').map(n => n[0]).join('')}
+                                                                                        </div>
+                                                                                        <div>
+                                                                                            <p className="text-sm font-bold text-gray-900">{emp.name}</p>
+                                                                                            <div className="flex items-center space-x-3 mt-0.5">
+                                                                                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{emp.employeeId}</span>
+                                                                                                {emp.department !== 'N/A' && (
+                                                                                                    <>
+                                                                                                        <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
+                                                                                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{emp.department}</span>
+                                                                                                    </>
+                                                                                                )}
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div className="flex items-center space-x-3">
+                                                                                        <span className="text-xs font-medium text-gray-400">{emp.assignedAt}</span>
+                                                                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-600 border border-emerald-100">
+                                                                                            1 Seat
+                                                                                        </span>
                                                                                     </div>
                                                                                 </div>
+                                                                            ))}
+                                                                        </div>
+                                                                    ) : (
+                                                                        <div className="flex items-center space-x-3 bg-white rounded-2xl px-5 py-4 border border-dashed border-gray-200">
+                                                                            <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-gray-300">
+                                                                                <User className="w-5 h-5" />
                                                                             </div>
-                                                                            <div className="flex items-center space-x-3">
-                                                                                <span className="text-xs font-medium text-gray-400">{emp.assignedAt}</span>
-                                                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-600 border border-emerald-100">
-                                                                                    1 Seat
-                                                                                </span>
+                                                                            <div>
+                                                                                <p className="text-sm font-bold text-gray-500">No employees assigned</p>
+                                                                                <p className="text-xs text-gray-400 mt-0.5">This license has no active seat assignments yet.</p>
                                                                             </div>
                                                                         </div>
-                                                                    ))}
+                                                                    )}
                                                                 </div>
-                                                            ) : (
-                                                                <div className="flex items-center space-x-3 bg-white rounded-2xl px-5 py-4 border border-dashed border-gray-200">
-                                                                    <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-gray-300">
-                                                                        <User className="w-5 h-5" />
-                                                                    </div>
-                                                                    <div>
-                                                                        <p className="text-sm font-bold text-gray-500">No employees assigned</p>
-                                                                        <p className="text-xs text-gray-400 mt-0.5">This license has no active seat assignments yet.</p>
-                                                                    </div>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        )}
-                                        </React.Fragment>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                )}
+                                            </React.Fragment>
                                         );
                                     })
                                 ) : (
@@ -552,7 +554,7 @@ const LicenseList = () => {
                         </table>
                     </div>
                 )}
-                                {/* Bottom Results Count */}
+                {/* Bottom Results Count */}
                 {!loading && filteredLicenses.length > 0 && (
                     <div className="px-8 py-4 border-t border-gray-100">
                         <div className="text-sm text-gray-600 font-medium">
@@ -561,7 +563,7 @@ const LicenseList = () => {
                         </div>
                     </div>
                 )}
-                                {/* Pagination */}
+                {/* Pagination */}
                 {!loading && filteredLicenses.length > 0 && (
                     <Pagination
                         currentPage={currentPage}
@@ -580,7 +582,7 @@ const LicenseList = () => {
                 initialData={editingLicense}
             />
 
-            <DeleteConfirmModal 
+            <DeleteConfirmModal
                 isOpen={isDeleteModalOpen}
                 onClose={() => setIsDeleteModalOpen(false)}
                 onConfirm={confirmDelete}
