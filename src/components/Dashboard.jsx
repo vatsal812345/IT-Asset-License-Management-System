@@ -46,19 +46,19 @@ import AssetForm from './AssetForm';
 const StatCard = ({ title, value, icon: Icon, color, onClick }) => (
     <div
         onClick={onClick}
-        className="bg-white p-8 rounded-3xl shadow-premium border border-slate-50 flex flex-col gap-6 transition-all duration-500 hover:shadow-hover hover:-translate-y-2 cursor-pointer group relative overflow-hidden"
+        className="bg-white dark:bg-dark-card p-6 md:p-8 rounded-3xl shadow-premium border border-slate-50 dark:border-dark-border flex flex-col gap-4 md:gap-6 transition-all duration-500 hover:shadow-hover hover:-translate-y-2 cursor-pointer group relative overflow-hidden"
     >
-        <div className="absolute top-0 right-0 w-32 h-32 bg-linear-to-br from-indigo-50/50 to-transparent rounded-full -mr-16 -mt-16 transition-transform duration-700 group-hover:scale-150"></div>
+        <div className="absolute top-0 right-0 w-24 h-24 md:w-32 md:h-32 bg-linear-to-br from-indigo-50/50 to-transparent rounded-full -mr-12 -mt-12 md:-mr-16 md:-mt-16 transition-transform duration-700 group-hover:scale-150"></div>
 
-        <div className={`w-14 h-14 rounded-2xl ${color.bg} flex items-center justify-center shadow-sm group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 relative z-10`}>
-            <Icon className={`w-7 h-7 ${color.text}`} />
+        <div className={`w-12 h-12 md:w-14 md:h-14 rounded-2xl ${color.bg} flex items-center justify-center shadow-sm group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 relative z-10`}>
+            <Icon className={`w-6 h-6 md:w-7 md:h-7 ${color.text}`} />
         </div>
 
         <div className="relative z-10">
-            <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">{title}</p>
+            <p className="text-slate-400 dark:text-slate-500 text-[10px] md:text-xs font-bold uppercase tracking-widest mb-1">{title}</p>
             <div className="flex items-baseline gap-2">
-                <p className="text-4xl font-black text-slate-900 tracking-tight group-hover:text-brand-primary transition-colors duration-300">{value}</p>
-                <ArrowUpRight className="w-5 h-5 text-indigo-200 opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0" />
+                <p className="text-2xl md:text-4xl font-black text-slate-900 dark:text-white tracking-tight group-hover:text-brand-primary transition-colors duration-300">{value}</p>
+                <ArrowUpRight className="w-4 h-4 md:w-5 md:h-5 text-indigo-200 dark:text-slate-600 opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0" />
             </div>
         </div>
     </div>
@@ -202,24 +202,24 @@ const Dashboard = () => {
 
     if (loading && !stats.totalAssets) {
         return (
-            <div className="flex h-screen items-center justify-center bg-gray-50">
+            <div className="flex h-screen items-center justify-center bg-gray-50 dark:bg-dark-bg">
                 <Loader className="w-10 h-10 text-blue-500 animate-spin" />
             </div>
         );
     }
 
     return (
-        <div className="p-8 bg-gray-50/50 min-h-screen animate-fade-in-up">
-            <header className="mb-12">
+        <div className="p-4 md:p-8 bg-gray-50/50 dark:bg-dark-bg/50 min-h-screen animate-fade-in-up">
+            <header className="mb-8 md:mb-12">
                 <div className="flex items-center gap-3 mb-2">
                     <div className="w-8 h-1 bg-brand-primary rounded-full"></div>
-                    <h2 className="text-brand-primary font-bold text-xs uppercase tracking-[0.2em]">System Overview</h2>
+                    <h2 className="text-brand-primary font-bold text-[10px] md:text-xs uppercase tracking-[0.2em]">System Overview</h2>
                 </div>
-                <h1 className="text-4xl font-black text-slate-900 tracking-tight">IT Asset & License Management System </h1>
-                <p className="text-slate-500 font-medium mt-1 uppercase text-[10px] tracking-widest">Real-time IT Asset Intelligence & Monitoring</p>
+                <h1 className="text-2xl md:text-4xl font-black text-slate-900 dark:text-white tracking-tight">IT Asset & License Management</h1>
+                <p className="text-slate-500 dark:text-slate-400 font-medium mt-1 uppercase text-[8px] md:text-[10px] tracking-widest">Real-time IT Asset Intelligence & Monitoring</p>
             </header>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-12">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 md:gap-6 mb-8 md:mb-12">
                 {statCards.map((stat, index) => (
                     <div key={index} className="animate-slide-up" style={{ animationDelay: `${index * 0.1}s` }}>
                         <StatCard {...stat} onClick={() => stat.title.includes('License') || stat.title === 'Expiring Soon' ? navigate('/licenses') : handleCardClick(stat.title)} />
@@ -229,19 +229,19 @@ const Dashboard = () => {
 
             {/* Warranty / Expiry Alerts Section */}
             {(expiringItems.assets.length > 0 || expiringItems.licenses.length > 0) && (
-                <div className="bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 rounded-2xl shadow-lg p-6 mb-10 animate-slide-up">
+                <div className="bg-linear-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border-2 border-amber-200 dark:border-amber-900/40 rounded-2xl shadow-lg p-6 mb-10 animate-slide-up">
                     <div className="flex items-center gap-3 mb-6">
-                        <AlertTriangle className="w-6 h-6 text-amber-600" />
-                        <h2 className="text-xl font-bold text-amber-900">Warranty & Expiry Alerts</h2>
+                        <AlertTriangle className="w-6 h-6 text-amber-600 dark:text-amber-500" />
+                        <h2 className="text-xl font-bold text-amber-900 dark:text-amber-200">Warranty & Expiry Alerts</h2>
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {/* Expiring Assets */}
                         {expiringItems.assets.length > 0 && (
-                            <div className="bg-white rounded-xl p-5 shadow-sm border border-amber-100">
+                            <div className="bg-white dark:bg-slate-800/50 rounded-xl p-5 shadow-sm border border-amber-100 dark:border-amber-900/20">
                                 <div className="flex items-center justify-between mb-4">
-                                    <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                                        <ShieldAlert className="w-5 h-5 text-amber-600" />
+                                    <h3 className="text-lg font-semibold text-gray-800 dark:text-white flex items-center gap-2">
+                                        <ShieldAlert className="w-5 h-5 text-amber-600 dark:text-amber-500" />
                                         Expiring Assets ({expiringItems.assets.length})
                                     </h3>
                                     <button
@@ -257,21 +257,21 @@ const Dashboard = () => {
                                         return (
                                             <div
                                                 key={asset._id}
-                                                className="p-3 rounded-lg border border-gray-100 hover:border-amber-200 hover:shadow-md transition-all duration-200 cursor-pointer group"
+                                                className="p-3 rounded-lg border border-gray-100 dark:border-dark-border hover:border-amber-200 dark:hover:border-amber-700 hover:shadow-md transition-all duration-200 cursor-pointer group"
                                                 onClick={() => navigate(`/assets/${asset._id}`)}
                                             >
                                                 <div className="flex items-start justify-between mb-2">
                                                     <div className="flex-1">
-                                                        <p className="font-semibold text-gray-800 text-sm group-hover:text-amber-700 transition-colors">
+                                                        <p className="font-semibold text-gray-800 dark:text-gray-200 text-sm group-hover:text-amber-700 transition-colors">
                                                             {asset.name}
                                                         </p>
-                                                        <p className="text-xs text-gray-500 mt-1">
+                                                        <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">
                                                             {asset.assetTag} • {asset.category}
                                                         </p>
                                                     </div>
                                                     <span className={`px-2 py-1 rounded-full text-xs font-semibold ${status.status === 'expired'
-                                                            ? 'bg-red-100 text-red-700'
-                                                            : 'bg-amber-100 text-amber-700'
+                                                            ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+                                                            : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400'
                                                         }`}>
                                                         {status.label}
                                                     </span>
@@ -293,10 +293,10 @@ const Dashboard = () => {
 
                         {/* Expiring Licenses */}
                         {expiringItems.licenses.length > 0 && (
-                            <div className="bg-white rounded-xl p-5 shadow-sm border border-amber-100">
+                            <div className="bg-white dark:bg-slate-800/50 rounded-xl p-5 shadow-sm border border-amber-100 dark:border-amber-900/20">
                                 <div className="flex items-center justify-between mb-4">
-                                    <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                                        <ShieldAlert className="w-5 h-5 text-amber-600" />
+                                    <h3 className="text-lg font-semibold text-gray-800 dark:text-white flex items-center gap-2">
+                                        <ShieldAlert className="w-5 h-5 text-amber-600 dark:text-amber-500" />
                                         Expiring Licenses ({expiringItems.licenses.length})
                                     </h3>
                                     <button
@@ -312,21 +312,21 @@ const Dashboard = () => {
                                         return (
                                             <div
                                                 key={license._id}
-                                                className="p-3 rounded-lg border border-gray-100 hover:border-amber-200 hover:shadow-md transition-all duration-200 cursor-pointer group"
+                                                className="p-3 rounded-lg border border-gray-100 dark:border-dark-border hover:border-amber-200 dark:hover:border-amber-700 hover:shadow-md transition-all duration-200 cursor-pointer group"
                                                 onClick={() => navigate('/licenses')}
                                             >
                                                 <div className="flex items-start justify-between mb-2">
                                                     <div className="flex-1">
-                                                        <p className="font-semibold text-gray-800 text-sm group-hover:text-amber-700 transition-colors">
+                                                        <p className="font-semibold text-gray-800 dark:text-gray-200 text-sm group-hover:text-amber-700 transition-colors">
                                                             {license.softwareName}
                                                         </p>
-                                                        <p className="text-xs text-gray-500 mt-1">
+                                                        <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">
                                                             {license.vendor} • {license.licenseKey?.slice(0, 8)}...
                                                         </p>
                                                     </div>
                                                     <span className={`px-2 py-1 rounded-full text-xs font-semibold ${status.status === 'expired'
-                                                            ? 'bg-red-100 text-red-700'
-                                                            : 'bg-amber-100 text-amber-700'
+                                                            ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+                                                            : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400'
                                                         }`}>
                                                         {status.label}
                                                     </span>
@@ -351,9 +351,9 @@ const Dashboard = () => {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
                 {/* License Utilization */}
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 min-h-[400px]">
+                <div className="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-dark-border min-h-[400px]">
                     <div className="flex items-center justify-between mb-8">
-                        <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                        <h2 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
                             License Utilization
                         </h2>
                         <button onClick={() => navigate('/licenses')} className="text-blue-600 text-xs font-bold uppercase tracking-widest hover:underline transition-all">View All</button>
@@ -368,30 +368,30 @@ const Dashboard = () => {
 
                                 // Enhanced Color and Gradient Logic
                                 let gradientClass = 'from-emerald-400 to-teal-500';
-                                let badgeClass = 'bg-emerald-50 text-emerald-700 border-emerald-100';
+                                let badgeClass = 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/50';
                                 let glowColor = 'rgba(16, 185, 129, 0.4)';
 
                                 if (percentage > 80) {
                                     gradientClass = 'from-rose-500 to-red-600';
-                                    badgeClass = 'bg-red-50 text-red-700 border-red-100';
+                                    badgeClass = 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border-red-100 dark:border-red-900/50';
                                     glowColor = 'rgba(239, 68, 68, 0.4)';
                                 } else if (percentage > 60) {
                                     gradientClass = 'from-amber-400 to-orange-500';
-                                    badgeClass = 'bg-amber-50 text-amber-700 border-amber-100';
+                                    badgeClass = 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border-amber-100 dark:border-amber-900/50';
                                     glowColor = 'rgba(245, 158, 11, 0.4)';
                                 }
 
                                 return (
                                     <div
                                         key={license._id}
-                                        className="p-5 rounded-2xl border border-slate-50 hover:border-indigo-100 hover:shadow-xl hover:scale-[1.02] transition-all duration-500 group relative bg-white overflow-hidden"
+                                        className="p-5 rounded-2xl border border-slate-50 dark:border-dark-border hover:border-indigo-100 dark:hover:border-indigo-900 hover:shadow-xl hover:scale-[1.02] transition-all duration-500 group relative bg-white dark:bg-slate-800/50 overflow-hidden"
                                     >
                                         <div className="flex justify-between items-start mb-4 relative z-10">
                                             <div>
-                                                <h3 className="text-sm font-black text-slate-800 group-hover:text-indigo-600 transition-colors duration-300 flex items-center gap-2">
+                                                <h3 className="text-sm font-black text-slate-800 dark:text-slate-200 group-hover:text-indigo-600 transition-colors duration-300 flex items-center gap-2">
                                                     {license.softwareName}
                                                 </h3>
-                                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.15em] mt-0.5">{license.vendor}</p>
+                                                <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-[0.15em] mt-0.5">{license.vendor}</p>
                                             </div>
                                             <div className={`px-3 py-1 rounded-full border ${badgeClass} text-[10px] font-black tracking-wider shadow-sm animate-pulse-subtle`}>
                                                 {percentage}% USED
@@ -406,13 +406,13 @@ const Dashboard = () => {
                                                     </span>
                                                 </div>
                                                 <div className="text-right">
-                                                    <span className="text-[11px] font-black text-slate-600">
-                                                        {used} <span className="text-slate-300 mx-0.5">/</span> {total} <span className="text-[9px] text-slate-400 uppercase tracking-tighter ml-0.5 font-bold">Seats</span>
+                                                    <span className="text-[11px] font-black text-slate-600 dark:text-slate-400">
+                                                        {used} <span className="text-slate-300 dark:text-slate-700 mx-0.5">/</span> {total} <span className="text-[9px] text-slate-400 dark:text-slate-600 uppercase tracking-tighter ml-0.5 font-bold">Seats</span>
                                                     </span>
                                                 </div>
                                             </div>
 
-                                            <div className="relative h-3 w-full bg-slate-100 rounded-full overflow-hidden border border-slate-50 shadow-inner">
+                                            <div className="relative h-3 w-full bg-slate-100 dark:bg-slate-900/50 rounded-full overflow-hidden border border-slate-50 dark:border-dark-border shadow-inner">
                                                 {/* Animated Bar */}
                                                 <div
                                                     style={{
@@ -431,26 +431,26 @@ const Dashboard = () => {
                                         </div>
 
                                         {/* Background Decoration */}
-                                        <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-slate-50 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-700 scale-0 group-hover:scale-150 z-0"></div>
+                                        <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-slate-50 dark:bg-slate-700 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-700 scale-0 group-hover:scale-150 z-0"></div>
                                     </div>
                                 );
                             })
                         ) : (
-                            <div className="text-center py-16 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-                                <ShieldAlert className="w-10 h-10 text-slate-300 mx-auto mb-3 opacity-50" />
-                                <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">No Active Licenses</p>
+                            <div className="text-center py-16 bg-slate-50 dark:bg-slate-900/30 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800">
+                                <ShieldAlert className="w-10 h-10 text-slate-300 dark:text-slate-700 mx-auto mb-3 opacity-50" />
+                                <p className="text-sm font-bold text-slate-400 dark:text-slate-600 uppercase tracking-widest">No Active Licenses</p>
                             </div>
                         )}
                     </div>
                 </div>
 
                 {/* Asset Distribution Chart */}
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col min-h-[400px]">
-                    <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                <div className="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-dark-border flex flex-col min-h-[350px] md:min-h-[400px]">
+                    <h2 className="text-lg md:text-xl font-bold text-gray-800 dark:text-white mb-6 flex items-center gap-2">
                         Asset Distribution
                     </h2>
-                    <div className="flex-1 min-h-[250px] w-full items-center justify-center flex">
-                        <ResponsiveContainer width="100%" height={280}>
+                    <div className="flex-1 min-h-[200px] md:min-h-[250px] w-full items-center justify-center flex">
+                        <ResponsiveContainer width="100%" height={240}>
                             <PieChart>
                                 <Pie
                                     data={[
@@ -460,8 +460,8 @@ const Dashboard = () => {
                                     ]}
                                     cx="50%"
                                     cy="50%"
-                                    innerRadius={60}
-                                    outerRadius={80}
+                                    innerRadius={50}
+                                    outerRadius={70}
                                     paddingAngle={5}
                                     dataKey="value"
                                 >
@@ -474,23 +474,36 @@ const Dashboard = () => {
                                     ))}
                                 </Pie>
                                 <Tooltip
-                                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}
+                                    contentStyle={{ 
+                                        borderRadius: '12px', 
+                                        border: 'none', 
+                                        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+                                        backgroundColor: document.documentElement.className.includes('dark') ? '#1e293b' : '#ffffff',
+                                        color: document.documentElement.className.includes('dark') ? '#f8fafc' : '#0f172a'
+                                    }}
+                                    itemStyle={{
+                                        color: document.documentElement.className.includes('dark') ? '#f8fafc' : '#0f172a'
+                                    }}
                                 />
-                                <Legend verticalAlign="bottom" height={36} />
+                                <Legend 
+                                    verticalAlign="bottom" 
+                                    height={36}
+                                    formatter={(value) => <span className="text-slate-600 dark:text-slate-400 text-xs font-bold uppercase tracking-wider">{value}</span>}
+                                />
                             </PieChart>
                         </ResponsiveContainer>
                     </div>
                     <div className="grid grid-cols-3 gap-2 mt-4">
                         <div className="text-center">
-                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Available</p>
+                            <p className="text-[10px] text-gray-400 dark:text-slate-500 font-bold uppercase tracking-widest">Available</p>
                             <p className="text-lg font-bold text-emerald-600">{stats.available}</p>
                         </div>
-                        <div className="text-center border-x border-gray-100">
-                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Assigned</p>
+                        <div className="text-center border-x border-gray-100 dark:border-dark-border">
+                            <p className="text-[10px] text-gray-400 dark:text-slate-500 font-bold uppercase tracking-widest">Assigned</p>
                             <p className="text-lg font-bold text-blue-600">{stats.assigned}</p>
                         </div>
                         <div className="text-center">
-                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Repair</p>
+                            <p className="text-[10px] text-gray-400 dark:text-slate-500 font-bold uppercase tracking-widest">Repair</p>
                             <p className="text-lg font-bold text-amber-600">{stats.underRepair}</p>
                         </div>
                     </div>
@@ -499,9 +512,9 @@ const Dashboard = () => {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Recent Activity Feed */}
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col lg:col-span-2 min-h-[400px]">
+                <div className="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-dark-border flex flex-col lg:col-span-2 min-h-[400px]">
                     <div className="flex items-center justify-between mb-8">
-                        <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                        <h2 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
                             Recent Activity Feed
                         </h2>
                         <button onClick={() => navigate('/history')} className="text-blue-600 text-xs font-bold uppercase tracking-widest hover:underline transition-all">View All History</button>
@@ -519,17 +532,17 @@ const Dashboard = () => {
                                 if (activity.status === 'Assigned') {
                                     typeLabel = "Asset Assigned";
                                     typeIcon = UserPlus;
-                                    iconColor = "bg-purple-50 text-purple-600";
+                                    iconColor = "bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400";
                                     actionMessage = `Asset ${activity.name} was assigned to an employee.`;
                                 } else if (activity.status === 'Available') {
                                     typeLabel = "Asset Returned";
                                     typeIcon = CheckCircle;
-                                    iconColor = "bg-emerald-50 text-emerald-600";
+                                    iconColor = "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400";
                                     actionMessage = `Asset ${activity.name} is now available.`;
                                 } else if (activity.status === 'Under Repair') {
                                     typeLabel = "Maintenance";
                                     typeIcon = Wrench;
-                                    iconColor = "bg-orange-50 text-orange-600";
+                                    iconColor = "bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400";
                                     actionMessage = `Asset ${activity.name} sent for repair.`;
                                 } else {
                                     actionMessage = `Asset ${activity.name} was updated.`;
@@ -539,8 +552,8 @@ const Dashboard = () => {
                                 const timeAgo = new Date(activity.updatedAt).toLocaleString();
 
                                 return (
-                                    <div key={activity._id} className="flex gap-4 p-5 rounded-2xl hover:bg-white hover:shadow-premium transition-all duration-300 border border-transparent hover:border-slate-50 group animate-slide-up" style={{ animationDelay: `${index * 0.05}s` }}>
-                                        <div className={`w-14 h-14 rounded-2xl overflow-hidden flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 transition-transform duration-500 ${activity.image ? 'p-0.5 bg-slate-50' : iconColor}`}>
+                                    <div key={activity._id} className="flex gap-4 p-5 rounded-2xl hover:bg-white dark:hover:bg-slate-800/50 hover:shadow-premium transition-all duration-300 border border-transparent hover:border-slate-50 dark:hover:border-dark-border group animate-slide-up" style={{ animationDelay: `${index * 0.05}s` }}>
+                                        <div className={`w-14 h-14 rounded-2xl overflow-hidden flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 transition-transform duration-500 ${activity.image ? 'p-0.5 bg-slate-50 dark:bg-slate-900' : iconColor}`}>
                                             {activity.image ? (
                                                 <img src={activity.image} alt={activity.name} className="w-full h-full object-cover rounded-xl" />
                                             ) : (
@@ -549,15 +562,15 @@ const Dashboard = () => {
                                         </div>
                                         <div className="flex-1">
                                             <div className="flex justify-between items-start">
-                                                <h4 className="text-sm font-bold text-slate-800 mb-1 group-hover:text-brand-primary transition-colors">{typeLabel}</h4>
-                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                                                <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-1 group-hover:text-brand-primary transition-colors">{typeLabel}</h4>
+                                                <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
                                                     <Clock className="w-3 h-3 text-indigo-400" />
                                                     {timeAgo}
                                                 </span>
                                             </div>
-                                            <p className="text-sm text-slate-500 line-clamp-1">{actionMessage}</p>
+                                            <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-1">{actionMessage}</p>
                                             <div className="mt-3 flex items-center gap-3">
-                                                <span className="text-[10px] font-bold bg-slate-50 text-slate-500 px-2.5 py-1 rounded-lg uppercase tracking-wider">{activity.assetTag}</span>
+                                                <span className="text-[10px] font-bold bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 px-2.5 py-1 rounded-lg uppercase tracking-wider">{activity.assetTag}</span>
                                                 <button onClick={(e) => { e.stopPropagation(); navigate(`/assets/${activity._id}`); }} className="text-[10px] font-bold text-brand-primary hover:tracking-widest transition-all duration-300 uppercase">View Record →</button>
                                             </div>
                                         </div>
@@ -574,35 +587,35 @@ const Dashboard = () => {
                 </div>
 
                 {/* Quick Actions */}
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-fit">
-                    <h2 className="text-xl font-bold text-gray-800 mb-8 font-extrabold uppercase tracking-tight">
+                <div className="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-dark-border h-fit">
+                    <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-8 font-extrabold uppercase tracking-tight">
                         Quick Actions
                     </h2>
                     <div className="grid grid-cols-1 gap-4">
-                        <button
+                                <button
                             onClick={() => navigate('/licenses/register')}
-                            className="w-full bg-blue-600 text-white px-6 py-4 rounded-xl font-bold text-sm shadow-lg shadow-blue-100 hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-between group"
+                            className="w-full bg-blue-600 dark:bg-indigo-600 text-white px-6 py-4 rounded-xl font-bold text-sm shadow-lg shadow-blue-100 dark:shadow-none hover:bg-blue-700 dark:hover:bg-indigo-700 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-between group"
                         >
                             <span>Register License</span>
                             <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform" />
                         </button>
                         <button
                             onClick={() => setIsAssetFormOpen(true)}
-                            className="w-full bg-indigo-600 text-white px-6 py-4 rounded-xl font-bold text-sm shadow-lg shadow-indigo-100 hover:bg-indigo-700 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-between group"
+                            className="w-full bg-indigo-600 dark:bg-indigo-500 text-white px-6 py-4 rounded-xl font-bold text-sm shadow-lg shadow-indigo-100 dark:shadow-none hover:bg-indigo-700 dark:hover:bg-indigo-600 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-between group"
                         >
                             <span>Add Asset</span>
                             <Monitor className="w-5 h-5 transition-bounce" />
                         </button>
                         <button
                             onClick={() => navigate('/licenses')}
-                            className="w-full bg-emerald-600 text-white px-6 py-4 rounded-xl font-bold text-sm shadow-lg shadow-emerald-100 hover:bg-emerald-700 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-between group"
+                            className="w-full bg-emerald-600 dark:bg-emerald-500 text-white px-6 py-4 rounded-xl font-bold text-sm shadow-lg shadow-emerald-100 dark:shadow-none hover:bg-emerald-700 dark:hover:bg-emerald-600 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-between group"
                         >
                             <span>Manage Licenses</span>
                             <ShieldCheck className="w-5 h-5 transition-transform" />
                         </button>
                         <button
                             onClick={() => navigate('/licenses/any/assign')}
-                            className="w-full bg-purple-600 text-white px-6 py-4 rounded-xl font-bold text-sm shadow-lg shadow-purple-100 hover:bg-purple-700 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-between group"
+                            className="w-full bg-purple-600 dark:bg-purple-500 text-white px-6 py-4 rounded-xl font-bold text-sm shadow-lg shadow-purple-100 dark:shadow-none hover:bg-purple-700 dark:hover:bg-purple-600 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-between group"
                         >
                             <span>Assign License</span>
                             <UserPlus className="w-5 h-5 transition-transform" />
@@ -616,12 +629,15 @@ const Dashboard = () => {
                     width: 6px;
                 }
                 .custom-scrollbar::-webkit-scrollbar-track {
-                    background: #f1f1f1;
+                    background: transparent;
                     border-radius: 10px;
                 }
                 .custom-scrollbar::-webkit-scrollbar-thumb {
-                    background: #e2e8f0;
+                    background: #e2e8f033;
                     border-radius: 10px;
+                }
+                .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+                    background: #334155;
                 }
                 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
                     background: #cbd5e1;

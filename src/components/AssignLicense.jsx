@@ -8,7 +8,8 @@ import {
     Loader,
     AlertCircle,
     CheckCircle2,
-    ShieldCheck
+    ShieldCheck,
+    ArrowLeft
 } from 'lucide-react';
 import EmployeeAutocomplete from './EmployeeAutocomplete';
 import api from '../utils/api';
@@ -131,60 +132,68 @@ const AssignLicense = () => {
     };
 
     if (loading) return (
-        <div className="flex h-screen items-center justify-center">
+        <div className="flex h-screen items-center justify-center bg-gray-50 dark:bg-dark-bg transition-colors">
             <Loader className="w-10 h-10 text-blue-500 animate-spin" />
         </div>
     );
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
-            <div className="bg-white w-full max-w-4xl rounded-[2.5rem] shadow-2xl overflow-hidden border border-gray-100 flex flex-col">
+        <div className="min-h-screen bg-gray-50 dark:bg-dark-bg flex flex-col items-center justify-center p-4 transition-colors duration-500 font-sans">
+            <div className="bg-white dark:bg-dark-card w-full max-w-4xl rounded-[2.5rem] shadow-2xl dark:shadow-none overflow-hidden border border-gray-100 dark:border-dark-border flex flex-col transition-colors">
                 <div className="p-10 pb-4">
-                    <div className="flex items-center space-x-3 mb-2">
-                        <div className="p-2 bg-indigo-50 rounded-xl">
-                            <ShieldCheck className="w-6 h-6 text-indigo-600" />
+                    <div className="flex items-center space-x-5 mb-6">
+                        <button
+                            onClick={() => navigate(-1)}
+                            className="p-3 bg-white dark:bg-dark-card border border-gray-100 dark:border-dark-border rounded-2xl hover:bg-gray-50 dark:hover:bg-slate-800 transition-all shadow-sm group"
+                        >
+                            <ArrowLeft className="w-5 h-5 text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
+                        </button>
+                        <div className="flex items-center space-x-3">
+                            <div className="p-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl transition-colors">
+                                <ShieldCheck className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+                            </div>
+                            <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest transition-colors">Provisioning</span>
                         </div>
-                        <span className="text-xs font-bold text-indigo-600 uppercase tracking-widest">Provisioning</span>
                     </div>
-                    <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">Assign License</h1>
-                    <p className="text-gray-500 mt-2 font-medium">Provision software seats to organization employees.</p>
+                    <h1 className="text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight transition-colors">Assign License</h1>
+                    <p className="text-gray-500 dark:text-slate-400 mt-2 font-medium transition-colors">Provision software seats to organization employees.</p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-10 pt-4 space-y-8">
                     {/* License Selection */}
                     <div className="space-y-2">
-                        <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Select Software License</label>
+                        <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest ml-1 transition-colors">Select Software License</label>
                         <div className="relative group">
                             <select
                                 value={selectedLicenseId}
                                 onChange={(e) => setSelectedLicenseId(e.target.value)}
-                                className="w-full h-14 pl-5 pr-12 bg-gray-50 border border-gray-200 rounded-2xl appearance-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all outline-none font-bold text-gray-800"
+                                className="w-full h-14 pl-5 pr-12 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-dark-border rounded-2xl appearance-none focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/40 focus:border-blue-500 outline-none transition-all font-bold text-gray-800 dark:text-white transition-colors"
                             >
                                 <option value="" disabled>Select a license with available seats</option>
                                 {availableLicenses.map(l => (
                                     <option key={l._id} value={l._id}>{l.softwareName} ({l.licenseKey}) - {l.totalSeats - (l.usedSeats || 0)} left</option>
                                 ))}
                             </select>
-                            <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 group-hover:text-blue-500 transition-colors pointer-events-none" />
+                            <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 group-hover:text-blue-500 transition-colors pointer-events-none" />
                         </div>
                     </div>
 
                     {/* Employee Autocomplete & ID */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div className="space-y-2">
-                            <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Employee Name</label>
+                            <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest ml-1 transition-colors">Employee Name</label>
                             <EmployeeAutocomplete
                                 onSelect={handleEmployeeSelect}
                             />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Employee ID</label>
+                            <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest ml-1 transition-colors">Employee ID</label>
                             <input
                                 readOnly
                                 type="text"
                                 value={formData.employeeId}
                                 placeholder="Auto-filled from selection"
-                                className="w-full h-14 px-5 bg-gray-100 border border-gray-200 rounded-2xl outline-none font-bold text-gray-500 cursor-not-allowed"
+                                className="w-full h-14 px-5 bg-gray-100 dark:bg-slate-900/50 border border-gray-200 dark:border-dark-border rounded-2xl outline-none font-bold text-gray-500 dark:text-slate-600 cursor-not-allowed transition-colors"
                             />
                         </div>
                     </div>
@@ -192,35 +201,35 @@ const AssignLicense = () => {
                     {/* Department & Date */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div className="space-y-2">
-                            <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Department</label>
+                            <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest ml-1 transition-colors">Department</label>
                             <input
                                 readOnly
                                 type="text"
                                 value={formData.department}
                                 placeholder="Auto-filled from selection"
-                                className="w-full h-14 px-5 bg-gray-100 border border-gray-200 rounded-2xl outline-none font-bold text-gray-500 cursor-not-allowed"
+                                className="w-full h-14 px-5 bg-gray-100 dark:bg-slate-900/50 border border-gray-200 dark:border-dark-border rounded-2xl outline-none font-bold text-gray-500 dark:text-slate-600 cursor-not-allowed transition-colors"
                             />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Assignment Date</label>
+                            <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest ml-1 transition-colors">Assignment Date</label>
                             <input
                                 type="date"
                                 value={formData.assignmentDate}
                                 onChange={(e) => setFormData({ ...formData, assignmentDate: e.target.value })}
-                                className="w-full h-14 px-5 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all font-bold text-gray-800 cursor-pointer"
+                                className="w-full h-14 px-5 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-dark-border rounded-2xl focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/40 focus:border-blue-500 outline-none transition-all font-bold text-gray-800 dark:text-white cursor-pointer color-scheme-dark transition-colors"
                             />
                         </div>
                     </div>
 
                     {/* Notes */}
                     <div className="space-y-2">
-                        <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Notes</label>
+                        <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest ml-1 transition-colors">Notes</label>
                         <textarea
                             rows="3"
                             value={formData.notes}
                             onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                             placeholder="Add any specific licensing notes or hardware restrictions..."
-                            className="w-full p-5 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all font-medium resize-none text-gray-800"
+                            className="w-full p-5 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-dark-border rounded-2xl focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/40 focus:border-blue-500 outline-none transition-all font-medium resize-none text-gray-800 dark:text-white transition-colors"
                         />
                     </div>
 
@@ -229,7 +238,7 @@ const AssignLicense = () => {
                         <button
                             type="button"
                             onClick={() => navigate(-1)}
-                            className="px-8 py-4 bg-white text-gray-500 rounded-2xl font-bold text-sm hover:bg-gray-100 transition-all border border-gray-100"
+                            className="px-8 py-4 bg-white dark:bg-dark-card text-gray-500 dark:text-slate-400 rounded-2xl font-bold text-sm hover:bg-gray-100 dark:hover:bg-slate-800 transition-all border border-gray-100 dark:border-dark-border transition-colors"
                         >
                             Cancel
                         </button>
@@ -237,8 +246,8 @@ const AssignLicense = () => {
                             type="submit"
                             disabled={submitting || !isEmployeeSelected}
                             className={`px-10 py-4 rounded-2xl font-bold text-sm shadow-xl transition-all flex items-center gap-2 ${submitting || !isEmployeeSelected
-                                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                    : 'bg-linear-to-r from-blue-600 to-indigo-600 text-white shadow-blue-100 hover:shadow-blue-200 hover:scale-[1.02] active:scale-[0.98]'
+                                    ? 'bg-gray-300 dark:bg-slate-800 text-gray-500 dark:text-slate-600 cursor-not-allowed shadow-none'
+                                    : 'bg-linear-to-r from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-500 text-white shadow-blue-100 dark:shadow-none hover:shadow-blue-200 hover:scale-[1.02] active:scale-[0.98]'
                                 }`}
                         >
                             {submitting ? <Loader className="w-5 h-5 animate-spin" /> : (

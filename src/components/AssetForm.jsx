@@ -32,18 +32,34 @@ const AssetForm = ({ isOpen, onClose, onSubmit, initialData }) => {
     imageFile: null,
   });
 
+  const [vendors, setVendors] = useState([]);
+
   useEffect(() => {
+    const fetchVendors = async () => {
+      try {
+        const response = await api.get('/vendors?limit=100');
+        if (response.data.success) {
+          setVendors(response.data.data.vendors);
+        }
+      } catch (error) {
+        console.error('Error fetching vendors:', error);
+      }
+    };
+    fetchVendors();
+
     if (initialData) {
       setFormData({
         ...initialData,
         purchaseDate: initialData.purchaseDate ? initialData.purchaseDate.split('T')[0] : '',
         warrantyExpiry: initialData.warrantyExpiry ? initialData.warrantyExpiry.split('T')[0] : '',
+        vendor: initialData.vendor?._id || initialData.vendor || '',
       });
     } else {
       setFormData({
         name: '',
         assetTag: '',
         category: '',
+        vendor: '',
         brand: '',
         model: '',
         serialNumber: '',
@@ -72,24 +88,24 @@ const AssetForm = ({ isOpen, onClose, onSubmit, initialData }) => {
   const CategoryIcon = selectedCategory ? selectedCategory.icon : Box;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-md p-4 animate-fade-in">
-      <div className="bg-white/95 backdrop-blur-xl rounded-[2.5rem] shadow-premium w-full max-w-2xl max-h-[95vh] overflow-hidden animate-scale-in border border-white/50 flex flex-col">
-        <div className="flex items-center justify-between p-8 border-b border-slate-100 bg-slate-50/50 backdrop-blur-sm shrink-0">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 dark:bg-black/60 backdrop-blur-md p-4 animate-fade-in">
+      <div className="bg-white/95 dark:bg-dark-card backdrop-blur-xl rounded-[2.5rem] shadow-premium w-full max-w-2xl max-h-[95vh] overflow-hidden animate-scale-in border border-white/50 dark:border-dark-border flex flex-col transition-colors duration-500">
+        <div className="flex items-center justify-between p-8 border-b border-slate-100 dark:border-dark-border bg-slate-50/50 dark:bg-slate-900/50 backdrop-blur-sm shrink-0 transition-colors">
           <div>
             <div className="flex items-center gap-2 mb-1">
               <div className="w-2 h-2 bg-brand-primary rounded-full animate-pulse"></div>
               <span className="text-brand-primary font-bold text-[10px] uppercase tracking-widest leading-none">Resource Tracking</span>
             </div>
-            <h2 className="text-3xl font-black text-slate-900 tracking-tight leading-tight">
+            <h2 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight leading-tight transition-colors">
               {initialData ? 'Refine Asset' : 'Register New Asset'}
             </h2>
-            <p className="text-sm text-slate-500 mt-1 font-medium">Capture essential hardware details for enterprise inventory.</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 font-medium transition-colors">Capture essential hardware details for enterprise inventory.</p>
           </div>
           <button
             onClick={onClose}
-            className="p-3 hover:bg-slate-100/80 rounded-2xl transition-all duration-300 group border border-transparent hover:border-slate-200"
+            className="p-3 hover:bg-slate-100/80 dark:hover:bg-slate-800 rounded-2xl transition-all duration-300 group border border-transparent hover:border-slate-200 dark:hover:border-slate-700"
           >
-            <X className="w-5 h-5 text-slate-400 group-hover:text-slate-900" />
+            <X className="w-5 h-5 text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white" />
           </button>
         </div>
 
@@ -110,35 +126,35 @@ const AssetForm = ({ isOpen, onClose, onSubmit, initialData }) => {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Asset Name</label>
+                <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest ml-1 transition-colors">Asset Name</label>
                 <input
                   type="text"
                   name="name"
                   placeholder="e.g. MacBook Pro M3"
                   value={formData.name}
                   onChange={handleChange}
-                  className="w-full h-12 px-5 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all duration-300 font-bold text-gray-800 placeholder:text-gray-300"
+                  className="w-full h-12 px-5 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-dark-border rounded-2xl focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/40 focus:border-blue-500 outline-none transition-all duration-300 font-bold text-gray-800 dark:text-white placeholder:text-gray-300 dark:placeholder:text-slate-600"
                   required
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Asset Tag</label>
+                <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest ml-1 transition-colors">Asset Tag</label>
                 <input
                   type="text"
                   name="assetTag"
                   placeholder="e.g. LAP-101"
                   value={formData.assetTag}
                   onChange={handleChange}
-                  className="w-full h-12 px-5 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all duration-300 font-bold text-gray-800 placeholder:text-gray-300"
+                  className="w-full h-12 px-5 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-dark-border rounded-2xl focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/40 focus:border-blue-500 outline-none transition-all duration-300 font-bold text-gray-800 dark:text-white placeholder:text-gray-300 dark:placeholder:text-slate-600"
                   required
                 />
               </div>
 
               {/* Asset Category Dropdown */}
-              <div className="md:col-span-2 space-y-2">
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Asset Category</label>
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest ml-1 transition-colors">Asset Category</label>
                 <div className="relative group">
-                  <div className={`absolute left-5 top-1/2 -translate-y-1/2 p-1.5 rounded-lg ${selectedCategory ? selectedCategory.bg : 'bg-gray-100'} transition-colors pointer-events-none z-10`}>
+                  <div className={`absolute left-5 top-1/2 -translate-y-1/2 p-1.5 rounded-lg ${selectedCategory ? selectedCategory.bg + ' dark:bg-slate-900/50' : 'bg-gray-100 dark:bg-slate-900/50'} transition-colors pointer-events-none z-10`}>
                     <CategoryIcon className={`w-4 h-4 ${selectedCategory ? selectedCategory.color : 'text-gray-400'}`} />
                   </div>
                   <select
@@ -146,7 +162,7 @@ const AssetForm = ({ isOpen, onClose, onSubmit, initialData }) => {
                     name="category"
                     value={formData.category}
                     onChange={handleChange}
-                    className="w-full h-12 pl-14 pr-12 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all font-bold text-gray-800 appearance-none cursor-pointer"
+                    className="w-full h-12 pl-14 pr-12 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-dark-border rounded-2xl focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/40 focus:border-blue-500 outline-none transition-all font-bold text-gray-800 dark:text-white appearance-none cursor-pointer"
                   >
                     <option value="" disabled>Select Asset Category</option>
                     {CATEGORIES.map((cat) => (
@@ -158,68 +174,88 @@ const AssetForm = ({ isOpen, onClose, onSubmit, initialData }) => {
                   <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none group-hover:text-blue-500 transition-colors" />
                 </div>
               </div>
+
+              {/* Vendor Dropdown */}
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest ml-1 transition-colors">Vendor</label>
+                <div className="relative group">
+                  <select
+                    name="vendor"
+                    value={formData.vendor}
+                    onChange={handleChange}
+                    className="w-full h-12 px-5 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-dark-border rounded-2xl focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/40 focus:border-blue-500 outline-none transition-all duration-300 font-bold text-gray-800 dark:text-white appearance-none cursor-pointer"
+                  >
+                    <option value="">Select Vendor (Optional)</option>
+                    {vendors.map((v) => (
+                      <option key={v._id} value={v._id}>{v.vendorName}</option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none group-hover:text-blue-500 transition-colors" />
+                </div>
+              </div>
+
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Brand</label>
+                <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest ml-1 transition-colors">Brand</label>
                 <input
                   type="text"
                   name="brand"
                   placeholder="e.g. Apple"
                   value={formData.brand}
                   onChange={handleChange}
-                  className="w-full h-12 px-5 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all duration-300 font-bold text-gray-800 placeholder:text-gray-300"
+                  className="w-full h-12 px-5 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-dark-border rounded-2xl focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/40 focus:border-blue-500 outline-none transition-all duration-300 font-bold text-gray-800 dark:text-white placeholder:text-gray-300 dark:placeholder:text-slate-600"
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Model</label>
+                <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest ml-1 transition-colors">Model</label>
                 <input
                   type="text"
                   name="model"
                   placeholder="e.g. A2941"
                   value={formData.model}
                   onChange={handleChange}
-                  className="w-full h-12 px-5 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all duration-300 font-bold text-gray-800 placeholder:text-gray-300"
+                  className="w-full h-12 px-5 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-dark-border rounded-2xl focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/40 focus:border-blue-500 outline-none transition-all duration-300 font-bold text-gray-800 dark:text-white placeholder:text-gray-300 dark:placeholder:text-slate-600"
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Serial Number</label>
+                <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest ml-1 transition-colors">Serial Number</label>
                 <input
                   type="text"
                   name="serialNumber"
                   placeholder="e.g. SN-8231-XJ"
                   value={formData.serialNumber}
                   onChange={handleChange}
-                  className="w-full h-12 px-5 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all duration-300 font-bold text-gray-800 placeholder:text-gray-300"
+                  className="w-full h-12 px-5 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-dark-border rounded-2xl focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/40 focus:border-blue-500 outline-none transition-all duration-300 font-bold text-gray-800 dark:text-white placeholder:text-gray-300 dark:placeholder:text-slate-600"
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Purchase Date</label>
+                <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest ml-1 transition-colors">Purchase Date</label>
                 <input
                   type="date"
                   name="purchaseDate"
                   value={formData.purchaseDate}
                   onChange={handleChange}
-                  className="w-full h-12 px-5 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all duration-300 font-bold text-gray-800 cursor-pointer"
+                  className="w-full h-12 px-5 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-dark-border rounded-2xl focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/40 focus:border-blue-500 outline-none transition-all duration-300 font-bold text-gray-800 dark:text-white cursor-pointer color-scheme-dark"
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Warranty Expiry Date</label>
+                <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest ml-1 transition-colors">Warranty Expiry Date</label>
                 <input
                   type="date"
                   name="warrantyExpiry"
                   value={formData.warrantyExpiry}
                   onChange={handleChange}
-                  className="w-full h-12 px-5 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-emerald-100 focus:border-emerald-500 outline-none transition-all duration-300 font-bold text-gray-800 cursor-pointer"
+                  className="w-full h-12 px-5 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-dark-border rounded-2xl focus:ring-4 focus:ring-emerald-100 dark:focus:ring-emerald-900/40 focus:border-emerald-500 outline-none transition-all duration-300 font-bold text-gray-800 dark:text-white cursor-pointer color-scheme-dark"
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Status</label>
+                <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest ml-1 transition-colors">Status</label>
                 <div className="relative group">
                   <select
                     required
                     name="status"
                     value={formData.status}
                     onChange={handleChange}
-                    className="w-full h-12 px-5 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all duration-300 font-bold text-gray-800 appearance-none cursor-pointer"
+                    className="w-full h-12 px-5 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-dark-border rounded-2xl focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/40 focus:border-blue-500 outline-none transition-all duration-300 font-bold text-gray-800 dark:text-white appearance-none cursor-pointer"
                   >
                     <option value="Available">Available</option>
                     <option value="Assigned">Assigned</option>
@@ -230,30 +266,30 @@ const AssetForm = ({ isOpen, onClose, onSubmit, initialData }) => {
                 </div>
               </div>
               <div className="md:col-span-2 space-y-1.5">
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Location</label>
+                <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest ml-1 transition-colors">Location</label>
                 <input
                   type="text"
                   name="location"
                   placeholder="e.g. Floor 2 - IT Lab"
                   value={formData.location}
                   onChange={handleChange}
-                  className="w-full h-12 px-5 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all duration-300 font-bold text-gray-800 placeholder:text-gray-300"
+                  className="w-full h-12 px-5 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-dark-border rounded-2xl focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/40 focus:border-blue-500 outline-none transition-all duration-300 font-bold text-gray-800 dark:text-white placeholder:text-gray-300 dark:placeholder:text-slate-600"
                 />
               </div>
             </div>
           </div>
 
-          <div className="flex items-center justify-end space-x-4 p-8 border-t border-slate-100 bg-slate-50/50 backdrop-blur-sm shrink-0">
+          <div className="flex items-center justify-end space-x-4 p-8 border-t border-slate-100 dark:border-dark-border bg-slate-50/50 dark:bg-slate-900/50 backdrop-blur-sm shrink-0 transition-colors">
             <button
               type="button"
               onClick={onClose}
-              className="px-8 py-3.5 rounded-2xl text-slate-500 font-bold text-sm hover:bg-slate-100 hover:text-slate-900 transition-all duration-300"
+              className="px-8 py-3.5 rounded-2xl text-slate-500 dark:text-slate-400 font-bold text-sm hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-all duration-300"
             >
               Discard
             </button>
             <button
               type="submit"
-              className="px-10 py-3.5 rounded-2xl bg-brand-primary text-white font-bold text-sm shadow-premium shadow-indigo-100 hover:shadow-hover hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed group flex items-center gap-2"
+              className="px-10 py-3.5 rounded-2xl bg-brand-primary text-white font-bold text-sm shadow-premium shadow-indigo-100 dark:shadow-none hover:shadow-hover hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed group flex items-center gap-2"
             >
               <span>{initialData ? 'Update Asset' : 'Register Asset'}</span>
               <Check className="w-4 h-4 group-hover:scale-125 transition-transform" />

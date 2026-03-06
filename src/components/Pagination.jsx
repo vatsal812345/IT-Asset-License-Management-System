@@ -63,7 +63,7 @@ const Pagination = ({
     const pageNumbers = getPageNumbers();
 
     return (
-        <div className="bg-gradient-to-r from-gray-50 to-white border-t border-gray-200 px-6 py-5 flex items-center justify-center gap-4">
+        <div className="bg-gradient-to-r from-gray-50 to-white dark:from-slate-900 dark:to-dark-card border-t border-gray-200 dark:border-dark-border px-6 py-5 flex items-center justify-center gap-4">
             {/* Pagination Controls */}
             {totalPages > 1 && (
                 <div className="flex items-center gap-2">
@@ -73,8 +73,8 @@ const Pagination = ({
                         disabled={currentPage === 1}
                         className={`px-4 py-2 rounded-full font-medium text-sm transition-all duration-200 flex items-center gap-2 ${
                             currentPage === 1
-                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                : 'bg-white text-gray-700 hover:bg-gray-100 shadow-sm hover:shadow-md'
+                                ? 'bg-gray-100 dark:bg-slate-800 text-gray-400 dark:text-slate-600 cursor-not-allowed'
+                                : 'bg-white dark:bg-dark-card text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 shadow-sm hover:shadow-md dark:border dark:border-dark-border'
                         }`}
                     >
                         <ChevronLeft className="w-4 h-4" />
@@ -101,8 +101,8 @@ const Pagination = ({
                                     onClick={() => onPageChange(page)}
                                     className={`min-w-10 h-10 rounded-full font-semibold text-sm transition-all duration-300 ${
                                         currentPage === page
-                                            ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 scale-110'
-                                            : 'bg-transparent text-gray-700 hover:bg-gray-100'
+                                            ? 'bg-indigo-600 dark:bg-indigo-500 text-white shadow-lg shadow-indigo-200 dark:shadow-indigo-900/40 scale-110'
+                                            : 'bg-transparent text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800'
                                     }`}
                                 >
                                     {page}
@@ -117,8 +117,8 @@ const Pagination = ({
                         disabled={currentPage === totalPages}
                         className={`px-4 py-2 rounded-full font-medium text-sm transition-all duration-200 flex items-center gap-2 ${
                             currentPage === totalPages
-                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                : 'bg-white text-gray-700 hover:bg-gray-100 shadow-sm hover:shadow-md'
+                                ? 'bg-gray-100 dark:bg-slate-800 text-gray-400 dark:text-slate-600 cursor-not-allowed'
+                                : 'bg-white dark:bg-dark-card text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 shadow-sm hover:shadow-md dark:border dark:border-dark-border'
                         }`}
                     >
                         <span>Next</span>

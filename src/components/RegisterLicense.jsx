@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ShieldCheck, Tag, Globe, Package, Calendar, Hash, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, ShieldCheck, Tag, Globe, Package, Calendar, Hash, CheckCircle2, ChevronDown } from 'lucide-react';
 import api from '../utils/api';
 
 const RegisterLicense = () => {
@@ -18,6 +18,22 @@ const RegisterLicense = () => {
         platform: '',
         status: 'Active',
     });
+
+    const [vendors, setVendors] = useState([]);
+
+    useEffect(() => {
+        const fetchVendors = async () => {
+            try {
+                const response = await api.get('/vendors?limit=100');
+                if (response.data.success) {
+                    setVendors(response.data.data.vendors);
+                }
+            } catch (error) {
+                console.error('Error fetching vendors:', error);
+            }
+        };
+        fetchVendors();
+    }, []);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -45,34 +61,34 @@ const RegisterLicense = () => {
     };
 
     return (
-        <div className="p-4 md:p-8 bg-gray-50/30 min-h-screen">
+        <div className="p-4 md:p-8 bg-gray-50/30 dark:bg-dark-bg min-h-screen transition-colors duration-500 font-sans">
             <div className="max-w-4xl mx-auto">
                 {/* Header */}
                 <div className="flex items-center space-x-5 mb-10">
                     <button
                         onClick={() => navigate('/licenses')}
-                        className="p-3 bg-white border border-gray-100 rounded-2xl hover:bg-gray-50 transition-all shadow-sm group"
+                        className="p-3 bg-white dark:bg-dark-card border border-gray-100 dark:border-dark-border rounded-2xl hover:bg-gray-50 dark:hover:bg-slate-800 transition-all shadow-sm group"
                     >
-                        <ArrowLeft className="w-5 h-5 text-gray-400 group-hover:text-blue-600 transition-colors" />
+                        <ArrowLeft className="w-5 h-5 text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
                     </button>
                     <div>
-                        <div className="flex items-center space-x-2 text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">
-                            <span className="hover:text-blue-600 transition-colors cursor-pointer" onClick={() => navigate('/licenses')}>Licenses</span>
-                            <span className="text-gray-300">/</span>
-                            <span className="text-gray-500">Register New</span>
+                        <div className="flex items-center space-x-2 text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-1 transition-colors">
+                            <span className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer" onClick={() => navigate('/licenses')}>Licenses</span>
+                            <span className="text-gray-300 dark:text-slate-700">/</span>
+                            <span className="text-gray-500 dark:text-slate-400">Register New</span>
                         </div>
-                        <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Register License</h1>
+                        <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight transition-colors">Register License</h1>
                     </div>
                 </div>
 
-                <div className="bg-white rounded-[2.5rem] shadow-xl shadow-blue-50/50 border border-gray-100 overflow-hidden outline-none">
+                <div className="bg-white dark:bg-dark-card rounded-[2.5rem] shadow-xl shadow-blue-50/50 dark:shadow-none border border-gray-100 dark:border-dark-border overflow-hidden outline-none transition-colors">
                     <div className="p-8 md:p-12">
                         <form onSubmit={handleSubmit} className="space-y-10">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8">
                                 <div className="space-y-2">
-                                    <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Software Name</label>
+                                    <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest ml-1 transition-colors">Software Name</label>
                                     <div className="relative group">
-                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors">
+                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 group-focus-within:text-blue-500 transition-colors">
                                             <Package className="w-5 h-5" />
                                         </div>
                                         <input
@@ -81,16 +97,16 @@ const RegisterLicense = () => {
                                             placeholder="e.g. Adobe Creative Cloud"
                                             value={formData.softwareName}
                                             onChange={handleChange}
-                                            className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all duration-300 font-bold text-gray-800 placeholder:text-gray-300"
+                                            className="w-full h-14 pl-12 pr-4 bg-gray-50 dark:bg-slate-800/50 border border-gray-100 dark:border-dark-border rounded-2xl focus:bg-white dark:focus:bg-slate-800 focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/40 focus:border-blue-500 outline-none transition-all duration-300 font-bold text-gray-800 dark:text-white placeholder:text-gray-300 dark:placeholder:text-slate-600"
                                             required
                                         />
                                     </div>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">License Key / ID</label>
+                                    <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest ml-1 transition-colors">License Key / ID</label>
                                     <div className="relative group">
-                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors">
+                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 group-focus-within:text-blue-500 transition-colors">
                                             <Hash className="w-5 h-5" />
                                         </div>
                                         <input
@@ -99,37 +115,42 @@ const RegisterLicense = () => {
                                             placeholder="e.g. XXXX-XXXX-XXXX-XXXX"
                                             value={formData.licenseKey}
                                             onChange={handleChange}
-                                            className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all duration-300 font-bold text-gray-800 placeholder:text-gray-300"
+                                            className="w-full h-14 pl-12 pr-4 bg-gray-50 dark:bg-slate-800/50 border border-gray-100 dark:border-dark-border rounded-2xl focus:bg-white dark:focus:bg-slate-800 focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/40 focus:border-blue-500 outline-none transition-all duration-300 font-bold text-gray-800 dark:text-white placeholder:text-gray-300 dark:placeholder:text-slate-600"
                                             required
                                         />
                                     </div>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Vendor</label>
+                                    <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest ml-1 transition-colors">Vendor</label>
                                     <div className="relative group">
-                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors">
+                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 group-focus-within:text-blue-500 transition-colors z-10">
                                             <Globe className="w-5 h-5" />
                                         </div>
-                                        <input
-                                            type="text"
+                                        <select
                                             name="vendor"
-                                            placeholder="e.g. Adobe"
                                             value={formData.vendor}
                                             onChange={handleChange}
-                                            className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all duration-300 font-bold text-gray-800 placeholder:text-gray-300"
-                                        />
+                                            className="w-full h-14 pl-12 pr-10 bg-gray-50 dark:bg-slate-800/50 border border-gray-100 dark:border-dark-border rounded-2xl focus:bg-white dark:focus:bg-slate-800 focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/40 focus:border-blue-500 outline-none transition-all duration-300 font-bold text-gray-800 dark:text-white appearance-none cursor-pointer"
+                                            required
+                                        >
+                                            <option value="">Select Vendor</option>
+                                            {vendors.map((v) => (
+                                                <option key={v._id} value={v._id}>{v.vendorName}</option>
+                                            ))}
+                                        </select>
+                                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none group-focus-within:text-blue-500" />
                                     </div>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">License Type</label>
+                                    <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest ml-1 transition-colors">License Type</label>
                                     <div className="relative group">
                                         <select
                                             name="licenseType"
                                             value={formData.licenseType}
                                             onChange={handleChange}
-                                            className="w-full px-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all duration-300 font-bold text-gray-800 appearance-none cursor-pointer"
+                                            className="w-full h-14 px-4 bg-gray-50 dark:bg-slate-800/50 border border-gray-100 dark:border-dark-border rounded-2xl focus:bg-white dark:focus:bg-slate-800 focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/40 focus:border-blue-500 outline-none transition-all duration-300 font-bold text-gray-800 dark:text-white appearance-none cursor-pointer"
                                             required
                                         >
                                             <option value="">Select Type</option>
@@ -139,23 +160,21 @@ const RegisterLicense = () => {
                                             <option value="OEM">OEM</option>
                                             <option value="Open Source">Open Source</option>
                                         </select>
-                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
-                                        </div>
+                                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none group-focus-within:text-blue-500" />
                                     </div>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Category</label>
+                                    <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest ml-1 transition-colors">Category</label>
                                     <div className="relative group">
-                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors pointer-events-none">
+                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 group-focus-within:text-blue-500 transition-colors pointer-events-none z-10">
                                             <Tag className="w-5 h-5" />
                                         </div>
                                         <select
                                             name="category"
                                             value={formData.category}
                                             onChange={handleChange}
-                                            className="w-full pl-12 pr-10 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all duration-300 font-bold text-gray-800 appearance-none cursor-pointer"
+                                            className="w-full h-14 pl-12 pr-10 bg-gray-50 dark:bg-slate-800/50 border border-gray-100 dark:border-dark-border rounded-2xl focus:bg-white dark:focus:bg-slate-800 focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/40 focus:border-blue-500 outline-none transition-all duration-300 font-bold text-gray-800 dark:text-white appearance-none cursor-pointer"
                                         >
                                             <option value="">Select Category</option>
                                             <option value="Productivity">Productivity</option>
@@ -167,23 +186,21 @@ const RegisterLicense = () => {
                                             <option value="Analytics">Analytics</option>
                                             <option value="Other">Other</option>
                                         </select>
-                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
-                                        </div>
+                                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none group-focus-within:text-blue-500" />
                                     </div>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Platform</label>
+                                    <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest ml-1 transition-colors">Platform</label>
                                     <div className="relative group">
-                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors pointer-events-none">
+                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 group-focus-within:text-blue-500 transition-colors pointer-events-none z-10">
                                             <Globe className="w-5 h-5" />
                                         </div>
                                         <select
                                             name="platform"
                                             value={formData.platform}
                                             onChange={handleChange}
-                                            className="w-full pl-12 pr-10 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all duration-300 font-bold text-gray-800 appearance-none cursor-pointer"
+                                            className="w-full h-14 pl-12 pr-10 bg-gray-50 dark:bg-slate-800/50 border border-gray-100 dark:border-dark-border rounded-2xl focus:bg-white dark:focus:bg-slate-800 focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/40 focus:border-blue-500 outline-none transition-all duration-300 font-bold text-gray-800 dark:text-white appearance-none cursor-pointer"
                                         >
                                             <option value="">Select Platform</option>
                                             <option value="Windows">Windows</option>
@@ -193,16 +210,14 @@ const RegisterLicense = () => {
                                             <option value="Cross-Platform">Cross-Platform</option>
                                             <option value="Other">Other</option>
                                         </select>
-                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
-                                        </div>
+                                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none group-focus-within:text-blue-500" />
                                     </div>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Total Seats / Users</label>
+                                    <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest ml-1 transition-colors">Total Seats / Users</label>
                                     <div className="relative group">
-                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors">
+                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 group-focus-within:text-blue-500 transition-colors">
                                             <ShieldCheck className="w-5 h-5" />
                                         </div>
                                         <input
@@ -211,35 +226,33 @@ const RegisterLicense = () => {
                                             placeholder="e.g. 50"
                                             value={formData.totalSeats}
                                             onChange={handleChange}
-                                            className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all duration-300 font-bold text-gray-800 placeholder:text-gray-300"
+                                            className="w-full h-14 pl-12 pr-4 bg-gray-50 dark:bg-slate-800/50 border border-gray-100 dark:border-dark-border rounded-2xl focus:bg-white dark:focus:bg-slate-800 focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/40 focus:border-blue-500 outline-none transition-all duration-300 font-bold text-gray-800 dark:text-white placeholder:text-gray-300 dark:placeholder:text-slate-600"
                                             required
                                         />
                                     </div>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Status</label>
+                                    <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest ml-1 transition-colors">Status</label>
                                     <div className="relative group">
                                         <select
                                             name="status"
                                             value={formData.status}
                                             onChange={handleChange}
-                                            className="w-full px-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all duration-300 font-bold text-gray-800 appearance-none cursor-pointer"
+                                            className="w-full h-14 px-4 bg-gray-50 dark:bg-slate-800/50 border border-gray-100 dark:border-dark-border rounded-2xl focus:bg-white dark:focus:bg-slate-800 focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/40 focus:border-blue-500 outline-none transition-all duration-300 font-bold text-gray-800 dark:text-white appearance-none cursor-pointer"
                                         >
                                             <option value="Active">Active</option>
                                             <option value="Expired">Expired</option>
                                             <option value="Suspended">Suspended</option>
                                         </select>
-                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
-                                        </div>
+                                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none group-focus-within:text-blue-500" />
                                     </div>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Purchase Date</label>
+                                    <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest ml-1 transition-colors">Purchase Date</label>
                                     <div className="relative group">
-                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors">
+                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 group-focus-within:text-blue-500 transition-colors">
                                             <Calendar className="w-5 h-5" />
                                         </div>
                                         <input
@@ -247,15 +260,15 @@ const RegisterLicense = () => {
                                             name="purchaseDate"
                                             value={formData.purchaseDate}
                                             onChange={handleChange}
-                                            className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all duration-300 font-bold text-gray-800 cursor-pointer"
+                                            className="w-full h-14 pl-12 pr-4 bg-gray-50 dark:bg-slate-800/50 border border-gray-100 dark:border-dark-border rounded-2xl focus:bg-white dark:focus:bg-slate-800 focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/40 focus:border-blue-500 outline-none transition-all duration-300 font-bold text-gray-800 dark:text-white cursor-pointer color-scheme-dark"
                                         />
                                     </div>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Expiry Date</label>
+                                    <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest ml-1 transition-colors">Expiry Date</label>
                                     <div className="relative group">
-                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors">
+                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 group-focus-within:text-blue-500 transition-colors">
                                             <Calendar className="w-5 h-5" />
                                         </div>
                                         <input
@@ -263,24 +276,24 @@ const RegisterLicense = () => {
                                             name="expiryDate"
                                             value={formData.expiryDate}
                                             onChange={handleChange}
-                                            className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all duration-300 font-bold text-gray-800 cursor-pointer"
+                                            className="w-full h-14 pl-12 pr-4 bg-gray-50 dark:bg-slate-800/50 border border-gray-100 dark:border-dark-border rounded-2xl focus:bg-white dark:focus:bg-slate-800 focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/40 focus:border-blue-500 outline-none transition-all duration-300 font-bold text-gray-800 dark:text-white cursor-pointer color-scheme-dark"
                                         />
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="flex flex-col md:flex-row items-center justify-end gap-4 pt-10 border-t border-gray-50">
+                            <div className="flex flex-col md:flex-row items-center justify-end gap-4 pt-10 border-t border-gray-50 dark:border-slate-800 transition-colors">
                                 <button
                                     type="button"
                                     onClick={() => navigate('/licenses')}
-                                    className="w-full md:w-auto px-10 py-4 rounded-2xl text-gray-500 font-bold text-sm hover:bg-gray-100 hover:text-gray-900 transition-all duration-300 order-2 md:order-1"
+                                    className="w-full md:w-auto px-10 py-4 rounded-2xl text-gray-500 dark:text-slate-400 font-bold text-sm hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-white transition-all duration-300 order-2 md:order-1"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={loading}
-                                    className="w-full md:w-auto px-10 py-4 rounded-2xl bg-linear-to-r from-blue-600 to-indigo-600 text-white font-bold text-sm shadow-xl shadow-blue-100 hover:shadow-blue-200 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 flex items-center justify-center space-x-2 disabled:opacity-70 disabled:cursor-not-allowed order-1 md:order-2"
+                                    className="w-full md:w-auto px-10 py-4 rounded-2xl bg-linear-to-r from-blue-600 to-indigo-600 text-white font-bold text-sm shadow-xl shadow-blue-100 dark:shadow-none hover:shadow-blue-200 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 flex items-center justify-center space-x-2 disabled:opacity-70 disabled:cursor-not-allowed order-1 md:order-2"
                                 >
                                     {loading ? (
                                         <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

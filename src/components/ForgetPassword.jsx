@@ -28,7 +28,7 @@ const ForgetPassword = () => {
     };
 
     return (
-        <div className="flex min-h-screen bg-slate-50 font-sans overflow-hidden">
+        <div className="flex min-h-screen bg-slate-50 dark:bg-dark-bg font-sans overflow-hidden transition-colors duration-500">
             {/* Left Side: Illustration & Branding */}
             <div className="hidden lg:flex lg:w-1/2 bg-linear-to-br from-indigo-600 via-blue-600 to-indigo-800 relative items-center justify-center p-12">
                 <div className="absolute inset-0 bg-blue-900/10 pointer-events-none"></div>
@@ -57,23 +57,23 @@ const ForgetPassword = () => {
             {/* Right Side: Form */}
             <div className="w-full lg:w-1/2 flex items-center justify-center p-6 md:p-12 lg:p-20 relative overflow-y-auto">
                 <div className="w-full max-w-md">
-                    <Link to="/login" className="inline-flex items-center text-slate-500 font-bold hover:text-indigo-600 transition-colors mb-12 group">
+                    <Link to="/login" className="inline-flex items-center text-slate-500 dark:text-slate-400 font-bold hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors mb-12 group">
                         <ArrowLeft className="w-5 h-5 mr-2 group-hover:-translate-x-1 transition-transform" />
                         Back to Login
                     </Link>
 
                     <div className="mb-10">
-                        <h1 className="text-4xl font-black text-slate-900 mb-3 tracking-tight">Forgot Password?</h1>
-                        <p className="text-slate-500 font-medium whitespace-pre-line">
+                        <h1 className="text-4xl font-black text-slate-900 dark:text-white mb-3 tracking-tight transition-colors">Forgot Password?</h1>
+                        <p className="text-slate-500 dark:text-slate-400 font-medium whitespace-pre-line transition-colors">
                             Enter the email address associated with your account and we'll send you a recovery code.
                         </p>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="group">
-                            <label className="block text-sm font-extrabold text-slate-700 mb-2 ml-1">Email Address</label>
+                            <label className="block text-sm font-extrabold text-slate-700 dark:text-slate-300 mb-2 ml-1 transition-colors">Email Address</label>
                             <div className="relative">
-                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors">
+                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400 transition-colors">
                                     <Mail className="w-5 h-5" />
                                 </span>
                                 <input
@@ -81,7 +81,7 @@ const ForgetPassword = () => {
                                     placeholder="admin@example.com"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    className="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-2xl text-slate-900 font-semibold focus:outline-none focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all duration-300 shadow-sm"
+                                    className="w-full pl-12 pr-4 py-4 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-dark-border rounded-2xl text-slate-900 dark:text-white font-semibold focus:outline-none focus:ring-4 focus:ring-indigo-100 dark:focus:ring-indigo-900/40 focus:border-indigo-500 transition-all duration-300 shadow-sm"
                                     required
                                 />
                             </div>
@@ -92,8 +92,8 @@ const ForgetPassword = () => {
                             disabled={isSubmitting || !email}
                             className={`w-full font-black py-4 rounded-2xl shadow-xl transition-all duration-300 flex items-center justify-center space-x-2 active:scale-95 disabled:opacity-50 group ${
                                 email 
-                                    ? 'bg-linear-to-r from-indigo-600 to-blue-600 text-white shadow-indigo-100 hover:shadow-hover hover:-translate-y-1 hover:scale-[1.01]' 
-                                    : 'bg-slate-200 text-slate-500 shadow-none'
+                                    ? 'bg-linear-to-r from-indigo-600 to-blue-600 text-white shadow-indigo-100 dark:shadow-none hover:shadow-hover hover:-translate-y-1 hover:scale-[1.01]' 
+                                    : 'bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 shadow-none'
                             }`}
                         >
                             {isSubmitting ? (
@@ -107,8 +107,8 @@ const ForgetPassword = () => {
                         </button>
                     </form>
 
-                    <div className="mt-12 p-6 bg-blue-50/50 border border-blue-100 rounded-2xl">
-                        <p className="text-sm text-blue-700 font-bold text-center">
+                    <div className="mt-12 p-6 bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 rounded-2xl transition-colors">
+                        <p className="text-sm text-blue-700 dark:text-blue-400 font-bold text-center">
                             Can't access your email? Contact your system administrator for manual recovery.
                         </p>
                     </div>

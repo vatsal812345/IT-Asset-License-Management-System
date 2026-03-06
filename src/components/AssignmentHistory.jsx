@@ -141,11 +141,11 @@ const AssignmentHistory = () => {
 
         return (
             <div className="w-full min-w-[120px]">
-                <div className="flex justify-between text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
+                <div className="flex justify-between text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-1.5">
                     <span>{percentage}% Used</span>
                     <span>{used} / {total}</span>
                 </div>
-                <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden border border-gray-50">
+                <div className="h-2 w-full bg-gray-100 dark:bg-slate-800 rounded-full overflow-hidden border border-gray-50 dark:border-slate-700">
                     <div
                         className={`h-full ${barColor} rounded-full shadow-sm`}
                         style={{
@@ -169,21 +169,21 @@ const AssignmentHistory = () => {
     };
 
     return (
-        <div className="p-4 md:p-8 bg-gray-50/30 min-h-screen">
+        <div className="p-4 md:p-8 bg-gray-50/30 dark:bg-dark-bg min-h-screen">
             <div className="max-w-6xl mx-auto">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
                     <div>
-                        <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Assignment History</h1>
-                        <p className="text-gray-500 mt-1">Track all asset movements, assignments, and returns.</p>
+                        <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">Assignment History</h1>
+                        <p className="text-gray-500 dark:text-slate-400 mt-1">Track all asset movements, assignments, and returns.</p>
                     </div>
                     <div className="flex items-center gap-3">
                         {/* Toggle Buttons */}
-                        <div className="flex items-center bg-gray-100 rounded-xl p-1">
+                        <div className="flex items-center bg-gray-100 dark:bg-slate-800 rounded-xl p-1">
                             <button
                                 onClick={() => { setActiveView('assets'); setSearchQuery(''); }}
                                 className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-bold transition-all duration-300 ${activeView === 'assets'
-                                        ? 'bg-white text-blue-600 shadow-sm'
-                                        : 'text-gray-500 hover:text-gray-700'
+                                        ? 'bg-white dark:bg-dark-card text-blue-600 dark:text-brand-primary shadow-sm'
+                                        : 'text-gray-500 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300'
                                     }`}
                             >
                                 <Monitor className="w-4 h-4" />
@@ -192,8 +192,8 @@ const AssignmentHistory = () => {
                             <button
                                 onClick={() => { setActiveView('licenses'); setSearchQuery(''); }}
                                 className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-bold transition-all duration-300 ${activeView === 'licenses'
-                                        ? 'bg-white text-indigo-600 shadow-sm'
-                                        : 'text-gray-500 hover:text-gray-700'
+                                        ? 'bg-white dark:bg-dark-card text-indigo-600 dark:text-brand-primary shadow-sm'
+                                        : 'text-gray-500 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300'
                                     }`}
                             >
                                 <KeyRound className="w-4 h-4" />
@@ -202,7 +202,7 @@ const AssignmentHistory = () => {
                         </div>
                         <button
                             onClick={handleRefresh}
-                            className="flex items-center space-x-2 bg-white border border-gray-100 text-gray-600 px-5 py-2.5 rounded-xl font-bold text-sm shadow-sm hover:bg-gray-50 transition-all"
+                            className="flex items-center space-x-2 bg-white dark:bg-dark-card border border-gray-100 dark:border-dark-border text-gray-600 dark:text-slate-300 px-5 py-2.5 rounded-xl font-bold text-sm shadow-sm hover:bg-gray-50 dark:hover:bg-slate-800 transition-all"
                         >
                             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                             <span>Refresh</span>
@@ -211,7 +211,7 @@ const AssignmentHistory = () => {
                 </div>
 
                 {/* Search */}
-                <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 mb-8">
+                <div className="bg-white dark:bg-dark-card p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-dark-border mb-8">
                     <div className="relative w-full">
                         <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                         <input
@@ -221,7 +221,7 @@ const AssignmentHistory = () => {
                                 : 'Search by license name, key, or vendor...'}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-12 pr-4 py-3 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                            className="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-slate-800 border-none rounded-xl focus:ring-2 focus:ring-blue-500 dark:focus:ring-indigo-500 dark:text-white outline-none transition-all placeholder:dark:text-slate-500"
                         />
                     </div>
                 </div>
@@ -230,7 +230,7 @@ const AssignmentHistory = () => {
                 <div className="transition-all duration-500 ease-in-out">
                     {/* ========== ASSET HISTORY TABLE ========== */}
                     {activeView === 'assets' && (
-                        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden animate-fadeIn">
+                        <div className="bg-white dark:bg-dark-card rounded-3xl shadow-sm border border-gray-100 dark:border-dark-border overflow-hidden animate-fadeIn">
                             {loading ? (
                                 <div className="flex items-center justify-center p-20">
                                     <Loader className="w-10 h-10 text-blue-500 animate-spin" />
@@ -239,23 +239,23 @@ const AssignmentHistory = () => {
                                 <div className="overflow-x-auto">
                                     <table className="w-full text-left border-collapse">
                                         <thead>
-                                            <tr className="bg-gray-50/50 border-b border-gray-100">
-                                                <th className="px-8 py-5 text-xs font-bold text-gray-400 uppercase tracking-widest">Asset</th>
-                                                <th className="px-8 py-5 text-xs font-bold text-gray-400 uppercase tracking-widest">Assigned To</th>
-                                                <th className="px-8 py-5 text-xs font-bold text-gray-400 uppercase tracking-widest">Date</th>
-                                                <th className="px-8 py-5 text-xs font-bold text-gray-400 uppercase tracking-widest">Status</th>
+                                            <tr className="bg-gray-50/50 dark:bg-slate-800/50 border-b border-gray-100 dark:border-dark-border">
+                                                <th className="px-8 py-5 text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Asset</th>
+                                                <th className="px-8 py-5 text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Assigned To</th>
+                                                <th className="px-8 py-5 text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Date</th>
+                                                <th className="px-8 py-5 text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Status</th>
                                             </tr>
                                         </thead>
-                                        <tbody className="divide-y divide-gray-50">
+                                        <tbody className="divide-y divide-gray-50 dark:divide-slate-800">
                                             {filteredAssetHistory.map((item, index) => (
                                                 <tr
                                                     key={index}
-                                                    className="hover:bg-blue-50/30 transition-all duration-300 group cursor-default"
+                                                    className="hover:bg-blue-50/30 dark:hover:bg-slate-800/30 transition-all duration-300 group cursor-default"
                                                 >
                                                     <td className="px-8 py-5">
                                                         <div className="flex flex-col">
-                                                            <span className="text-sm font-bold text-gray-900">{item.assetName}</span>
-                                                            <span className="text-xs font-mono text-blue-600 bg-blue-50 px-2 py-0.5 rounded w-fit mt-1">{item.assetTag}</span>
+                                                            <span className="text-sm font-bold text-gray-900 dark:text-white">{item.assetName}</span>
+                                                            <span className="text-xs font-mono text-blue-600 dark:text-brand-primary bg-blue-50 dark:bg-slate-800 px-2 py-0.5 rounded w-fit mt-1">{item.assetTag}</span>
                                                         </div>
                                                     </td>
                                                     <td className="px-8 py-5">
@@ -263,11 +263,11 @@ const AssignmentHistory = () => {
                                                             <div className="w-8 h-8 rounded-full bg-linear-to-tr from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-bold shadow-sm">
                                                                 {item.employeeName.split(' ').map(n => n[0]).join('')}
                                                             </div>
-                                                            <span className="text-sm font-semibold text-gray-800">{item.employeeName}</span>
+                                                            <span className="text-sm font-semibold text-gray-800 dark:text-slate-200">{item.employeeName}</span>
                                                         </div>
                                                     </td>
                                                     <td className="px-8 py-5">
-                                                        <span className="text-sm text-gray-500 font-medium">{item.date}</span>
+                                                        <span className="text-sm text-gray-500 dark:text-slate-500 font-medium">{item.date}</span>
                                                     </td>
                                                     <td className="px-8 py-5">
                                                         <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${getStatusBadge(item.status)}`}>
@@ -281,11 +281,11 @@ const AssignmentHistory = () => {
                                 </div>
                             ) : (
                                 <div className="flex flex-col items-center justify-center p-20 text-center">
-                                    <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
-                                        <AlertCircle className="w-8 h-8 text-gray-300" />
+                                    <div className="w-16 h-16 bg-gray-50 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
+                                        <AlertCircle className="w-8 h-8 text-gray-300 dark:text-slate-600" />
                                     </div>
-                                    <h3 className="text-lg font-bold text-gray-800">No Asset History Found</h3>
-                                    <p className="text-gray-400 text-sm mt-1 max-w-xs">There are no asset assignment or return records matching your current filter.</p>
+                                    <h3 className="text-lg font-bold text-gray-800 dark:text-white">No Asset History Found</h3>
+                                    <p className="text-gray-400 dark:text-slate-500 text-sm mt-1 max-w-xs">There are no asset assignment or return records matching your current filter.</p>
                                 </div>
                             )}
                         </div>
@@ -293,7 +293,7 @@ const AssignmentHistory = () => {
 
                     {/* ========== LICENSE HISTORY TABLE ========== */}
                     {activeView === 'licenses' && (
-                        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden animate-fadeIn">
+                        <div className="bg-white dark:bg-dark-card rounded-3xl shadow-sm border border-gray-100 dark:border-dark-border overflow-hidden animate-fadeIn">
                             {loading ? (
                                 <div className="flex items-center justify-center p-20">
                                     <Loader className="w-10 h-10 text-indigo-500 animate-spin" />
@@ -302,28 +302,28 @@ const AssignmentHistory = () => {
                                 <div className="overflow-x-auto">
                                     <table className="w-full text-left border-collapse">
                                         <thead>
-                                            <tr className="bg-gray-50/50 border-b border-gray-100">
+                                            <tr className="bg-gray-50/50 dark:bg-slate-800/50 border-b border-gray-100 dark:border-dark-border">
                                                 <th className="px-4 py-5 w-10"></th>
-                                                <th className="px-4 py-5 text-xs font-bold text-gray-400 uppercase tracking-widest">License</th>
-                                                <th className="px-6 py-5 text-xs font-bold text-gray-400 uppercase tracking-widest">Utilization</th>
-                                                <th className="px-6 py-5 text-xs font-bold text-gray-400 uppercase tracking-widest">Assigned To</th>
-                                                <th className="px-6 py-5 text-xs font-bold text-gray-400 uppercase tracking-widest">Date</th>
-                                                <th className="px-6 py-5 text-xs font-bold text-gray-400 uppercase tracking-widest">Status</th>
+                                                <th className="px-4 py-5 text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">License</th>
+                                                <th className="px-6 py-5 text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Utilization</th>
+                                                <th className="px-6 py-5 text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Assigned To</th>
+                                                <th className="px-6 py-5 text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Date</th>
+                                                <th className="px-6 py-5 text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Status</th>
                                             </tr>
                                         </thead>
-                                        <tbody className="divide-y divide-gray-50">
+                                        <tbody className="divide-y divide-gray-50 dark:divide-slate-800">
                                             {filteredLicenseHistory.map((license, index) => (
                                                 <React.Fragment key={license._id}>
                                                     {/* Main License Row */}
                                                     <tr
-                                                        className="hover:bg-indigo-50/30 transition-all duration-300 group cursor-pointer"
+                                                        className="hover:bg-indigo-50/30 dark:hover:bg-slate-800/30 transition-all duration-300 group cursor-pointer"
                                                         onClick={() => toggleRow(license._id)}
                                                     >
                                                         {/* Expand/Collapse Icon */}
                                                         <td className="px-4 py-5">
                                                             <div className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all duration-300 ${expandedRows[license._id]
-                                                                    ? 'bg-indigo-100 text-indigo-600'
-                                                                    : 'bg-gray-50 text-gray-400 group-hover:bg-indigo-50 group-hover:text-indigo-500'
+                                                                    ? 'bg-indigo-100 dark:bg-slate-700 text-indigo-600 dark:text-brand-primary'
+                                                                    : 'bg-gray-50 dark:bg-slate-800 text-gray-400 group-hover:bg-indigo-50 dark:group-hover:bg-slate-700 group-hover:text-indigo-500 dark:group-hover:text-brand-primary'
                                                                 }`}>
                                                                 {expandedRows[license._id]
                                                                     ? <ChevronDown className="w-4 h-4" />
@@ -334,8 +334,8 @@ const AssignmentHistory = () => {
                                                         {/* License Name & Key */}
                                                         <td className="px-4 py-5">
                                                             <div className="flex flex-col">
-                                                                <span className="text-sm font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">{license.licenseName}</span>
-                                                                <span className="text-xs font-mono text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded w-fit mt-1">{license.licenseKey}</span>
+                                                                <span className="text-sm font-bold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-brand-primary transition-colors">{license.licenseName}</span>
+                                                                <span className="text-xs font-mono text-indigo-600 dark:text-brand-primary bg-indigo-50 dark:bg-slate-800 px-2 py-0.5 rounded w-fit mt-1">{license.licenseKey}</span>
                                                             </div>
                                                         </td>
                                                         {/* Utilization */}
@@ -354,24 +354,24 @@ const AssignmentHistory = () => {
                                                                         {license.employees[0].name.split(' ').map(n => n[0]).join('')}
                                                                     </div>
                                                                     <div className="flex flex-col">
-                                                                        <span className="text-sm font-semibold text-gray-700">{license.employees[0].name}</span>
+                                                                        <span className="text-sm font-semibold text-gray-700 dark:text-slate-300">{license.employees[0].name}</span>
                                                                         {license.employees.length > 1 && (
-                                                                            <span className="text-[10px] font-bold text-indigo-500">+{license.employees.length - 1} more</span>
+                                                                            <span className="text-[10px] font-bold text-indigo-500 dark:text-brand-primary">+{license.employees.length - 1} more</span>
                                                                         )}
                                                                     </div>
                                                                 </div>
                                                             ) : (
                                                                 <div className="flex items-center space-x-2">
-                                                                    <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-400">
+                                                                    <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-slate-800 flex items-center justify-center text-gray-400 dark:text-slate-500">
                                                                         <Users className="w-4 h-4" />
                                                                     </div>
-                                                                    <span className="text-sm font-medium text-gray-400">Unassigned</span>
+                                                                    <span className="text-sm font-medium text-gray-400 dark:text-slate-500">Unassigned</span>
                                                                 </div>
                                                             )}
                                                         </td>
                                                         {/* Date */}
                                                         <td className="px-6 py-5">
-                                                            <span className="text-sm text-gray-500 font-medium">{license.date}</span>
+                                                            <span className="text-sm text-gray-500 dark:text-slate-500 font-medium">{license.date}</span>
                                                         </td>
                                                         {/* Status */}
                                                         <td className="px-6 py-5">
@@ -385,11 +385,11 @@ const AssignmentHistory = () => {
                                                     {expandedRows[license._id] && (
                                                         <tr>
                                                             <td colSpan="6" className="px-0 py-0">
-                                                                <div className="bg-linear-to-b from-indigo-50/50 to-white border-t border-indigo-100 animate-slideDown">
+                                                                <div className="bg-linear-to-b from-indigo-50/50 to-white dark:from-slate-800/50 dark:to-dark-card border-t border-indigo-100 dark:border-slate-700 animate-slideDown">
                                                                     <div className="px-12 py-5">
                                                                         <div className="flex items-center space-x-2 mb-4">
-                                                                            <Users className="w-4 h-4 text-indigo-500" />
-                                                                            <span className="text-xs font-bold text-indigo-600 uppercase tracking-widest">
+                                                                            <Users className="w-4 h-4 text-indigo-500 dark:text-brand-primary" />
+                                                                            <span className="text-xs font-bold text-indigo-600 dark:text-brand-primary uppercase tracking-widest">
                                                                                 Assigned Employees ({license.employees.length})
                                                                             </span>
                                                                         </div>
@@ -398,7 +398,7 @@ const AssignmentHistory = () => {
                                                                                 {license.employees.map((emp, i) => (
                                                                                     <div
                                                                                         key={emp._id}
-                                                                                        className="flex items-center justify-between bg-white rounded-2xl px-5 py-4 border border-gray-100 shadow-sm hover:shadow-md hover:border-indigo-100 transition-all duration-300"
+                                                                                        className="flex items-center justify-between bg-white dark:bg-slate-800 rounded-2xl px-5 py-4 border border-gray-100 dark:border-dark-border shadow-sm hover:shadow-md hover:border-indigo-100 dark:hover:border-slate-700 transition-all duration-300"
                                                                                         style={{ animationDelay: `${i * 80}ms` }}
                                                                                     >
                                                                                         <div className="flex items-center space-x-4">
@@ -406,21 +406,21 @@ const AssignmentHistory = () => {
                                                                                                 {emp.name.split(' ').map(n => n[0]).join('')}
                                                                                             </div>
                                                                                             <div>
-                                                                                                <p className="text-sm font-bold text-gray-900">{emp.name}</p>
+                                                                                                <p className="text-sm font-bold text-gray-900 dark:text-white">{emp.name}</p>
                                                                                                 <div className="flex items-center space-x-3 mt-0.5">
-                                                                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{emp.employeeId}</span>
+                                                                                                    <span className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">{emp.employeeId}</span>
                                                                                                     {emp.department !== 'N/A' && (
                                                                                                         <>
-                                                                                                            <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-                                                                                                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{emp.department}</span>
+                                                                                                            <span className="w-1 h-1 bg-gray-300 dark:bg-slate-600 rounded-full"></span>
+                                                                                                            <span className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">{emp.department}</span>
                                                                                                         </>
                                                                                                     )}
                                                                                                 </div>
                                                                                             </div>
                                                                                         </div>
                                                                                         <div className="flex items-center space-x-3">
-                                                                                            <span className="text-xs font-medium text-gray-400">{emp.assignedAt}</span>
-                                                                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-600 border border-emerald-100">
+                                                                                            <span className="text-xs font-medium text-gray-400 dark:text-slate-500">{emp.assignedAt}</span>
+                                                                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/50">
                                                                                                 1 Seat
                                                                                             </span>
                                                                                         </div>
@@ -428,13 +428,13 @@ const AssignmentHistory = () => {
                                                                                 ))}
                                                                             </div>
                                                                         ) : (
-                                                                            <div className="flex items-center space-x-3 bg-white rounded-2xl px-5 py-4 border border-dashed border-gray-200">
-                                                                                <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-gray-300">
+                                                                            <div className="flex items-center space-x-3 bg-white dark:bg-slate-800 rounded-2xl px-5 py-4 border border-dashed border-gray-200 dark:border-slate-700">
+                                                                                <div className="w-10 h-10 rounded-xl bg-gray-50 dark:bg-slate-900 flex items-center justify-center text-gray-300 dark:text-slate-600">
                                                                                     <User className="w-5 h-5" />
                                                                                 </div>
                                                                                 <div>
-                                                                                    <p className="text-sm font-bold text-gray-500">No employees assigned</p>
-                                                                                    <p className="text-xs text-gray-400 mt-0.5">This license has no active seat assignments yet.</p>
+                                                                                    <p className="text-sm font-bold text-gray-500 dark:text-white">No employees assigned</p>
+                                                                                    <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">This license has no active seat assignments yet.</p>
                                                                                 </div>
                                                                             </div>
                                                                         )}
@@ -450,11 +450,11 @@ const AssignmentHistory = () => {
                                 </div>
                             ) : (
                                 <div className="flex flex-col items-center justify-center p-20 text-center">
-                                    <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
-                                        <AlertCircle className="w-8 h-8 text-gray-300" />
+                                    <div className="w-16 h-16 bg-gray-50 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
+                                        <AlertCircle className="w-8 h-8 text-gray-300 dark:text-slate-600" />
                                     </div>
-                                    <h3 className="text-lg font-bold text-gray-800">No License History Found</h3>
-                                    <p className="text-gray-400 text-sm mt-1 max-w-xs">There are no license records matching your current filter.</p>
+                                    <h3 className="text-lg font-bold text-gray-800 dark:text-white">No License History Found</h3>
+                                    <p className="text-gray-400 dark:text-slate-500 text-sm mt-1 max-w-xs">There are no license records matching your current filter.</p>
                                 </div>
                             )}
                         </div>

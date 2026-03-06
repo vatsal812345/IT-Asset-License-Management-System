@@ -258,11 +258,11 @@ const AssetList = () => {
 
     const getStatusColor = (status) => {
         switch (status) {
-            case 'Available': return 'bg-emerald-50 text-emerald-700 border-emerald-100';
-            case 'Assigned': return 'bg-indigo-50 text-indigo-700 border-indigo-100';
-            case 'Under Repair': return 'bg-amber-50 text-amber-700 border-amber-100';
-            case 'Retired': return 'bg-rose-50 text-rose-700 border-rose-100';
-            default: return 'bg-slate-50 text-slate-700 border-slate-100';
+            case 'Available': return 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/30';
+            case 'Assigned': return 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-400 border-indigo-100 dark:border-indigo-900/30';
+            case 'Under Repair': return 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border-amber-100 dark:border-amber-900/30';
+            case 'Retired': return 'bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-400 border-rose-100 dark:border-rose-900/30';
+            default: return 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-400 border-slate-100 dark:border-dark-border';
         }
     };
 
@@ -309,21 +309,21 @@ const AssetList = () => {
     const currentAssets = filteredAssets.slice(startIndex, endIndex);
 
     return (
-        <div className="p-8 animate-fade-in-up">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+        <div className="p-4 md:p-8 animate-fade-in-up transition-colors duration-500">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 md:mb-12">
                 <div>
                     <div className="flex items-center gap-2 mb-2">
                         <div className="w-6 h-1 bg-brand-primary rounded-full"></div>
-                        <span className="text-brand-primary font-bold text-[10px] uppercase tracking-widest">Global Inventory</span>
+                        <span className="text-brand-primary font-bold text-[8px] md:text-[10px] uppercase tracking-widest">Global Inventory</span>
                     </div>
-                    <h1 className="text-4xl font-black text-slate-900 tracking-tight">Assets Management</h1>
-                    <p className="text-slate-500 font-medium mt-1">Enterprise-grade tracking for all managed hardware resources.</p>
+                    <h1 className="text-2xl md:text-4xl font-black text-slate-900 dark:text-white tracking-tight transition-colors">Assets Management</h1>
+                    <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 font-medium mt-1 transition-colors">Enterprise-grade tracking for all managed hardware resources.</p>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
                     <button
                         onClick={handleExportCSV}
                         disabled={isExporting || filteredAssets.length === 0}
-                        className="flex items-center justify-center space-x-2 bg-white border border-slate-200 text-slate-600 px-6 py-3 rounded-2xl font-bold text-sm shadow-premium hover:shadow-hover hover:-translate-y-1 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed group"
+                        className="flex items-center justify-center space-x-2 bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border text-slate-600 dark:text-slate-300 px-4 md:px-6 py-3 rounded-2xl font-bold text-sm shadow-premium hover:shadow-hover hover:-translate-y-1 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed group"
                     >
                         {isExporting ? (
                             <Loader className="w-5 h-5 animate-spin" />
@@ -338,7 +338,7 @@ const AssetList = () => {
                                 setEditingAsset(null);
                                 setIsFormOpen(true);
                             }}
-                            className="flex items-center space-x-2 bg-brand-primary text-white px-6 py-3 rounded-2xl font-bold text-sm shadow-premium shadow-indigo-200 hover:shadow-hover hover:-translate-y-1 hover:scale-[1.02] transition-all duration-300 active:scale-95 w-full md:w-auto justify-center group"
+                            className="flex items-center space-x-2 bg-brand-primary text-white px-4 md:px-6 py-3 rounded-2xl font-bold text-sm shadow-premium shadow-indigo-200 dark:shadow-none hover:shadow-hover hover:-translate-y-1 hover:scale-[1.02] transition-all duration-300 active:scale-95 w-full md:w-auto justify-center group"
                         >
                             <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
                             <span>Register New Asset</span>
@@ -348,26 +348,26 @@ const AssetList = () => {
             </div>
 
             {/* Filters */}
-            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6 flex flex-col md:flex-row gap-4 items-center justify-between">
-                <div className="relative w-full md:w-96">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <div className="bg-white dark:bg-dark-card p-4 md:p-6 rounded-[1.5rem] md:rounded-[2rem] shadow-premium dark:shadow-none border border-gray-100 dark:border-dark-border mb-8 flex flex-col lg:flex-row gap-4 md:gap-6 items-center justify-between transition-colors">
+                <div className="relative w-full lg:w-96 group">
+                    <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-slate-500 w-5 h-5 group-focus-within:text-blue-500 transition-colors" />
                     <input
                         type="text"
-                        placeholder="Search by tag, name, or serial number..."
+                        placeholder="Search assets..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all duration-200 focus:shadow-md hover:shadow-sm hover:border-blue-300"
+                        className="w-full pl-12 pr-4 py-3 bg-gray-50/50 dark:bg-slate-800/50 border border-transparent dark:border-dark-border rounded-2xl focus:bg-white dark:focus:bg-slate-800 focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/20 focus:border-blue-500 outline-none transition-all duration-300 font-bold text-sm text-gray-800 dark:text-white placeholder:text-gray-300 dark:placeholder:text-slate-600"
                     />
                 </div>
-                <div className="flex items-center space-x-3 w-full md:w-auto">
-                    <div className="flex items-center space-x-2 text-gray-500">
-                        <Filter className="w-5 h-5" />
-                        <span className="font-medium">Filter:</span>
+                <div className="flex flex-col sm:flex-row items-center gap-4 w-full lg:w-auto">
+                    <div className="hidden sm:flex items-center space-x-2 text-gray-400 dark:text-slate-500 px-2 font-bold uppercase tracking-widest text-[10px]">
+                        <Filter className="w-4 h-4 text-blue-500" />
+                        <span>Filter</span>
                     </div>
                     <select
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value)}
-                        className="px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none bg-white min-w-[150px] cursor-pointer transition-all duration-200 focus:shadow-md hover:shadow-sm hover:border-blue-300"
+                        className="w-full sm:w-auto px-6 py-3 bg-gray-50/50 dark:bg-slate-800/50 border border-transparent dark:border-dark-border rounded-2xl focus:bg-white dark:focus:bg-slate-800 focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/20 focus:border-blue-500 outline-none cursor-pointer transition-all duration-300 font-bold text-xs md:text-sm text-gray-800 dark:text-white min-w-[140px]"
                     >
                         <option value="All">All Status</option>
                         <option value="Available">Available</option>
@@ -378,7 +378,7 @@ const AssetList = () => {
                     <select
                         value={warrantyFilter}
                         onChange={(e) => setWarrantyFilter(e.target.value)}
-                        className="px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none bg-white min-w-[170px] cursor-pointer transition-all duration-200 focus:shadow-md hover:shadow-sm hover:border-emerald-300"
+                        className="w-full sm:w-auto px-6 py-3 bg-gray-50/50 dark:bg-slate-800/50 border border-transparent dark:border-dark-border rounded-2xl focus:bg-white dark:focus:bg-slate-800 focus:ring-4 focus:ring-emerald-100 dark:focus:ring-emerald-900/20 focus:border-emerald-500 outline-none cursor-pointer transition-all duration-300 font-bold text-xs md:text-sm text-gray-800 dark:text-white min-w-[150px]"
                     >
                         <option value="All">All Warranty</option>
                         <option value="Active">Active</option>
@@ -392,110 +392,109 @@ const AssetList = () => {
             {/* Results Count */}
             {!loading && filteredAssets.length > 0 && (
                 <div className="flex justify-end mb-4">
-                    <div className="text-sm text-gray-600 font-medium">
-                        Showing <span className="font-bold text-gray-900">{currentPage}</span> of{' '}
-                        <span className="font-bold text-gray-900">{totalPages}</span> results
+                    <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-slate-800/30 px-3 py-1 rounded-full border border-slate-100 dark:border-dark-border/20 transition-colors">
+                        Page <span className="text-blue-600 dark:text-indigo-400">{currentPage}</span> of <span className="text-slate-900 dark:text-white">{totalPages}</span>
                     </div>
                 </div>
             )}
 
-            {/* Table */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            {/* Table wrapper for horizontal scroll */}
+            <div className="bg-white dark:bg-dark-card rounded-[1.5rem] md:rounded-[2.5rem] shadow-premium dark:shadow-none border border-slate-100 dark:border-dark-border overflow-hidden transition-colors duration-500">
+
                 {loading ? (
-                    <div className="flex items-center justify-center p-12">
-                        <Loader className="w-8 h-8 text-blue-500 animate-spin" />
+                    <div className="flex items-center justify-center p-24">
+                        <Loader className="w-10 h-10 text-blue-500 animate-spin" />
                     </div>
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
-                                <tr className="bg-gray-50/50 border-b border-gray-100">
-                                    <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Asset Tag</th>
-                                    <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Asset Name</th>
-                                    <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Category</th>
-                                    <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
-                                    <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Warranty</th>
-                                    <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Assigned To</th>
-                                    <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">Actions</th>
+                                <tr className="bg-slate-50/50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-dark-border transition-colors">
+                                    <th className="px-8 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">Asset Tag</th>
+                                    <th className="px-8 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">Asset Name</th>
+                                    <th className="px-8 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">Category</th>
+                                    <th className="px-8 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">Status</th>
+                                    <th className="px-8 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">Warranty</th>
+                                    <th className="px-8 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">Assigned To</th>
+                                    <th className="px-8 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] text-right">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-50">
+                            <tbody className="divide-y divide-slate-50 dark:divide-dark-border transition-colors">
                                 {currentAssets.length > 0 ? (
                                     currentAssets.map((asset, index) => (
                                         <tr
                                             key={asset._id}
-                                            className="hover:bg-blue-50/50 transition-all duration-200 group hover:shadow-md cursor-pointer animate-slide-up"
-                                            style={{ animationDelay: `${index * 0.05}s` }}
+                                            className="hover:bg-blue-50/40 dark:hover:bg-slate-800/40 transition-all duration-300 group cursor-pointer"
                                             onClick={() => navigate(`/assets/${asset._id}`)}
                                         >
-                                            <td className="px-6 py-4">
-                                                <span className="text-sm font-medium text-gray-900 font-mono bg-gray-100 px-2 py-1 rounded-md border border-gray-200 group-hover:bg-white group-hover:border-blue-200 transition-colors">{asset.assetTag}</span>
+                                            <td className="px-8 py-6">
+                                                <span className="text-xs font-black font-mono text-gray-900 dark:text-slate-200 bg-gray-100 dark:bg-slate-800 px-3 py-1.5 rounded-xl border border-gray-200 dark:border-dark-border group-hover:bg-white dark:group-hover:bg-slate-700 transition-colors uppercase tracking-widest">{asset.assetTag}</span>
                                             </td>
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center space-x-3">
-                                                    <div className="w-10 h-10 bg-gray-100 rounded-lg overflow-hidden border border-gray-100 shrink-0">
+                                            <td className="px-8 py-6">
+                                                <div className="flex items-center space-x-4">
+                                                    <div className="w-12 h-12 bg-gray-100 dark:bg-slate-800 rounded-2xl overflow-hidden border border-gray-100 dark:border-dark-border shrink-0 transition-colors group-hover:scale-105 duration-500">
                                                         {asset.imageUrl ? (
                                                             <img src={getDisplayImageUrl(asset.imageUrl)} alt={asset.name} className="w-full h-full object-cover" />
                                                         ) : (
-                                                            <div className="w-full h-full flex items-center justify-center text-gray-400">
-                                                                <Box className="w-5 h-5" />
+                                                            <div className="w-full h-full flex items-center justify-center text-gray-300 dark:text-slate-600">
+                                                                <Box className="w-6 h-6" />
                                                             </div>
                                                         )}
                                                     </div>
                                                     <div className="flex flex-col">
-                                                        <span className="text-sm font-semibold text-gray-900">{asset.name}</span>
-                                                        <span className="text-xs text-gray-500">{asset.model}</span>
+                                                        <span className="text-sm font-black text-slate-900 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-indigo-400 transition-colors">{asset.name}</span>
+                                                        <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-0.5">{asset.model}</span>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4">
-                                                <span className="text-sm text-gray-700 bg-gray-100 px-2 py-1 rounded-full">{asset.category}</span>
+                                            <td className="px-8 py-6">
+                                                <span className="text-[10px] font-black text-slate-500 dark:text-slate-300 bg-slate-100 dark:bg-slate-800/50 px-3 py-1.5 rounded-xl uppercase tracking-widest transition-colors">{asset.category}</span>
                                             </td>
-                                            <td className="px-6 py-4">
-                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(asset.status)}`}>
+                                            <td className="px-8 py-6">
+                                                <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border transition-colors ${getStatusColor(asset.status)}`}>
                                                     {asset.status}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-4">
+                                            <td className="px-8 py-6">
                                                 {(() => {
                                                     const warrantyStatus = getExpiryStatus(asset.warrantyExpiry);
                                                     const Icon = warrantyStatus.icon;
                                                     return (
                                                         <span
-                                                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 hover:scale-105 ${warrantyStatus.status === 'active'
-                                                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+                                                            className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-full text-xs font-black uppercase tracking-widest border transition-all duration-300 group/warranty ${warrantyStatus.status === 'active'
+                                                                ? 'bg-emerald-50 dark:bg-emerald-900/10 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900/30'
                                                                 : warrantyStatus.status === 'expiring'
-                                                                    ? 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'
+                                                                    ? 'bg-amber-50 dark:bg-amber-900/10 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-900/30'
                                                                     : warrantyStatus.status === 'expired'
-                                                                        ? 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100'
-                                                                        : 'bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100'
+                                                                        ? 'bg-red-50 dark:bg-red-900/10 text-red-700 dark:text-red-400 border-red-200 dark:border-red-900/30'
+                                                                        : 'bg-gray-50 dark:bg-slate-800/50 text-gray-500 dark:text-slate-500 border-gray-200 dark:border-dark-border'
                                                                 }`}
                                                         >
-                                                            <Icon className="w-3.5 h-3.5" />
-                                                            {warrantyStatus.label}
+                                                            <Icon className={`w-3.5 h-3.5 group-hover/warranty:scale-125 transition-transform duration-500`} />
+                                                            <span className="text-[9px]">{warrantyStatus.label}</span>
                                                         </span>
                                                     );
                                                 })()}
                                             </td>
-                                            <td className="px-6 py-4">
+                                            <td className="px-8 py-6">
                                                 {asset.currentAssignedTo ? (
-                                                    <div className="flex items-center space-x-2">
-                                                        <div className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold shadow-sm">
+                                                    <div className="flex items-center space-x-3">
+                                                        <div className="w-8 h-8 rounded-xl bg-linear-to-tr from-blue-500 to-indigo-600 text-white flex items-center justify-center text-[10px] font-black shadow-lg">
                                                             {asset.currentAssignedTo.firstName.charAt(0)}{asset.currentAssignedTo.lastName.charAt(0)}
                                                         </div>
-                                                        <span className="text-sm text-gray-700 font-medium">{asset.currentAssignedTo.fullName}</span>
+                                                        <span className="text-sm text-slate-700 dark:text-slate-300 font-bold group-hover:text-blue-600 dark:group-hover:text-indigo-400 transition-colors">{asset.currentAssignedTo.fullName}</span>
                                                     </div>
                                                 ) : (
-                                                    <div className="flex items-center space-x-2">
-                                                        <span className="text-sm text-gray-400 italic">Unassigned</span>
+                                                    <div className="flex items-center space-x-3">
+                                                        <span className="text-xs font-bold text-slate-300 dark:text-slate-700 italic tracking-wider transition-colors">UNASSIGNED</span>
                                                         {asset.status === 'Available' && ['Admin', 'Manager'].includes(user?.role) && (
                                                             <button
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
                                                                     navigate(`/assets/${asset._id}/assign`);
                                                                 }}
-                                                                className="p-1 text-blue-500 hover:bg-blue-100 rounded-md transition-colors"
-                                                                title="Assign Now"
+                                                                className="p-2 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-xl transition-all duration-300 hover:scale-110"
+                                                                title="Quick Assign"
                                                             >
                                                                 <UserPlus className="w-4 h-4" />
                                                             </button>
@@ -503,7 +502,7 @@ const AssetList = () => {
                                                     </div>
                                                 )}
                                             </td>
-                                            <td className="px-6 py-4 text-right">
+                                            <td className="px-8 py-6 text-right">
                                                 <div className="flex items-center justify-end space-x-2">
                                                     {['Admin', 'Manager'].includes(user?.role) && (
                                                         <>
@@ -513,10 +512,10 @@ const AssetList = () => {
                                                                         e.stopPropagation();
                                                                         handleReturnClick(asset);
                                                                     }}
-                                                                    className="p-2 text-emerald-600 bg-emerald-50 rounded-lg hover:bg-emerald-100 hover:shadow-md transition-all duration-200 transform hover:scale-110"
+                                                                    className="p-3 text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-900/30 rounded-2xl hover:bg-emerald-600 hover:text-white dark:hover:bg-emerald-500 hover:shadow-lg transition-all duration-300 group/ret"
                                                                     title="Return Asset"
                                                                 >
-                                                                    <RotateCcw className="w-4 h-4" />
+                                                                    <RotateCcw className="w-4 h-4 group-hover/ret:rotate-180 transition-transform duration-500" />
                                                                 </button>
                                                             )}
                                                             <button
@@ -524,8 +523,8 @@ const AssetList = () => {
                                                                     e.stopPropagation();
                                                                     openEditForm(asset);
                                                                 }}
-                                                                className="p-2 text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 hover:shadow-md transition-all duration-200 transform hover:scale-110"
-                                                                title="Edit Asset"
+                                                                className="p-3 text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 rounded-2xl hover:bg-blue-600 hover:text-white dark:hover:bg-blue-500 hover:shadow-lg transition-all duration-300"
+                                                                title="Edit"
                                                             >
                                                                 <Edit className="w-4 h-4" />
                                                             </button>
@@ -537,8 +536,8 @@ const AssetList = () => {
                                                                 e.stopPropagation();
                                                                 handleDeleteClick(asset);
                                                             }}
-                                                            className="p-2 text-red-600 bg-red-50 rounded-lg hover:bg-red-100 hover:shadow-md transition-all duration-200 transform hover:scale-110"
-                                                            title="Delete Asset"
+                                                            className="p-3 text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30 rounded-2xl hover:bg-red-500 hover:text-white dark:hover:bg-red-500 hover:shadow-lg transition-all duration-300"
+                                                            title="Delete"
                                                         >
                                                             <Trash2 className="w-4 h-4" />
                                                         </button>
@@ -549,10 +548,15 @@ const AssetList = () => {
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan="6" className="px-6 py-12 text-center">
-                                            <div className="flex flex-col items-center justify-center text-gray-500">
-                                                <Search className="w-8 h-8 mb-2 text-gray-300" />
-                                                <p>No assets found matching your criteria.</p>
+                                        <td colSpan="7" className="px-8 py-32 text-center">
+                                            <div className="flex flex-col items-center justify-center text-slate-400 dark:text-slate-600 space-y-6">
+                                                <div className="w-24 h-24 bg-slate-50 dark:bg-slate-900/50 rounded-[2.5rem] flex items-center justify-center transition-colors">
+                                                    <Search className="w-10 h-10" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-xl font-black text-slate-900 dark:text-white transition-colors">No assets discovered</p>
+                                                    <p className="font-medium mt-2 max-w-xs mx-auto">Try refining your discovery parameters or search query.</p>
+                                                </div>
                                             </div>
                                         </td>
                                     </tr>
@@ -561,17 +565,11 @@ const AssetList = () => {
                         </table>
                     </div>
                 )}
-                {/* Bottom Results Count */}
-                {!loading && filteredAssets.length > 0 && (
-                    <div className="px-8 py-4 border-t border-gray-100">
-                        <div className="text-sm text-gray-600 font-medium">
-                            Showing <span className="font-bold text-gray-900">{currentPage}</span> of{' '}
-                            <span className="font-bold text-gray-900">{totalPages}</span> results
-                        </div>
-                    </div>
-                )}
-                {/* Pagination */}
-                {!loading && filteredAssets.length > 0 && (
+            </div>
+
+            {/* Pagination */}
+            {!loading && filteredAssets.length > 0 && (
+                <div className="mt-10">
                     <Pagination
                         currentPage={currentPage}
                         totalPages={totalPages}
@@ -579,8 +577,8 @@ const AssetList = () => {
                         totalItems={filteredAssets.length}
                         onPageChange={setCurrentPage}
                     />
-                )}
-            </div>
+                </div>
+            )}
 
             <AssetForm
                 isOpen={isFormOpen}
