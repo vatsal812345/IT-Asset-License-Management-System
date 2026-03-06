@@ -149,7 +149,7 @@ const LicenseList = () => {
                 { 
                     key: 'expirationDate', 
                     header: 'Expiration Date',
-                    accessor: (license) => formatDateForCSV(license.expirationDate)
+                    accessor: (license) => formatDateForCSV(license.expiryDate)
                 },
                 { 
                     key: 'purchaseDate', 
@@ -316,7 +316,7 @@ const LicenseList = () => {
                                             </td>
                                             <td className="px-8 py-6">
                                                 {(() => {
-                                                    const expiry = getExpiryStatus(license.expirationDate);
+                                                    const expiry = getExpiryStatus(license.expiryDate);
                                                     const Icon = expiry.icon;
                                                     return (
                                                         <div className={`flex items-center space-x-2 text-sm font-bold transition-colors ${
@@ -324,7 +324,7 @@ const LicenseList = () => {
                                                             expiry.status === 'expiring' ? 'text-amber-600 dark:text-amber-400' : 'text-slate-600 dark:text-slate-300'
                                                         }`}>
                                                             <Icon className="w-4 h-4" />
-                                                            <span>{new Date(license.expirationDate).toLocaleDateString()}</span>
+                                                            <span>{new Date(license.expiryDate).toLocaleDateString()}</span>
                                                         </div>
                                                     );
                                                 })()}

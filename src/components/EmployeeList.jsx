@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { Search, Plus, Filter, Edit, Trash2, Loader, User, Mail, Building, Shield, ExternalLink, Download, Contact } from 'lucide-react';
+import { Search, Plus, Filter, Edit, Trash2, Loader, User, Mail, Building, ExternalLink, Download, Contact } from 'lucide-react';
 import EmployeeForm from './EmployeeForm';
 import DeleteConfirmModal from './DeleteConfirmModal';
 import Pagination from './Pagination';
@@ -170,14 +170,6 @@ const EmployeeList = () => {
         }
     };
 
-    const getRoleBadge = (role) => {
-        switch (role) {
-            case 'Admin': return 'bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-400 border-rose-100 dark:border-rose-900/30';
-            case 'Manager': return 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-400 border-indigo-100 dark:border-indigo-900/30';
-            default: return 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/30';
-        }
-    };
-
     // Pagination
     const totalPages = Math.ceil(filteredEmployees.length / itemsPerPage);
     const currentEmployees = filteredEmployees.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
@@ -269,7 +261,7 @@ const EmployeeList = () => {
                                 <tr className="bg-slate-50/50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-dark-border transition-colors">
                                     <th className="px-8 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">Employee</th>
                                     <th className="px-8 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">ID / Department</th>
-                                    <th className="px-8 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">System Role</th>
+                                    <th className="px-8 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] text-center">Status</th>
                                     <th className="px-8 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">Contact</th>
                                     <th className="px-8 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] text-right">Actions</th>
                                 </tr>
@@ -312,9 +304,15 @@ const EmployeeList = () => {
                                                 </div>
                                             </td>
                                             <td className="px-8 py-6">
-                                                <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border transition-colors ${getRoleBadge(emp.role)}`}>
-                                                    {emp.role}
-                                                </span>
+                                                <div className="flex justify-center">
+                                                    <span className={`px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase ${
+                                                        emp.status === 'Active' 
+                                                        ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400' 
+                                                        : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500'
+                                                    }`}>
+                                                        {emp.status || 'Active'}
+                                                    </span>
+                                                </div>
                                             </td>
                                             <td className="px-8 py-6">
                                                 <div className="flex flex-col space-y-1">
