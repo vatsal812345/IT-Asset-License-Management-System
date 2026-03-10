@@ -115,8 +115,8 @@ const ReturnAsset = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         {filteredAssets.map((asset, index) => (
                             <div key={asset._id} 
-                                 className="bg-white dark:bg-dark-card p-8 rounded-[2.5rem] border border-slate-100 dark:border-dark-border shadow-premium hover:shadow-premium-hover hover:-translate-y-2 transition-all duration-500 group animate-slide-up"
-                                 style={{ animationDelay: `${index * 0.1}s` }}
+                                className="bg-white dark:bg-dark-card p-8 rounded-[2.5rem] border border-slate-100 dark:border-dark-border shadow-premium hover:shadow-premium-hover hover:-translate-y-2 transition-all duration-500 group animate-slide-up"
+                                style={{ animationDelay: `${index * 0.1}s` }}
                             >
                                 <div className="flex justify-between items-start mb-8">
                                     <div className="p-4 bg-blue-50 dark:bg-slate-800 rounded-2xl group-hover:bg-blue-600 dark:group-hover:bg-blue-500 transition-colors duration-500 shadow-sm">

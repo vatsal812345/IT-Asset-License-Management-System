@@ -27,6 +27,8 @@ import { AuthProvider } from './context/AuthContext';
 
 import { ThemeProvider } from './context/ThemeContext';
 
+import Maintenance from './components/Maintenance';
+
 const App = () => {
   return (
     <ThemeProvider>
@@ -52,6 +54,7 @@ const App = () => {
                     <Route path="vendors" element={<VendorList />} />
                     <Route path="vendors/:id" element={<VendorDetails />} />
                     <Route path="profile" element={<ProfilePage />} />
+                    <Route path="maintenance" element={<Maintenance />} />
 
                     {/* Management Only Routes */}
                     <Route element={<ProtectedRoute allowedRoles={['Admin', 'Manager']} />}>

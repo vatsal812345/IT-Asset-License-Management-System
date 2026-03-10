@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Package, ClipboardList, RefreshCcw, History, ShieldCheck, Users, Building2, LogOut, User, ChevronDown, Menu, X } from 'lucide-react';
+import { LayoutDashboard, Package, ClipboardList, RefreshCcw, History, ShieldCheck, Users, Building2, LogOut, User, ChevronDown, Menu, X, Wrench } from 'lucide-react';
 import { NotificationBell } from './NotificationPanel';
 import NotificationPanel from './NotificationPanel';
 import { useAuth } from '../context/AuthContext';
@@ -74,6 +74,7 @@ const Layout = () => {
           {['Admin', 'Manager'].includes(user?.role) && <SidebarItem to="/assignments" icon={ClipboardList} label="Assignments" onClick={closeSidebar} />}
           <SidebarItem to="/licenses" icon={ShieldCheck} label="Licenses" onClick={closeSidebar} />
           <SidebarItem to="/vendors" icon={Building2} label="Vendors" onClick={closeSidebar} />
+          <SidebarItem to="/maintenance" icon={Wrench} label="Maintenance" onClick={closeSidebar} />
           {['Admin', 'Manager'].includes(user?.role) && <SidebarItem to="/return-asset" icon={RefreshCcw} label="Return Asset" onClick={closeSidebar} />}
           <SidebarItem to="/history" icon={History} label="Assignment History" onClick={closeSidebar} />
         </nav>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Laptop, Monitor, Printer, MousePointer2, Box, Smartphone, Check, Scan, Tablet, Server, Network, FileCode, ChevronDown } from 'lucide-react';
 import ImageUpload from './ImageUpload';
+import api from '../utils/api';
 
 const CATEGORIES = [
   { id: 'Laptop', label: 'Laptop', icon: Laptop, color: 'text-blue-600', bg: 'bg-blue-50' },

@@ -25,11 +25,13 @@ import {
     Trash2,
     ShieldCheck,
     ShieldAlert,
-    ShieldX
+    ShieldX,
+    DollarSign
 } from 'lucide-react';
 
 import ReturnConfirmModal from './ReturnConfirmModal';
 import AssetForm from './AssetForm';
+import MaintenanceForm from './MaintenanceForm';
 import DeleteConfirmModal from './DeleteConfirmModal';
 import ImageUpload from './ImageUpload';
 import { useAuth } from '../context/AuthContext';
@@ -60,6 +62,10 @@ const AssetDetails = () => {
     const [error, setError] = useState(null);
     const [isReturnModalOpen, setIsReturnModalOpen] = useState(false);
     const [isReturning, setIsReturning] = useState(false);
+    const [maintenanceRecords, setMaintenanceRecords] = useState([]);
+    const [maintenanceCost, setMaintenanceCost] = useState(0);
+    const [downtimeHours, setDowntimeHours] = useState(0);
+    const [isMaintenanceFormOpen, setIsMaintenanceFormOpen] = useState(false);
 
     const handleReturnClick = () => {
         setIsReturnModalOpen(true);
@@ -114,8 +120,35 @@ const AssetDetails = () => {
         }
     };
 
+    const fetchMaintenanceData = async () => {
+        try {
+            const [recordsRes, costRes, downtimeRes] = await Promise.all([
+                api.get('/maintenance'),
+                api.get(`/maintenance/cost/${id}`),
+                api.get(`/maintenance/downtime/${id}`)
+            ]);
+
+            if (recordsRes.data.success) {
+                const assetRecords = recordsRes.data.data.filter(r => 
+                    (r.assetId?._id === id) || (r.assetId === id)
+                );
+                assetRecords.sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
+                setMaintenanceRecords(assetRecords);
+            }
+            if (costRes?.data?.success) {
+                setMaintenanceCost(costRes.data.data?.totalCost || 0);
+            }
+            if (downtimeRes?.data?.success) {
+                setDowntimeHours(downtimeRes.data.data?.totalDowntime || 0);
+            }
+        } catch (error) {
+            console.error('Error fetching maintenance data:', error);
+        }
+    };
+
     useEffect(() => {
         fetchAssetDetails();
+        fetchMaintenanceData();
     }, [id]);
 
     const handleEditSubmit = async (formData) => {
@@ -480,6 +513,75 @@ const AssetDetails = () => {
 
                     {/* Right: History & Actions */}
                     <div className="space-y-8">
+                        {/* Maintenance Tracking Summary */}
+                        <div className="bg-white dark:bg-dark-card rounded-3xl shadow-sm border border-gray-100 dark:border-dark-border overflow-hidden">
+                            <div className="p-6 border-b border-gray-100 dark:border-dark-border bg-gray-50/50 dark:bg-slate-800/50">
+                                <h2 className="text-lg font-bold text-gray-800 dark:text-white">Maintenance Summary</h2>
+                            </div>
+                            <div className="p-6 space-y-4">
+                                <div className="flex justify-between items-center p-4 bg-gray-50 dark:bg-slate-800/50 rounded-2xl border border-gray-100 dark:border-dark-border">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl">
+                                            <DollarSign className="w-5 h-5" />
+                                        </div>
+                                        <div>
+                                            <p className="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-widest">Total Cost</p>
+                                            <p className="text-xl font-bold text-gray-900 dark:text-white">${maintenanceCost.toLocaleString()}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="flex justify-between items-center p-4 bg-gray-50 dark:bg-slate-800/50 rounded-2xl border border-gray-100 dark:border-dark-border">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2.5 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-xl">
+                                            <Clock className="w-5 h-5" />
+                                        </div>
+                                        <div>
+                                            <p className="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-widest">Total Downtime</p>
+                                            <p className="text-xl font-bold text-gray-900 dark:text-white">{downtimeHours} Hours</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Service History Timeline */}
+                        <div className="bg-white dark:bg-dark-card rounded-3xl shadow-sm border border-gray-100 dark:border-dark-border overflow-hidden">
+                            <div className="p-6 border-b border-gray-100 dark:border-dark-border bg-gray-50/50 dark:bg-slate-800/50 flex justify-between items-center">
+                                <h2 className="text-lg font-bold text-gray-800 dark:text-white">Service History</h2>
+                                <span className="bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-gray-300 text-xs font-bold px-3 py-1 rounded-full">{maintenanceRecords.length} Records</span>
+                            </div>
+                            <div className="p-6 space-y-6 relative max-h-[400px] overflow-y-auto custom-scrollbar">
+                                {maintenanceRecords.length === 0 ? (
+                                    <div className="text-center py-6">
+                                        <Wrench className="w-12 h-12 text-gray-300 dark:text-slate-600 mx-auto mb-3" />
+                                        <p className="text-gray-500 dark:text-slate-400 text-sm">No service records found.</p>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <div className="absolute left-9 top-6 bottom-6 w-px bg-gray-100 dark:bg-slate-800" />
+                                        {maintenanceRecords.map((record) => (
+                                            <div key={record._id} className="flex gap-4 relative">
+                                                <div className={`w-6 h-6 rounded-full border-4 border-white dark:border-dark-card shadow-sm z-10 shrink-0 ${record.status === 'Completed' ? 'bg-emerald-500' : record.status === 'In Progress' ? 'bg-blue-500' : 'bg-amber-500'}`} />
+                                                <div className="flex-1 bg-gray-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-gray-100 dark:border-dark-border hover:border-blue-200 dark:hover:border-indigo-500 transition-colors">
+                                                    <div className="flex justify-between items-start mb-2">
+                                                        <p className="text-sm font-bold text-gray-900 dark:text-white">{record.maintenanceType}</p>
+                                                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${record.status === 'Completed' ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' : record.status === 'In Progress' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400'}`}>
+                                                            {record.status}
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-xs text-gray-500 dark:text-slate-400 mb-3">{record.issueDescription}</p>
+                                                    <div className="flex justify-between items-center text-xs font-medium text-gray-400 dark:text-slate-500">
+                                                        <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {new Date(record.startDate).toLocaleDateString()}</span>
+                                                        <span className="font-bold text-gray-700 dark:text-gray-300">${record.serviceCost}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </>
+                                )}
+                            </div>
+                        </div>
+
                         <div className="bg-white dark:bg-dark-card rounded-3xl shadow-sm border border-gray-100 dark:border-dark-border overflow-hidden">
                             <div className="p-6 border-b border-gray-100 dark:border-dark-border bg-gray-50/50 dark:bg-slate-800/50">
                                 <h2 className="text-lg font-bold text-gray-800 dark:text-white">History</h2>
@@ -506,8 +608,11 @@ const AssetDetails = () => {
                         <div className="bg-linear-to-br from-indigo-600 to-blue-700 dark:from-indigo-700 dark:to-indigo-900 rounded-3xl p-8 text-white shadow-xl shadow-blue-100 dark:shadow-none">
                             <Wrench className="w-10 h-10 mb-6 opacity-40 text-white" />
                             <h3 className="text-xl font-bold mb-2">Maintenance Required?</h3>
-                            <p className="text-blue-100 dark:text-indigo-200 text-sm mb-8 leading-relaxed">If this asset needs repair or scheduled maintenance, you can mark it as 'Under Repair'.</p>
-                            <button className="w-full bg-white/10 hover:bg-white/20 backdrop-blur-md text-white py-3 rounded-2xl text-sm font-bold transition-all border border-white/20">
+                            <p className="text-blue-100 dark:text-indigo-200 text-sm mb-8 leading-relaxed">If this asset needs repair or scheduled maintenance, you can log it here.</p>
+                            <button 
+                                onClick={() => setIsMaintenanceFormOpen(true)}
+                                className="w-full bg-white/10 hover:bg-white/20 backdrop-blur-md text-white py-3 rounded-2xl text-sm font-bold transition-all border border-white/20"
+                            >
                                 Schedule Maintenance
                             </button>
                         </div>
@@ -522,6 +627,13 @@ const AssetDetails = () => {
                 assetName={asset?.name}
                 assetTag={asset?.assetTag}
                 isReturning={isReturning}
+            />
+
+            <MaintenanceForm 
+                isOpen={isMaintenanceFormOpen} 
+                onClose={() => setIsMaintenanceFormOpen(false)} 
+                defaultAssetId={id}
+                onSuccess={fetchMaintenanceData}
             />
 
             <AssetForm
