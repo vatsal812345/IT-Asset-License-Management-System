@@ -105,7 +105,7 @@ const AssetDetails = () => {
     const handleRegenerateQR = async () => {
         setIsRegeneratingQR(true);
         try {
-            const response = await api.get(`/assets/${id}/generate-qr`);
+            const response = await api.post(`/assets/${id}/generate-qr`);
             const data = response.data;
             if (data.success) {
                 setAsset(prev => ({ ...prev, qrCode: data.data.qrCode }));
