@@ -23,7 +23,8 @@ import {
     AlertTriangle,
     AlertCircle,
     CheckCircle2,
-    XCircle
+    XCircle,
+    Scan
 } from 'lucide-react';
 import api from '../utils/api';
 import {
@@ -41,6 +42,7 @@ import {
 } from 'recharts';
 import { getExpiryStatus, calculateExpiryStats } from '../utils/warrantyUtils';
 import AssetForm from './AssetForm';
+import QRScannerModal from './QRScannerModal';
 
 //header cards
 const StatCard = ({ title, value, icon: Icon, color, onClick }) => (
@@ -83,6 +85,7 @@ const Dashboard = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isAssetFormOpen, setIsAssetFormOpen] = useState(false);
+    const [isQRScannerOpen, setIsQRScannerOpen] = useState(false);
     const navigate = useNavigate();
 
     const fetchData = async () => {
@@ -188,6 +191,20 @@ const Dashboard = () => {
         } catch (error) {
             console.error('Error saving asset:', error);
             alert('Failed to save asset');
+        }
+    };
+
+    const handleScanSuccess = (decodedText) => {
+        setIsQRScannerOpen(false);
+        try {
+            let assetId = decodedText;
+            if (decodedText.includes('/')) {
+                const parts = decodedText.split('/');
+                assetId = parts[parts.length - 1]; // Try to get the last part if it is a URL
+            }
+            navigate(`/assets/${assetId}`);
+        } catch (error) {
+            console.error("Failed to parse QR code", error);
         }
     };
 
@@ -592,12 +609,19 @@ const Dashboard = () => {
                         Quick Actions
                     </h2>
                     <div className="grid grid-cols-1 gap-4">
-                                <button
+                        <button
                             onClick={() => navigate('/licenses/register')}
                             className="w-full bg-blue-600 dark:bg-indigo-600 text-white px-6 py-4 rounded-xl font-bold text-sm shadow-lg shadow-blue-100 dark:shadow-none hover:bg-blue-700 dark:hover:bg-indigo-700 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-between group"
                         >
                             <span>Register License</span>
                             <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform" />
+                        </button>
+                        <button
+                            onClick={() => setIsQRScannerOpen(true)}
+                            className="w-full bg-cyan-600 dark:bg-cyan-500 text-white px-6 py-4 rounded-xl font-bold text-sm shadow-lg shadow-cyan-100 dark:shadow-none hover:bg-cyan-700 dark:hover:bg-cyan-600 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-between group"
+                        >
+                            <span>Scan Asset QR</span>
+                            <Scan className="w-5 h-5 transition-transform group-hover:scale-110" />
                         </button>
                         <button
                             onClick={() => setIsAssetFormOpen(true)}
@@ -676,6 +700,12 @@ const Dashboard = () => {
                 isOpen={isAssetFormOpen}
                 onClose={() => setIsAssetFormOpen(false)}
                 onSubmit={handleCreateAsset}
+            />
+
+            <QRScannerModal
+                isOpen={isQRScannerOpen}
+                onClose={() => setIsQRScannerOpen(false)}
+                onScanSuccess={handleScanSuccess}
             />
         </div>
     );

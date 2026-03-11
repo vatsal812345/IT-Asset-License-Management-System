@@ -110,7 +110,7 @@ const EmployeeAutocomplete = ({ onSelect, initialData }) => {
                     onChange={handleInputChange}
                     onFocus={() => query.trim() && results.length > 0 && setIsOpen(true)}
                     placeholder="e.g. John Doe or EMP123"
-                    className={`w-full h-14 pl-12 pr-10 bg-gray-50 border ${isOpen ? 'border-blue-500 ring-4 ring-blue-100' : 'border-gray-200'} rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all font-bold text-gray-800 placeholder:text-gray-300`}
+                    className={`w-full h-14 pl-12 pr-10 bg-gray-50 border ${isOpen ? 'border-blue-500 ring-4 ring-blue-200' : 'border-gray-200'} rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all font-bold text-gray-800 placeholder:text-gray-300 `}
                 />
                 <Search className={`absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 ${isOpen ? 'text-blue-500' : 'text-gray-400'} transition-colors`} />
                 {loading && (

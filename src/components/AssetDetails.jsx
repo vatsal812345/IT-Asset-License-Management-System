@@ -26,8 +26,12 @@ import {
     ShieldCheck,
     ShieldAlert,
     ShieldX,
-    DollarSign
+    DollarSign,
+    QrCode,
+    Download
 } from 'lucide-react';
+
+import { QRCodeCanvas } from 'qrcode.react';
 
 import ReturnConfirmModal from './ReturnConfirmModal';
 import AssetForm from './AssetForm';
@@ -66,6 +70,7 @@ const AssetDetails = () => {
     const [maintenanceCost, setMaintenanceCost] = useState(0);
     const [downtimeHours, setDowntimeHours] = useState(0);
     const [isMaintenanceFormOpen, setIsMaintenanceFormOpen] = useState(false);
+    const [isRegeneratingQR, setIsRegeneratingQR] = useState(false);
 
     const handleReturnClick = () => {
         setIsReturnModalOpen(true);
@@ -95,6 +100,47 @@ const AssetDetails = () => {
         } finally {
             setIsReturning(false);
         }
+    };
+
+    const handleRegenerateQR = async () => {
+        setIsRegeneratingQR(true);
+        try {
+            const response = await api.get(`/assets/${id}/generate-qr`);
+            const data = response.data;
+            if (data.success) {
+                setAsset(prev => ({ ...prev, qrCode: data.data.qrCode }));
+                showToast('QR Code generated successfully', 'success');
+            } else {
+                showToast(data.message || 'Error generating QR code', 'error');
+            }
+        } catch (error) {
+            console.error('Error generating QR:', error);
+            showToast('Failed to generate QR code', 'error');
+        } finally {
+            setIsRegeneratingQR(false);
+        }
+    };
+
+    const handleDownloadQR = () => {
+        if (asset.qrCode && asset.qrCode.startsWith('data:image')) {
+            let downloadLink = document.createElement("a");
+            downloadLink.href = asset.qrCode;
+            downloadLink.download = `QR_${asset.assetTag}.png`;
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+            return;
+        }
+
+        const canvas = document.getElementById("asset-qrcode-canvas");
+        if (!canvas) return;
+        const pngUrl = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
+        let downloadLink = document.createElement("a");
+        downloadLink.href = pngUrl;
+        downloadLink.download = `QR_${asset.assetTag}.png`;
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
     };
 
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -362,6 +408,68 @@ const AssetDetails = () => {
                                 <DetailItem icon={Info} label="Model" value={asset.model} color="text-pink-600 dark:text-pink-400" />
                                 <DetailItem icon={Calendar} label="Purchase Date" value={new Date(asset.purchaseDate).toLocaleDateString()} color="text-emerald-600 dark:text-emerald-400" />
                                 <DetailItem icon={MapPin} label="Location" value={asset.location} color="text-amber-600 dark:text-amber-400" />
+                            </div>
+                        </div>
+
+                        {/* QR Code Card */}
+                        <div className="bg-white dark:bg-dark-card rounded-3xl shadow-sm border border-gray-100 dark:border-dark-border overflow-hidden">
+                            <div className="p-6 border-b border-gray-100 dark:border-dark-border bg-gray-50/50 dark:bg-slate-800/50 flex items-center justify-between">
+                                <h2 className="text-lg font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                                    <QrCode className="w-5 h-5 text-blue-500" />
+                                    Asset QR Code
+                                </h2>
+                                <button
+                                    onClick={handleRegenerateQR}
+                                    disabled={isRegeneratingQR}
+                                    className="flex items-center space-x-2 text-sm font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 disabled:opacity-50 transition-colors"
+                                >
+                                    <RotateCcw className={`w-4 h-4 ${isRegeneratingQR ? 'animate-spin' : ''}`} />
+                                    <span>{asset.qrCode ? 'Regenerate' : 'Generate'}</span>
+                                </button>
+                            </div>
+                            <div className="p-8 flex flex-col items-center justify-center">
+                                {asset.qrCode ? (
+                                    <>
+                                        <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 mb-6 flex justify-center items-center">
+                                            {asset.qrCode && asset.qrCode.startsWith('data:image') ? (
+                                                <img 
+                                                    src={asset.qrCode} 
+                                                    alt="Asset QR Code" 
+                                                    className="w-[180px] h-[180px] object-contain" 
+                                                    id="asset-qrcode-image" 
+                                                />
+                                            ) : asset.qrCode && asset.qrCode.length > 2000 ? (
+                                                <div className="text-center p-4">
+                                                    <AlertCircle className="w-10 h-10 text-red-500 mx-auto mb-2" />
+                                                    <p className="text-sm text-red-600 font-bold">QR Data Error</p>
+                                                    <p className="text-xs text-red-500 mt-1">Invalid QR format detected.</p>
+                                                </div>
+                                            ) : (
+                                                <QRCodeCanvas
+                                                    id="asset-qrcode-canvas"
+                                                    value={asset.qrCode}
+                                                    size={180}
+                                                    level="M"
+                                                    includeMargin={true}
+                                                />
+                                            )}
+                                        </div>
+                                        <button
+                                            onClick={handleDownloadQR}
+                                            className="flex items-center space-x-2 bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 px-6 py-3 rounded-xl font-bold text-sm hover:bg-gray-200 dark:hover:bg-slate-700 transition-all border border-gray-200 dark:border-slate-700"
+                                        >
+                                            <Download className="w-4 h-4" />
+                                            <span>Download QR</span>
+                                        </button>
+                                    </>
+                                ) : (
+                                    <div className="text-center py-6">
+                                        <div className="w-16 h-16 bg-gray-50 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <QrCode className="w-8 h-8 text-gray-300 dark:text-slate-600" />
+                                        </div>
+                                        <p className="text-gray-500 dark:text-slate-400 text-sm mb-4">No QR code generated for this asset yet.</p>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
