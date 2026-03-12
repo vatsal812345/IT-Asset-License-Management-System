@@ -320,10 +320,12 @@ const EmployeeList = () => {
                                                         <Mail className="w-3.5 h-3.5" />
                                                         <span className="text-xs font-bold">{emp.email}</span>
                                                     </div>
-                                                    <div className="flex items-center space-x-2 text-slate-400 dark:text-slate-500">
-                                                        <Contact className="w-3.5 h-3.5" />
-                                                        <span className="text-[10px] font-bold">{emp.phoneNumber || 'No contact info'}</span>
-                                                    </div>
+                                                    {emp.phone && (
+                                                        <div className="flex items-center space-x-2 text-slate-400 dark:text-slate-500">
+                                                            <Contact className="w-3.5 h-3.5" />
+                                                            <span className="text-[10px] font-bold">{emp.phone}</span>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </td>
                                             <td className="px-8 py-6 text-right">

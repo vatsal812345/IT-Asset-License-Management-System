@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search, Loader, RefreshCw, AlertCircle, Monitor, KeyRound, ChevronDown, ChevronRight, Users, User } from 'lucide-react';
+import { Search, Loader, RefreshCw, AlertCircle, Monitor, KeyRound, ChevronDown, ChevronRight, Users, User, Clock, CheckCircle2, RotateCcw } from 'lucide-react';
 import api from '../utils/api';
 
 const AssignmentHistory = () => {
@@ -11,6 +11,7 @@ const AssignmentHistory = () => {
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [expandedRows, setExpandedRows] = useState({});
+    const [showAllRows, setShowAllRows] = useState({});
 
     // Check if navigated from License List with a specific license filter
     useEffect(() => {
@@ -24,21 +25,50 @@ const AssignmentHistory = () => {
     const fetchAssetHistory = async () => {
         setLoading(true);
         try {
-            const response = await api.get('/assets');
+            const response = await api.get('/assignments');
             const data = response.data;
 
             if (data.success) {
-                const historyData = data.data.filter(a => a.currentAssignedTo).map(a => ({
-                    _id: a._id,
-                    assetName: a.name,
-                    assetTag: a.assetTag,
-                    employeeName: a.currentAssignedTo.fullName,
-                    date: new Date(a.updatedAt).toLocaleDateString(),
-                    status: 'Assigned',
-                    type: 'assignment'
-                }));
+                // Group assignments by asset, sort each group by assignedDate DESC (latest first)
+                const grouped = {};
+                data.data.forEach(record => {
+                    if (!record.asset) return;
+                    const assetId = record.asset._id || record.asset;
+                    if (!grouped[assetId]) {
+                        grouped[assetId] = {
+                            assetId,
+                            assetName: record.asset.name || 'Unknown Asset',
+                            assetTag: record.asset.assetTag || '',
+                            history: []
+                        };
+                    }
+                    grouped[assetId].history.push({
+                        _id: record._id,
+                        employeeName: record.employee
+                            ? `${record.employee.firstName} ${record.employee.lastName}`
+                            : 'Unknown Employee',
+                        employeeId: record.employee?.employeeId || '',
+                        department: record.employee?.department || '',
+                        assignedDate: record.assignedDate,
+                        returnedDate: record.returnedDate,
+                        status: record.returnedDate ? 'Returned' : 'Assigned',
+                    });
+                });
 
-                setAssignments(historyData);
+                // Sort each asset's history by assignedDate DESC
+                Object.values(grouped).forEach(g => {
+                    g.history.sort((a, b) => new Date(b.assignedDate) - new Date(a.assignedDate));
+
+                    // Deduplicate: keep only the most recent record per employee
+                    const seen = new Set();
+                    g.history = g.history.filter(record => {
+                        if (seen.has(record.employeeName)) return false;
+                        seen.add(record.employeeName);
+                        return true;
+                    });
+                });
+
+                setAssignments(Object.values(grouped));
             }
         } catch (error) {
             console.error('Error fetching asset history:', error);
@@ -124,8 +154,10 @@ const AssignmentHistory = () => {
     const filteredAssetHistory = assignments.filter(item =>
         item.assetName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.assetTag.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.employeeName.toLowerCase().includes(searchQuery.toLowerCase())
+        item.history.some(h => h.employeeName.toLowerCase().includes(searchQuery.toLowerCase()))
     );
+
+    const toggleShowAll = (id) => setShowAllRows(prev => ({ ...prev, [id]: !prev[id] }));
 
     const filteredLicenseHistory = licenseData.filter(item =>
         item.licenseName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -236,48 +268,127 @@ const AssignmentHistory = () => {
                                     <Loader className="w-10 h-10 text-blue-500 animate-spin" />
                                 </div>
                             ) : filteredAssetHistory.length > 0 ? (
-                                <div className="overflow-x-auto">
-                                    <table className="w-full text-left border-collapse">
-                                        <thead>
-                                            <tr className="bg-gray-50/50 dark:bg-slate-800/50 border-b border-gray-100 dark:border-dark-border">
-                                                <th className="px-8 py-5 text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Asset</th>
-                                                <th className="px-8 py-5 text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Assigned To</th>
-                                                <th className="px-8 py-5 text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Date</th>
-                                                <th className="px-8 py-5 text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-gray-50 dark:divide-slate-800">
-                                            {filteredAssetHistory.map((item, index) => (
-                                                <tr
-                                                    key={index}
-                                                    className="hover:bg-blue-50/30 dark:hover:bg-slate-800/30 transition-all duration-300 group cursor-default"
-                                                >
-                                                    <td className="px-8 py-5">
-                                                        <div className="flex flex-col">
-                                                            <span className="text-sm font-bold text-gray-900 dark:text-white">{item.assetName}</span>
-                                                            <span className="text-xs font-mono text-blue-600 dark:text-brand-primary bg-blue-50 dark:bg-slate-800 px-2 py-0.5 rounded w-fit mt-1">{item.assetTag}</span>
+                                <div className="divide-y divide-gray-50 dark:divide-slate-800">
+                                    {filteredAssetHistory.map((item) => {
+                                        const visibleHistory = showAllRows[item.assetId]
+                                            ? item.history
+                                            : item.history.slice(0, 3);
+                                        const hasMore = item.history.length > 3;
+
+                                        return (
+                                            <div key={item.assetId} className="px-6 md:px-8 py-6">
+                                                {/* Asset Header */}
+                                                <div className="flex items-center gap-3 mb-5">
+                                                    <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-md shrink-0">
+                                                        <Monitor className="w-5 h-5" />
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-sm font-black text-gray-900 dark:text-white">{item.assetName}</span>
+                                                        <div className="mt-0.5">
+                                                            <span className="text-xs font-mono font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-slate-800 px-2 py-0.5 rounded">{item.assetTag}</span>
                                                         </div>
-                                                    </td>
-                                                    <td className="px-8 py-5">
-                                                        <div className="flex items-center space-x-3">
-                                                            <div className="w-8 h-8 rounded-full bg-linear-to-tr from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-bold shadow-sm">
-                                                                {item.employeeName.split(' ').map(n => n[0]).join('')}
-                                                            </div>
-                                                            <span className="text-sm font-semibold text-gray-800 dark:text-slate-200">{item.employeeName}</span>
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-8 py-5">
-                                                        <span className="text-sm text-gray-500 dark:text-slate-500 font-medium">{item.date}</span>
-                                                    </td>
-                                                    <td className="px-8 py-5">
-                                                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${getStatusBadge(item.status)}`}>
-                                                            {item.status}
-                                                        </span>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
+                                                    </div>
+                                                    <div className="ml-auto flex items-center gap-1.5 text-xs font-bold text-gray-400 dark:text-slate-500 bg-gray-50 dark:bg-slate-800 px-3 py-1.5 rounded-full border border-gray-100 dark:border-dark-border">
+                                                        <Clock className="w-3.5 h-3.5" />
+                                                        <span>{item.history.length} record{item.history.length !== 1 ? 's' : ''}</span>
+                                                    </div>
+                                                </div>
+
+                                                {/* Timeline */}
+                                                <div className="ml-5 relative">
+                                                    {/* Vertical line */}
+                                                    <div className="absolute left-0 top-0 bottom-0 w-px bg-gradient-to-b from-blue-200 via-indigo-100 to-transparent dark:from-slate-600 dark:via-slate-700" />
+
+                                                    <div className="space-y-0">
+                                                        {visibleHistory.map((record, idx) => {
+                                                            const isLatest = idx === 0;
+                                                            const isReturned = record.status === 'Returned';
+                                                            return (
+                                                                <div key={record._id} className="relative pl-8 pb-4 group/entry">
+                                                                    {/* Timeline dot */}
+                                                                    <div className={`absolute left-0 top-2 w-2.5 h-2.5 rounded-full border-2 -translate-x-[4.5px] transition-transform duration-300 group-hover/entry:scale-125 ${
+                                                                        isLatest
+                                                                            ? 'bg-blue-500 border-blue-300 dark:border-blue-600 shadow-sm'
+                                                                            : 'bg-gray-200 dark:bg-slate-700 border-gray-100 dark:border-slate-600'
+                                                                    }`} />
+
+                                                                    {isLatest ? (
+                                                                        /* ── Current / Latest entry ── */
+                                                                        <div className="flex items-center justify-between rounded-2xl px-4 py-3 bg-blue-50/80 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 shadow-sm">
+                                                                            <div className="flex items-center gap-3">
+                                                                                <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-black shadow">
+                                                                                    {record.employeeName.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                                                                                </div>
+                                                                                <div>
+                                                                                    <div className="flex items-center gap-2">
+                                                                                        <span className="text-sm font-bold text-gray-900 dark:text-white">{record.employeeName}</span>
+                                                                                        <span className="text-[9px] font-black uppercase tracking-widest bg-blue-500 text-white px-2 py-0.5 rounded-full">Current</span>
+                                                                                    </div>
+                                                                                    <div className="flex items-center gap-2 mt-0.5">
+                                                                                        {record.employeeId && <span className="text-[10px] font-bold text-blue-400 dark:text-blue-500 uppercase tracking-widest">{record.employeeId}</span>}
+                                                                                        {record.department && (
+                                                                                            <><span className="w-1 h-1 bg-blue-200 dark:bg-blue-800 rounded-full" />
+                                                                                            <span className="text-[10px] font-bold text-blue-400 dark:text-blue-500 uppercase tracking-widest">{record.department}</span></>
+                                                                                        )}
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                            <div className="flex flex-col items-end gap-1 shrink-0">
+                                                                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
+                                                                                    <CheckCircle2 className="w-2.5 h-2.5" /> Assigned
+                                                                                </span>
+                                                                                <span className="text-[10px] font-medium text-blue-400 dark:text-blue-600">
+                                                                                    Since {new Date(record.assignedDate).toLocaleDateString()}
+                                                                                </span>
+                                                                            </div>
+                                                                        </div>
+                                                                    ) : (
+                                                                        /* ── Previous / Historical entry ── */
+                                                                        <div className="flex items-center justify-between rounded-xl px-4 py-2.5 bg-gray-50/60 dark:bg-slate-900/30 border border-dashed border-gray-200 dark:border-slate-700 opacity-75 hover:opacity-100 transition-opacity duration-200">
+                                                                            <div className="flex items-center gap-3">
+                                                                                <div className="w-7 h-7 rounded-lg bg-gray-200 dark:bg-slate-700 flex items-center justify-center text-gray-500 dark:text-slate-400 text-[10px] font-black">
+                                                                                    {record.employeeName.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                                                                                </div>
+                                                                                <div>
+                                                                                    <div className="flex items-center gap-2">
+                                                                                        <span className="text-xs font-semibold text-gray-500 dark:text-slate-400">{record.employeeName}</span>
+                                                                                        <span className="text-[9px] font-bold uppercase tracking-widest bg-gray-100 dark:bg-slate-800 text-gray-400 dark:text-slate-500 px-1.5 py-0.5 rounded-full">
+                                                                                            {isReturned ? 'Returned' : 'Previous'}
+                                                                                        </span>
+                                                                                    </div>
+                                                                                    {record.employeeId && <span className="text-[10px] font-medium text-gray-400 dark:text-slate-600 uppercase tracking-widest">{record.employeeId}</span>}
+                                                                                </div>
+                                                                            </div>
+                                                                            <div className="flex flex-col items-end gap-0.5 shrink-0">
+                                                                                <span className="text-[10px] font-medium text-gray-400 dark:text-slate-600">
+                                                                                    {new Date(record.assignedDate).toLocaleDateString()}
+                                                                                    {record.returnedDate && ` → ${new Date(record.returnedDate).toLocaleDateString()}`}
+                                                                                </span>
+                                                                            </div>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+
+                                                    {/* Show more / Show less */}
+                                                    {hasMore && (
+                                                        <button
+                                                            onClick={() => toggleShowAll(item.assetId)}
+                                                            className="ml-8 mt-0 flex items-center gap-1.5 text-xs font-bold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
+                                                        >
+                                                            {showAllRows[item.assetId] ? (
+                                                                <><ChevronDown className="w-3.5 h-3.5 rotate-180" /> Show less</>
+                                                            ) : (
+                                                                <><ChevronDown className="w-3.5 h-3.5" /> Show {item.history.length - 3} more record{item.history.length - 3 !== 1 ? 's' : ''}</>
+                                                            )}
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             ) : (
                                 <div className="flex flex-col items-center justify-center p-20 text-center">
