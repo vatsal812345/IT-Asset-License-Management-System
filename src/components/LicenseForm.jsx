@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import api from '../utils/api';
 import { X, Calendar, Hash, Tag, Globe, Package, ChevronDown } from 'lucide-react';
 import { CheckCircle2 } from 'lucide-react';
 
@@ -16,12 +17,29 @@ const LicenseForm = ({ isOpen, onClose, onSubmit, initialData }) => {
         status: 'Active',
     });
 
+    const [vendors, setVendors] = useState([]);
+
+    useEffect(() => {
+        const fetchVendors = async () => {
+            try {
+                const response = await api.get('/vendors?limit=100');
+                if (response.data.success) {
+                    setVendors(response.data.data.vendors);
+                }
+            } catch (error) {
+                console.error('Error fetching vendors:', error);
+            }
+        };
+        if (isOpen) fetchVendors();
+    }, [isOpen]);
+
     useEffect(() => {
         if (initialData) {
             setFormData({
                 ...initialData,
                 purchaseDate: initialData.purchaseDate ? initialData.purchaseDate.split('T')[0] : '',
                 expiryDate: initialData.expiryDate ? initialData.expiryDate.split('T')[0] : '',
+                vendor: initialData.vendor?._id || initialData.vendor || '',
             });
         } else {
             setFormData({
@@ -101,14 +119,20 @@ const LicenseForm = ({ isOpen, onClose, onSubmit, initialData }) => {
                         </div>
                         <div className="space-y-1.5">
                             <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest ml-1 transition-colors">Vendor</label>
-                            <input
-                                type="text"
-                                name="vendor"
-                                placeholder="e.g. Adobe"
-                                value={formData.vendor}
-                                onChange={handleChange}
-                                className="w-full h-12 px-5 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-dark-border rounded-2xl focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/40 focus:border-blue-500 outline-none transition-all duration-300 font-bold text-gray-800 dark:text-white placeholder:text-gray-300 dark:placeholder:text-slate-600"
-                            />
+                            <div className="relative group">
+                                <select
+                                    name="vendor"
+                                    value={formData.vendor}
+                                    onChange={handleChange}
+                                    className="w-full h-12 px-5 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-dark-border rounded-2xl focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/40 focus:border-blue-500 outline-none transition-all duration-300 font-bold text-gray-800 dark:text-white appearance-none cursor-pointer"
+                                >
+                                    <option value="">Select Vendor (Optional)</option>
+                                    {vendors.map((v) => (
+                                        <option key={v._id} value={v._id}>{v.vendorName}</option>
+                                    ))}
+                                </select>
+                                <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none group-hover:text-blue-500 transition-colors" />
+                            </div>
                         </div>
                         <div className="space-y-1.5">
                             <label className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest ml-1 transition-colors">License Type</label>

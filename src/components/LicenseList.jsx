@@ -63,11 +63,16 @@ const LicenseList = () => {
 
         if (searchQuery) {
             const query = searchQuery.toLowerCase();
-            result = result.filter(license =>
-                license.softwareName.toLowerCase().includes(query) ||
-                license.licenseKey.toLowerCase().includes(query) ||
-                license.vendor.toLowerCase().includes(query)
-            );
+            result = result.filter(license => {
+                const vendorName = typeof license.vendor === 'object'
+                    ? (license.vendor?.vendorName || '').toLowerCase()
+                    : (license.vendor || '').toLowerCase();
+                return (
+                    license.softwareName.toLowerCase().includes(query) ||
+                    license.licenseKey.toLowerCase().includes(query) ||
+                    vendorName.includes(query)
+                );
+            });
         }
 
         setFilteredLicenses(result);
@@ -288,7 +293,7 @@ const LicenseList = () => {
                                                     </div>
                                                     <div className="flex flex-col">
                                                         <span className="text-sm font-black text-slate-900 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-indigo-400 transition-colors">{license.softwareName}</span>
-                                                        <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-0.5">{license.vendor}</span>
+                                                        <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-0.5">{typeof license.vendor === 'object' ? license.vendor?.vendorName : license.vendor}</span>
                                                     </div>
                                                 </div>
                                             </td>

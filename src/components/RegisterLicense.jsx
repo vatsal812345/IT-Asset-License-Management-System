@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ShieldCheck, Tag, Globe, Package, Calendar, Hash, CheckCircle2, ChevronDown } from 'lucide-react';
 import api from '../utils/api';
