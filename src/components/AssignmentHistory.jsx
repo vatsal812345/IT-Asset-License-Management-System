@@ -11,7 +11,6 @@ const AssignmentHistory = () => {
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [expandedRows, setExpandedRows] = useState({});
-    const [showAllRows, setShowAllRows] = useState({});
 
     // Check if navigated from License List with a specific license filter
     useEffect(() => {
@@ -157,8 +156,6 @@ const AssignmentHistory = () => {
         item.history.some(h => h.employeeName.toLowerCase().includes(searchQuery.toLowerCase()))
     );
 
-    const toggleShowAll = (id) => setShowAllRows(prev => ({ ...prev, [id]: !prev[id] }));
-
     const filteredLicenseHistory = licenseData.filter(item =>
         item.licenseName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.licenseKey.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -268,127 +265,186 @@ const AssignmentHistory = () => {
                                     <Loader className="w-10 h-10 text-blue-500 animate-spin" />
                                 </div>
                             ) : filteredAssetHistory.length > 0 ? (
-                                <div className="divide-y divide-gray-50 dark:divide-slate-800">
-                                    {filteredAssetHistory.map((item) => {
-                                        const visibleHistory = showAllRows[item.assetId]
-                                            ? item.history
-                                            : item.history.slice(0, 3);
-                                        const hasMore = item.history.length > 3;
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-left border-collapse">
+                                        <thead>
+                                            <tr className="bg-gray-50/50 dark:bg-slate-800/50 border-b border-gray-100 dark:border-dark-border">
+                                                <th className="px-4 py-5 w-10"></th>
+                                                <th className="px-4 py-5 text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Asset</th>
+                                                <th className="px-6 py-5 text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Current Holder</th>
+                                                <th className="px-6 py-5 text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Assigned Since</th>
+                                                <th className="px-6 py-5 text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">History</th>
+                                                <th className="px-6 py-5 text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-50 dark:divide-slate-800">
+                                            {filteredAssetHistory.map((item) => {
+                                                const current = item.history[0];
+                                                const isExpanded = expandedRows[item.assetId];
+                                                const isAssigned = current && current.status === 'Assigned';
 
-                                        return (
-                                            <div key={item.assetId} className="px-6 md:px-8 py-6">
-                                                {/* Asset Header */}
-                                                <div className="flex items-center gap-3 mb-5">
-                                                    <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-md shrink-0">
-                                                        <Monitor className="w-5 h-5" />
-                                                    </div>
-                                                    <div>
-                                                        <span className="text-sm font-black text-gray-900 dark:text-white">{item.assetName}</span>
-                                                        <div className="mt-0.5">
-                                                            <span className="text-xs font-mono font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-slate-800 px-2 py-0.5 rounded">{item.assetTag}</span>
-                                                        </div>
-                                                    </div>
-                                                    <div className="ml-auto flex items-center gap-1.5 text-xs font-bold text-gray-400 dark:text-slate-500 bg-gray-50 dark:bg-slate-800 px-3 py-1.5 rounded-full border border-gray-100 dark:border-dark-border">
-                                                        <Clock className="w-3.5 h-3.5" />
-                                                        <span>{item.history.length} record{item.history.length !== 1 ? 's' : ''}</span>
-                                                    </div>
-                                                </div>
-
-                                                {/* Timeline */}
-                                                <div className="ml-5 relative">
-                                                    {/* Vertical line */}
-                                                    <div className="absolute left-0 top-0 bottom-0 w-px bg-gradient-to-b from-blue-200 via-indigo-100 to-transparent dark:from-slate-600 dark:via-slate-700" />
-
-                                                    <div className="space-y-0">
-                                                        {visibleHistory.map((record, idx) => {
-                                                            const isLatest = idx === 0;
-                                                            const isReturned = record.status === 'Returned';
-                                                            return (
-                                                                <div key={record._id} className="relative pl-8 pb-4 group/entry">
-                                                                    {/* Timeline dot */}
-                                                                    <div className={`absolute left-0 top-2 w-2.5 h-2.5 rounded-full border-2 -translate-x-[4.5px] transition-transform duration-300 group-hover/entry:scale-125 ${
-                                                                        isLatest
-                                                                            ? 'bg-blue-500 border-blue-300 dark:border-blue-600 shadow-sm'
-                                                                            : 'bg-gray-200 dark:bg-slate-700 border-gray-100 dark:border-slate-600'
-                                                                    }`} />
-
-                                                                    {isLatest ? (
-                                                                        /* ── Current / Latest entry ── */
-                                                                        <div className="flex items-center justify-between rounded-2xl px-4 py-3 bg-blue-50/80 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 shadow-sm">
-                                                                            <div className="flex items-center gap-3">
-                                                                                <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-black shadow">
-                                                                                    {record.employeeName.split(' ').map(n => n[0]).join('').slice(0, 2)}
-                                                                                </div>
-                                                                                <div>
-                                                                                    <div className="flex items-center gap-2">
-                                                                                        <span className="text-sm font-bold text-gray-900 dark:text-white">{record.employeeName}</span>
-                                                                                        <span className="text-[9px] font-black uppercase tracking-widest bg-blue-500 text-white px-2 py-0.5 rounded-full">Current</span>
-                                                                                    </div>
-                                                                                    <div className="flex items-center gap-2 mt-0.5">
-                                                                                        {record.employeeId && <span className="text-[10px] font-bold text-blue-400 dark:text-blue-500 uppercase tracking-widest">{record.employeeId}</span>}
-                                                                                        {record.department && (
-                                                                                            <><span className="w-1 h-1 bg-blue-200 dark:bg-blue-800 rounded-full" />
-                                                                                            <span className="text-[10px] font-bold text-blue-400 dark:text-blue-500 uppercase tracking-widest">{record.department}</span></>
-                                                                                        )}
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div className="flex flex-col items-end gap-1 shrink-0">
-                                                                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
-                                                                                    <CheckCircle2 className="w-2.5 h-2.5" /> Assigned
-                                                                                </span>
-                                                                                <span className="text-[10px] font-medium text-blue-400 dark:text-blue-600">
-                                                                                    Since {new Date(record.assignedDate).toLocaleDateString()}
-                                                                                </span>
-                                                                            </div>
-                                                                        </div>
-                                                                    ) : (
-                                                                        /* ── Previous / Historical entry ── */
-                                                                        <div className="flex items-center justify-between rounded-xl px-4 py-2.5 bg-gray-50/60 dark:bg-slate-900/30 border border-dashed border-gray-200 dark:border-slate-700 opacity-75 hover:opacity-100 transition-opacity duration-200">
-                                                                            <div className="flex items-center gap-3">
-                                                                                <div className="w-7 h-7 rounded-lg bg-gray-200 dark:bg-slate-700 flex items-center justify-center text-gray-500 dark:text-slate-400 text-[10px] font-black">
-                                                                                    {record.employeeName.split(' ').map(n => n[0]).join('').slice(0, 2)}
-                                                                                </div>
-                                                                                <div>
-                                                                                    <div className="flex items-center gap-2">
-                                                                                        <span className="text-xs font-semibold text-gray-500 dark:text-slate-400">{record.employeeName}</span>
-                                                                                        <span className="text-[9px] font-bold uppercase tracking-widest bg-gray-100 dark:bg-slate-800 text-gray-400 dark:text-slate-500 px-1.5 py-0.5 rounded-full">
-                                                                                            {isReturned ? 'Returned' : 'Previous'}
-                                                                                        </span>
-                                                                                    </div>
-                                                                                    {record.employeeId && <span className="text-[10px] font-medium text-gray-400 dark:text-slate-600 uppercase tracking-widest">{record.employeeId}</span>}
-                                                                                </div>
-                                                                            </div>
-                                                                            <div className="flex flex-col items-end gap-0.5 shrink-0">
-                                                                                <span className="text-[10px] font-medium text-gray-400 dark:text-slate-600">
-                                                                                    {new Date(record.assignedDate).toLocaleDateString()}
-                                                                                    {record.returnedDate && ` → ${new Date(record.returnedDate).toLocaleDateString()}`}
-                                                                                </span>
-                                                                            </div>
-                                                                        </div>
-                                                                    )}
-                                                                </div>
-                                                            );
-                                                        })}
-                                                    </div>
-
-                                                    {/* Show more / Show less */}
-                                                    {hasMore && (
-                                                        <button
-                                                            onClick={() => toggleShowAll(item.assetId)}
-                                                            className="ml-8 mt-0 flex items-center gap-1.5 text-xs font-bold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
+                                                return (
+                                                    <React.Fragment key={item.assetId}>
+                                                        {/* Main Asset Row */}
+                                                        <tr
+                                                            className="hover:bg-blue-50/30 dark:hover:bg-slate-800/30 transition-all duration-300 group cursor-pointer"
+                                                            onClick={() => toggleRow(item.assetId)}
                                                         >
-                                                            {showAllRows[item.assetId] ? (
-                                                                <><ChevronDown className="w-3.5 h-3.5 rotate-180" /> Show less</>
-                                                            ) : (
-                                                                <><ChevronDown className="w-3.5 h-3.5" /> Show {item.history.length - 3} more record{item.history.length - 3 !== 1 ? 's' : ''}</>
-                                                            )}
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
+                                                            {/* Expand/Collapse Icon */}
+                                                            <td className="px-4 py-5">
+                                                                <div className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all duration-300 ${isExpanded
+                                                                        ? 'bg-blue-100 dark:bg-slate-700 text-blue-600 dark:text-brand-primary'
+                                                                        : 'bg-gray-50 dark:bg-slate-800 text-gray-400 group-hover:bg-blue-50 dark:group-hover:bg-slate-700 group-hover:text-blue-500 dark:group-hover:text-brand-primary'
+                                                                    }`}>
+                                                                    {isExpanded
+                                                                        ? <ChevronDown className="w-4 h-4" />
+                                                                        : <ChevronRight className="w-4 h-4" />
+                                                                    }
+                                                                </div>
+                                                            </td>
+                                                            {/* Asset Name & Tag */}
+                                                            <td className="px-4 py-5">
+                                                                <div className="flex flex-col">
+                                                                    <span className="text-sm font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-brand-primary transition-colors">{item.assetName}</span>
+                                                                    <span className="text-xs font-mono text-blue-600 dark:text-brand-primary bg-blue-50 dark:bg-slate-800 px-2 py-0.5 rounded w-fit mt-1">{item.assetTag}</span>
+                                                                </div>
+                                                            </td>
+                                                            {/* Current Holder */}
+                                                            <td className="px-6 py-5">
+                                                                {current ? (
+                                                                    <div className="flex items-center space-x-2">
+                                                                        <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-bold shadow-sm">
+                                                                            {current.employeeName.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                                                                        </div>
+                                                                        <div className="flex flex-col">
+                                                                            <span className="text-sm font-semibold text-gray-700 dark:text-slate-300">{current.employeeName}</span>
+                                                                            {item.history.length > 1 && (
+                                                                                <span className="text-[10px] font-bold text-blue-500 dark:text-brand-primary">+{item.history.length - 1} previous</span>
+                                                                            )}
+                                                                        </div>
+                                                                    </div>
+                                                                ) : (
+                                                                    <div className="flex items-center space-x-2">
+                                                                        <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-slate-800 flex items-center justify-center text-gray-400 dark:text-slate-500">
+                                                                            <User className="w-4 h-4" />
+                                                                        </div>
+                                                                        <span className="text-sm font-medium text-gray-400 dark:text-slate-500">Unassigned</span>
+                                                                    </div>
+                                                                )}
+                                                            </td>
+                                                            {/* Assigned Since */}
+                                                            <td className="px-6 py-5">
+                                                                <span className="text-sm text-gray-500 dark:text-slate-500 font-medium">
+                                                                    {current ? new Date(current.assignedDate).toLocaleDateString() : '—'}
+                                                                </span>
+                                                            </td>
+                                                            {/* History Count */}
+                                                            <td className="px-6 py-5">
+                                                                <div className="flex items-center gap-1.5 text-xs font-bold text-gray-400 dark:text-slate-500 bg-gray-50 dark:bg-slate-800 px-3 py-1.5 rounded-full border border-gray-100 dark:border-dark-border w-fit">
+                                                                    <Clock className="w-3.5 h-3.5" />
+                                                                    <span>{item.history.length} record{item.history.length !== 1 ? 's' : ''}</span>
+                                                                </div>
+                                                            </td>
+                                                            {/* Status */}
+                                                            <td className="px-6 py-5">
+                                                                <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${isAssigned
+                                                                        ? 'bg-blue-50 text-blue-600 border border-blue-100'
+                                                                        : 'bg-gray-50 text-gray-500 border border-gray-100 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700'
+                                                                    }`}>
+                                                                    {isAssigned ? 'Assigned' : 'Returned'}
+                                                                </span>
+                                                            </td>
+                                                        </tr>
+
+                                                        {/* Expanded History Timeline */}
+                                                        {isExpanded && (
+                                                            <tr>
+                                                                <td colSpan="6" className="px-0 py-0">
+                                                                    <div className="bg-gradient-to-b from-blue-50/50 to-white dark:from-slate-800/50 dark:to-dark-card border-t border-blue-100 dark:border-slate-700 animate-slideDown">
+                                                                        <div className="px-12 py-5">
+                                                                            <div className="flex items-center space-x-2 mb-4">
+                                                                                <Clock className="w-4 h-4 text-blue-500 dark:text-brand-primary" />
+                                                                                <span className="text-xs font-bold text-blue-600 dark:text-brand-primary uppercase tracking-widest">
+                                                                                    Assignment History ({item.history.length})
+                                                                                </span>
+                                                                            </div>
+                                                                            {item.history.length > 0 ? (
+                                                                                <div className="grid gap-3">
+                                                                                    {item.history.map((record, i) => {
+                                                                                        const isLatest = i === 0;
+                                                                                        const isReturned = record.status === 'Returned';
+                                                                                        return (
+                                                                                            <div
+                                                                                                key={record._id}
+                                                                                                className="flex items-center justify-between bg-white dark:bg-slate-800 rounded-2xl px-5 py-4 border border-gray-100 dark:border-dark-border shadow-sm hover:shadow-md hover:border-blue-100 dark:hover:border-slate-700 transition-all duration-300"
+                                                                                                style={{ animationDelay: `${i * 80}ms` }}
+                                                                                            >
+                                                                                                <div className="flex items-center space-x-4">
+                                                                                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white text-xs font-bold shadow-sm ${isLatest ? 'bg-gradient-to-tr from-blue-500 to-indigo-600' : 'bg-gray-200 dark:bg-slate-700 text-gray-500 dark:text-slate-400'}`}>
+                                                                                                        {record.employeeName.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                                                                                                    </div>
+                                                                                                    <div>
+                                                                                                        <div className="flex items-center gap-2">
+                                                                                                            <p className="text-sm font-bold text-gray-900 dark:text-white">{record.employeeName}</p>
+                                                                                                            {isLatest && (
+                                                                                                                <span className="text-[9px] font-black uppercase tracking-widest bg-blue-500 text-white px-2 py-0.5 rounded-full">Current</span>
+                                                                                                            )}
+                                                                                                            {!isLatest && (
+                                                                                                                <span className="text-[9px] font-bold uppercase tracking-widest bg-gray-100 dark:bg-slate-800 text-gray-400 dark:text-slate-500 px-1.5 py-0.5 rounded-full">
+                                                                                                                    {isReturned ? 'Returned' : 'Previous'}
+                                                                                                                </span>
+                                                                                                            )}
+                                                                                                        </div>
+                                                                                                        <div className="flex items-center space-x-3 mt-0.5">
+                                                                                                            {record.employeeId && <span className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">{record.employeeId}</span>}
+                                                                                                            {record.department && (
+                                                                                                                <>
+                                                                                                                    <span className="w-1 h-1 bg-gray-300 dark:bg-slate-600 rounded-full"></span>
+                                                                                                                    <span className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">{record.department}</span>
+                                                                                                                </>
+                                                                                                            )}
+                                                                                                        </div>
+                                                                                                    </div>
+                                                                                                </div>
+                                                                                                <div className="flex items-center space-x-3">
+                                                                                                    <div className="flex flex-col items-end gap-0.5">
+                                                                                                        <span className="text-xs font-medium text-gray-400 dark:text-slate-500">
+                                                                                                            {new Date(record.assignedDate).toLocaleDateString()}
+                                                                                                            {record.returnedDate && ` → ${new Date(record.returnedDate).toLocaleDateString()}`}
+                                                                                                        </span>
+                                                                                                    </div>
+                                                                                                    <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${isLatest
+                                                                                                            ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-900'
+                                                                                                            : 'bg-gray-50 dark:bg-slate-900 text-gray-400 dark:text-slate-500 border-gray-100 dark:border-slate-700'
+                                                                                                        }`}>
+                                                                                                        {isLatest ? <><CheckCircle2 className="w-2.5 h-2.5" /> Assigned</> : isReturned ? <><RotateCcw className="w-2.5 h-2.5" /> Returned</> : 'Previous'}
+                                                                                                    </span>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        );
+                                                                                    })}
+                                                                                </div>
+                                                                            ) : (
+                                                                                <div className="flex items-center space-x-3 bg-white dark:bg-slate-800 rounded-2xl px-5 py-4 border border-dashed border-gray-200 dark:border-slate-700">
+                                                                                    <div className="w-10 h-10 rounded-xl bg-gray-50 dark:bg-slate-900 flex items-center justify-center text-gray-300 dark:text-slate-600">
+                                                                                        <User className="w-5 h-5" />
+                                                                                    </div>
+                                                                                    <div>
+                                                                                        <p className="text-sm font-bold text-gray-500 dark:text-white">No history found</p>
+                                                                                        <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">This asset has no assignment records yet.</p>
+                                                                                    </div>
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        )}
+                                                    </React.Fragment>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
                                 </div>
                             ) : (
                                 <div className="flex flex-col items-center justify-center p-20 text-center">
@@ -402,7 +458,7 @@ const AssignmentHistory = () => {
                         </div>
                     )}
 
-                    {/* ========== LICENSE HISTORY TABLE ========== */}
+
                     {activeView === 'licenses' && (
                         <div className="bg-white dark:bg-dark-card rounded-3xl shadow-sm border border-gray-100 dark:border-dark-border overflow-hidden animate-fadeIn">
                             {loading ? (
