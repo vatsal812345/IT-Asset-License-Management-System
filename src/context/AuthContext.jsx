@@ -54,6 +54,37 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const signup = async (name, email, password, role) => {
+    try {
+      const response = await api.post('/auth/signup', { name, email, password, role });
+      localStorage.setItem('verify_email', email);
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Signup failed');
+    }
+  };
+
+  const verifyEmail = async (code) => {
+    const email = localStorage.getItem('verify_email');
+    try {
+      const response = await api.post('/auth/verify-email', { email, code });
+      localStorage.removeItem('verify_email');
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Verification failed');
+    }
+  };
+
+  const resendOtp = async () => {
+    const email = localStorage.getItem('verify_email') || localStorage.getItem('auth_email');
+    try {
+      const response = await api.post('/auth/resend-otp', { email });
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Failed to resend code');
+    }
+  };
+
   const register = async (name, email, password, confirmPassword, role) => {
     try {
       const response = await api.post('/auth/register', { fullName: name, email, password, confirmPassword, role });
@@ -112,7 +143,21 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, requestPasswordReset, verifyResetCode, resetPassword, logout, updateProfile, isAuthenticated: !!user, loading }}>
+    <AuthContext.Provider value={{
+      user,
+      login,
+      signup,
+      verifyEmail,
+      resendOtp,
+      register,
+      requestPasswordReset,
+      verifyResetCode,
+      resetPassword,
+      logout,
+      updateProfile,
+      isAuthenticated: !!user,
+      loading
+    }}>
       {children}
     </AuthContext.Provider>
   );

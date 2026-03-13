@@ -16,6 +16,7 @@ import LoginPage from './components/LoginPage';
 import RegisterPage from './components/RegisterPage';
 import ForgetPassword from './components/ForgetPassword';
 import VerifyCode from './components/VerifyCode';
+import VerifyEmail from './components/VerifyEmail';
 import ProfilePage from './components/ProfilePage';
 import VendorList from './components/VendorList';
 import VendorDetails from './components/VendorDetails';
@@ -39,6 +40,7 @@ const App = () => {
               <Routes>
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
+                <Route path="/verify-email" element={<VerifyEmail />} />
                 <Route path="/forget-password" element={<ForgetPassword />} />
                 <Route path="/verify-code" element={<VerifyCode />} />
 

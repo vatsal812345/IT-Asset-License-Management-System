@@ -24,7 +24,13 @@ const LoginPage = () => {
                 window.location.href = '/';
             }
         } catch (err) {
-            showToast(err.message || 'Invalid credentials', 'error');
+            if (err.response?.data?.notVerified) {
+                showToast('Please verify your email first.', 'warning');
+                localStorage.setItem('verify_email', email);
+                navigate('/verify-email');
+            } else {
+                showToast(err.message || 'Invalid credentials', 'error');
+            }
         } finally {
             setIsSubmitting(false);
         }

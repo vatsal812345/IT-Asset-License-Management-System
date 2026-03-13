@@ -17,7 +17,7 @@ const RegisterPage = () => {
     const [strength, setStrength] = useState({ score: 0, label: 'Weak', color: 'bg-slate-200' });
     const [showTooltip, setShowTooltip] = useState(false);
 
-    const { register } = useAuth();
+    const { signup } = useAuth();
     const { showToast } = useToast();
     const navigate = useNavigate();
 
@@ -51,9 +51,9 @@ const RegisterPage = () => {
 
         setIsSubmitting(true);
         try {
-            await register(name, email, password, confirmPassword, role);
-            showToast('Account created successfully! Please log in.', 'success');
-            navigate('/login');
+            await signup(name, email, password, role);
+            showToast('Verification code sent to your email!', 'success');
+            navigate('/verify-email');
         } catch (err) {
             showToast(err.message || 'Registration failed', 'error');
         } finally {
@@ -130,7 +130,6 @@ const RegisterPage = () => {
                                 />
                             </div>
                         </div>
-
                         <div className="group">
                             <label className="block text-sm font-extrabold text-slate-700 dark:text-slate-300 mb-1.5 ml-1 transition-colors">Select Role</label>
                             <div className="relative">
@@ -154,7 +153,6 @@ const RegisterPage = () => {
                                 </span>
                             </div>
                         </div>
-
                         <div className="group relative">
                             <div className="flex items-center justify-between mb-1.5 ml-1">
                                 <label className="block text-sm font-extrabold text-slate-700 dark:text-slate-300 transition-colors">Create Password</label>
